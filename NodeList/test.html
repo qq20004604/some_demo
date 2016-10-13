@@ -1,0 +1,43 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+</head>
+<body>
+<script>
+    var nodeList = null;
+    function getList() {
+        nodeList = document.querySelectorAll(".test");
+        console.log(document.getElementsByClassName("test") instanceof NodeList);   //false
+        console.log(nodeList instanceof NodeList);  //true
+    }
+
+    function addTestNode() {
+        var parent = document.getElementById("list");
+        var node = document.createElement("p");
+        node.innerHTML = "test";
+        node.classList.add("test");
+        parent.appendChild(node);
+    }
+
+    if (!("forEach" in NodeList)) {
+        NodeList.prototype.forEach = Array.prototype.forEach;
+    }
+
+    function showNodeList() {
+        document.getElementById("log").innerHTML = JSON.stringify(nodeList.length);
+        console.log(nodeList);
+    }
+
+</script>
+<p>以下是NodeList的结点列表</p>
+<div id="list">
+</div>
+<p>以下显示NodeList的当前数组元素数，console可以查看当前NodeList有哪些元素</p>
+<div id="log">
+
+</div>
+<button onclick="getList()">获取list</button>
+<button onclick="addTestNode()">添加结点</button>
+<button onclick="showNodeList()">显示list</button>
+</body>
+</html>
