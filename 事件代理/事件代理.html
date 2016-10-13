@@ -1,0 +1,34 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>事件代理</title>
+</head>
+<body>
+<ul id="test">
+    <li>a</li>
+    <li>b</li>
+    <li>c</li>
+    <li>d</li>
+    <li>
+        eeee
+        <span>ffff</span>
+        gg
+    </li>
+</ul>
+
+<script>
+    function setEvent() {
+        document.querySelector("#test").addEventListener("click", function (evt) {
+            console.log(evt);   //这个获取点击事件
+            console.log(evt.target);    //这个是获取触发点击事件的dom，是最底层的DOM（即事件目标）
+            console.log(evt.target.nodeName);   //显示HTML标签名
+            if (evt && evt.target.nodeName === 'LI') {
+                alert("文本内容为：" + evt.target.innerHTML + "的li结点被触发了");
+            }
+        })
+    }
+    setEvent();
+</script>
+</body>
+</html>
