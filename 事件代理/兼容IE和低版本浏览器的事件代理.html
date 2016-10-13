@@ -1,0 +1,72 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>事件代理</title>
+</head>
+<body>
+<ul id="test">
+    <li>a</li>
+    <li>b</li>
+    <li>c</li>
+    <li>d</li>
+    <li>
+        eeee
+        <span>ffff</span>
+        gg
+    </li>
+</ul>
+
+<script>
+    //参数依次为：委托元素，选择器（支持类、id和元素），事件类型，回调函数
+    function delegateEvent(parentElement, selector, eventType, fn) {
+        if (parentElement.addEventListener) {
+            //普通的，然后触发回调函数
+            parentElement.addEventListener(eventType, eventfn);
+        } else {
+            //兼容的处理，然后触发回调函数
+            parentElement.attachEvent("on" + eventType, eventfn);
+        }
+
+        //触发事件的回调函数，在使用我们自己编辑的回调函数前，先验证触发事件的结点是否是我们需要的结点，如果是，才执行
+        function eventfn(e) {
+            //事件或者是兼容性处理的window的事件
+            console.log(e);
+            var e = e || window.event;
+            var target = e.target || e.srcElement;
+            if (matchSelector(target, selector)) {
+                if (fn) {
+                    //用call将目标dom作为this指向的对象
+                    fn.call(target, e);
+                }
+            }
+        }
+    }
+    /**
+     *  选择器匹配
+     *  不支持组合，只支持id、类、html标签名
+     */
+    function matchSelector(element, selector) {
+        // 匹配id
+        if (selector.charAt(0) === "#") {
+            return element.id === selector.slice(1);
+        }
+        // 匹配类名
+        if (selector.charAt(0) === ".") {
+            return (" " + element.className + " ").indexOf(" " + selector.slice(1) + " ") != -1;
+        }
+        // 匹配HTML标签名
+        return element.tagName.toLowerCase() === selector.toLowerCase();
+    }
+
+    //获取父节点
+    var parentNode = document.getElementById("test");
+    //调用事件委托函数，父节点作为代理结点，第二个参数是选择器，支持类名、标签名和id（但不能组合），第三个是事件，第四个参数是回调函数
+    delegateEvent(parentNode, "li", "click", function (e) {
+        console.log(e);
+        console.log(this);
+        alert("1");
+    })
+</script>
+</body>
+</html>
