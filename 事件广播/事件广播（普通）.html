@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件广播——简单级</title>
+</head>
+<body>
+<button id="test">点击触发冒泡事件</button>
+<script>
+    var ev = document.createEvent('HTMLEvents');
+
+    // 允许冒泡，阻止浏览器默认行为
+    ev.initEvent("test", true, true);
+
+    // 将要绑定给document的，自定义事件触发后的回调函数；
+    function toTest1() {
+        alert('document eventHappened');
+    }
+
+    // 将要绑定给#test的，自定义事件触发后的回调函数；
+    function toTest2() {
+        alert('#test eventHappened');
+    }
+    var node = document.querySelector("#test");
+
+    // 绑定事件
+    document.addEventListener('test', toTest1, false);
+    node.addEventListener('test', toTest2, false);
+
+    // 设置点击触发派发事件
+    node.addEventListener("click", function () {
+        node.dispatchEvent(ev);
+    })
+</script>
+</body>
+</html>

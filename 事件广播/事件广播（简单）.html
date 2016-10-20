@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件广播——简单级</title>
+</head>
+<body>
+<div id="test">点击触发自定义test事件</div>
+<script>
+    // 创建一个HTMLEvents事件（注意，这个事件名不能用event)
+    var ev = document.createEvent('HTMLEvents');
+
+    // initEvent接受3个参数：
+    // 事件类型（或者说事件名？），是否冒泡，是否阻止浏览器的默认行为
+    ev.initEvent("test", false, false);
+    function toTest() {
+        alert('eventHappened');
+    }
+
+    // 监听事件
+    document.addEventListener('test', toTest, false);
+
+    // 设置点击事件，然后用于触发自定义事件
+    document.querySelector("#test").addEventListener("click", function () {
+        document.dispatchEvent(ev);
+    })
+</script>
+</body>
+</html>
