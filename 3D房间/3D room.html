@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D ROOM</title>
+    <link href="./style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="root">
+    <div class="parent">
+        <div class="top"></div>
+        <div class="left"></div>
+        <div class="bottom"></div>
+        <div class="right"></div>
+        <!--<div class="front"></div>-->
+        <div class="back"></div>
+    </div>
+</div>
+
+<div id="btn">
+    <button class="farther">视角拉远</button>
+    <button class="nearer">视角拉近</button>
+    <button class="">-test</button>
+    <button>test</button>
+    <button>test</button>
+    <ul>
+        <li>
+            键盘按键：
+        </li>
+        <li>
+            上：拉近距离
+        </li>
+        <li>
+            下：拉远距离
+        </li>
+        <li>
+            当前距离：<br/>
+            <span id="nowVal"></span>
+        </li>
+    </ul>
+</div>
+
+<script>
+    var $ = function (selector) {
+        return document.querySelector(selector);
+    }
+
+    var root = $(".root");
+    var parent = $(".parent");
+    var buttons = $("#btn");
+    var nowVal = $("#nowVal");
+
+    function addZ(transformValue) {
+        var Z = transformValue.match(/translateZ\(\-?\d+px\)/)[0];
+        var oldVal = Z.match(/\-?\d+/)[0];
+        var newVal = Number(oldVal) + 50;
+        var newString = Z.replace(/\-?\d+/, newVal);
+        return transformValue.replace(/translateZ\(\-?\d+px\)/, newString);
+    }
+    function minusZ(transformValue) {
+        var Z = transformValue.match(/translateZ\(\-?\d+px\)/)[0];
+        var oldVal = Z.match(/\-?\d+/)[0];
+        var newVal = Number(oldVal) - 50;
+        var newString = Z.replace(/\-?\d+/, newVal);
+        return transformValue.replace(/translateZ\(\-?\d+px\)/, newString);
+    }
+
+    buttons.addEventListener("click", function (evt) {
+        var oldval = parent.style.transform;
+        if (oldval === '') {
+            oldval = 'translateZ(0px) rotateY(0deg)';
+        }
+        var classList = evt.target.classList;
+        if (classList.contains("farther")) {
+            var newval = minusZ(oldval);
+            parent.style.transform = newval;
+            nowVal.innerHTML = newval;
+        } else if (classList.contains("nearer")) {
+            var newval = addZ(oldval);
+            parent.style.transform = newval;
+            nowVal.innerHTML = newval;
+        } else if (classList.contains("lessthan500")) {
+
+        }
+    })
+
+    document.addEventListener("keydown", function (evt) {
+        //37左，38上，39右，40下，
+        var oldval = parent.style.transform;
+        if (oldval === '') {
+            oldval = 'translateZ(0px) rotateY(0deg)';
+        }
+        console.log(oldval);
+        if (evt.keyCode === 38) {
+            var newval = addZ(oldval);
+            parent.style.transform = newval;
+            nowVal.innerHTML = newval;
+        } else if (evt.keyCode === 40) {
+            var newval = minusZ(oldval);
+            parent.style.transform = newval;
+            nowVal.innerHTML = newval;
+        } else if (evt.keyCode === 37) {
+
+        } else if (evt.keyCode === 39) {
+
+        }
+    });
+</script>
+
+</body>
+</html>

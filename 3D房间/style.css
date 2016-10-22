@@ -1,0 +1,78 @@
+#btn {
+    position: absolute;
+    top: 0px;
+    right: 200px;
+    width: 200px;
+    height: 500px;
+}
+
+#btn button {
+    display: block;
+}
+
+.root {
+    position: absolute;
+    top: 200px;
+    left: 200px;
+    perspective: 500px;
+    width: 500px;
+    height: 500px;
+    border: 1px solid #aaa;
+    overflow: hidden;
+}
+
+.parent {
+    width: 500px;
+    height: 500px;
+    position: absolute;
+    transform-style: preserve-3d;
+    transform: translateZ(0px) rotateY(0deg);
+}
+
+.parent > div {
+    width: 500px;
+    height: 500px;
+    position: absolute;
+}
+
+.left {
+    background-color: greenyellow;
+    transform: translateZ(0px) rotateY(90deg);
+    backface-visibility: hidden;
+    transform-origin: 0 0;
+}
+
+.top {
+    background-color: green;
+    transform: rotateX(-90deg);
+    backface-visibility: hidden;
+    transform-origin: 0 0;
+}
+
+.bottom {
+    background-color: red;
+    transform: rotateX(90deg);
+    backface-visibility: hidden;
+    transform-origin: 0 100%;
+}
+
+.right {
+    background-color: darkcyan;
+    transform-origin: 100% 0;
+    transform: rotateY(-90deg);
+    backface-visibility: hidden;
+}
+
+.front {
+    background-color: yellow;
+    transform: rotateX(180deg);
+    backface-visibility: hidden;
+    transform-origin: 50% 50%;
+}
+
+.back {
+    background-color: pink;
+    transform: translateZ(-500px);
+    backface-visibility: hidden;
+    transform-origin: 50% 50%;
+}
