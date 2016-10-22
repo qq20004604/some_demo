@@ -40,6 +40,9 @@
     transform: translateZ(0px) rotateY(90deg);
     backface-visibility: hidden;
     transform-origin: 0 0;
+    background-image: url(./1.png);
+    background-size: 100% 100%;
+    width: 2000px !important;
 }
 
 .top {
@@ -47,6 +50,9 @@
     transform: rotateX(-90deg);
     backface-visibility: hidden;
     transform-origin: 0 0;
+    background-image: url(./5.png);
+    background-size: 100% 100%;
+    height: 2000px !important;
 }
 
 .bottom {
@@ -54,6 +60,10 @@
     transform: rotateX(90deg);
     backface-visibility: hidden;
     transform-origin: 0 100%;
+    background-image: url(./6.png);
+    background-size: 100% 100%;
+    height: 2000px !important;
+    bottom: 0;
 }
 
 .right {
@@ -61,6 +71,11 @@
     transform-origin: 100% 0;
     transform: rotateY(-90deg);
     backface-visibility: hidden;
+    background-image: url(./2.png);
+    background-size: 100% 100%;
+    width: 2000px !important;
+    top: 0;
+    right: 0;
 }
 
 .front {
@@ -68,11 +83,15 @@
     transform: rotateX(180deg);
     backface-visibility: hidden;
     transform-origin: 50% 50%;
+    background-image: url(./3.png);
+    background-size: 100% 100%;
 }
 
 .back {
     background-color: pink;
-    transform: translateZ(-500px);
+    transform: translateZ(-2000px);
     backface-visibility: hidden;
     transform-origin: 50% 50%;
+    background-image: url(./4.png);
+    background-size: 100% 100%;
 }
