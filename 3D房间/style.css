@@ -27,6 +27,7 @@
     position: absolute;
     transform-style: preserve-3d;
     transform: translateZ(0px) rotateY(0deg);
+    transform-origin: 50% 50% 0px;
 }
 
 .parent > div {
