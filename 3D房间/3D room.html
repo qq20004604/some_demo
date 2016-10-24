@@ -121,6 +121,67 @@
         parent.style['transform-origin'] = originValue;
     }
 
+
+    //这个毫无疑问就是后退的计算了
+    function goBackAndGetNewValue() {
+        var radian = getRadianFromAngle(xyz.rotate);
+        var x = Math.sin(radian) * 50;
+        var z = Math.cos(radian) * 50;
+        x = Number(x.toFixed(2));
+        z = Number(z.toFixed(2));
+        //首先让rotate的值是0~359之间
+        if (xyz.rotate >= 360) {
+            xyz.rotate -= 360;
+        } else if (xyz.rotate < 0) {
+            xyz.rotate += 360;
+        }
+        if (xyz.rotate == 0) {
+            xyz.z += 50;
+        } else if (xyz.rotate == 90) {
+            xyz.x -= 50;
+        } else if (xyz.rotate == 180) {
+            xyz.z -= 50;
+        } else if (xyz.rotate == 270) {
+            xyz.x += 50;
+        } else if (xyz.rotate < 90) {
+            //右上方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("右上");
+        } else if (xyz.rotate < 180) {
+            //右下方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("右下");
+        } else if (xyz.rotate < 270) {
+            //左下方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("左下");
+        } else if (xyz.rotate < 360) {
+            //左上方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("左上");
+        }
+//        console.log(xyz);
+    }
+
+    //后退函数
+    function GoBackwards() {
+        var transformValue = parent.style.transform;
+        goBackAndGetNewValue();
+        //先设置位移
+        var newString = 'translate3d(' + (-xyz.x) + 'px,' + 0 + 'px,' + (-xyz.z) + 'px)';
+        parent.style.transform = transformValue.replace(/translate3d\([^)]+\)/, newString);
+
+        //然后设置当前旋转中心
+        var originValue = String(250 + xyz.x) + 'px ' + String(250 + xyz.y) + 'px ' + String(xyz.z) + 'px';
+        console.log(originValue);
+        parent.style['transform-origin'] = originValue;
+    }
+
+
     //左转
     function TurnLeft() {
         var transformValue = parent.style.transform;
@@ -167,7 +228,7 @@
         if (evt.keyCode === 38) {
             GoAhead();
         } else if (evt.keyCode === 40) {
-
+            GoBackwards();
         } else if (evt.keyCode === 37) {
             TurnLeft();
         } else if (evt.keyCode === 39) {
