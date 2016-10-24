@@ -18,8 +18,8 @@
 </div>
 
 <div id="btn">
-    <!--<button class="farther">视角拉远</button>-->
-    <!--<button class="nearer">视角拉近</button>-->
+    <button class="looksky">往上看</button>
+    <button class="lookearth">往下看</button>
     <!--<button class="">-test</button>-->
     <!--<button>test</button>-->
     <!--<button>test</button>-->
@@ -32,6 +32,18 @@
         </li>
         <li>
             下：拉远距离
+        </li>
+        <li>
+            左：左转向
+        </li>
+        <li>
+            右：右转向
+        </li>
+        <li>
+            z：看天
+        </li>
+        <li>
+            x：看地
         </li>
         <li>
             当前距离：<br/>
@@ -53,9 +65,71 @@
     var xyz = {
         x: 0,     //xyz的坐标
         y: 0,
-        z: 0,
-        rotate: 0   //面向角度
+        z: 0
     }
+
+    var rotate = {
+        rotateY: 0,
+        rotate3d: {
+            x: 1,
+            y: 0,
+            z: 0,
+            rotate: 0
+        }
+    }
+
+    function TurnLeft() {
+        //先增加Y轴旋转角度
+        rotate.rotateY -= 5;
+        if (rotate.rotateY >= 360) {
+            rotate.rotateY -= 360;
+        }
+        if (rotate.rotateY < 0) {
+            rotate.rotateY += 360;
+        }
+        //目前已知旋转角度rotate.rotateY，圆半径1，可以求得点B的X轴和Y轴坐标（点B的意思请查看计算原理.md）
+        rotate.rotate3d.z = 1 * Math.sin(getRadianFromAngle(rotate.rotateY));
+        rotate.rotate3d.x = 1 * Math.cos(getRadianFromAngle(rotate.rotateY));
+        setAttributes();
+    }
+
+    function TurnRight() {
+        //先增加Y轴旋转角度
+        rotate.rotateY += 5;
+        if (rotate.rotateY >= 360) {
+            rotate.rotateY -= 360;
+        }
+        if (rotate.rotateY < 0) {
+            rotate.rotateY += 360;
+        }
+        //目前已知旋转角度rotate.rotateY，圆半径1，可以求得点B的X轴和Y轴坐标（点B的意思请查看计算原理.md）
+        rotate.rotate3d.z = 1 * Math.sin(getRadianFromAngle(rotate.rotateY));
+        rotate.rotate3d.x = 1 * Math.cos(getRadianFromAngle(rotate.rotateY));
+        setAttributes();
+    }
+
+    function LookSky() {
+        rotate.rotate3d.rotate += 5;
+        if (rotate.rotate3d.rotate >= 360) {
+            rotate.rotate3d.rotate -= 360;
+        }
+        if (rotate.rotate3d.rotate < 0) {
+            rotate.rotate3d.rotate += 360;
+        }
+        setAttributes();
+    }
+
+    function LookEarth() {
+        rotate.rotate3d.rotate -= 5;
+        if (rotate.rotate3d.rotate >= 360) {
+            rotate.rotate3d.rotate -= 360;
+        }
+        if (rotate.rotate3d.rotate < 0) {
+            rotate.rotate3d.rotate += 360;
+        }
+        setAttributes();
+    }
+
 
     //通过角度来得到弧度
     function getRadianFromAngle(angle) {
@@ -64,44 +138,90 @@
 
     //前进的话，根据角度计算坐标变化
     function goFrontAndGetNewValue() {
-        var radian = getRadianFromAngle(xyz.rotate);
+        var radian = getRadianFromAngle(rotate.rotateY);
+        //sin:对面比斜边；cos：临边比斜边；
         var x = Math.sin(radian) * 50;
         var z = Math.cos(radian) * 50;
         x = Number(x.toFixed(2));
         z = Number(z.toFixed(2));
         //首先让rotate的值是0~359之间
-        if (xyz.rotate >= 360) {
-            xyz.rotate -= 360;
-        } else if (xyz.rotate < 0) {
-            xyz.rotate += 360;
+        if (rotate.rotateY >= 360) {
+            rotate.rotateY -= 360;
+        } else if (rotate.rotateY < 0) {
+            rotate.rotateY += 360;
         }
-        if (xyz.rotate == 0) {
+        if (rotate.rotateY == 0) {
             xyz.z -= 50;
-        } else if (xyz.rotate == 90) {
+        } else if (rotate.rotateY == 90) {
             xyz.x += 50;
-        } else if (xyz.rotate == 180) {
+        } else if (rotate.rotateY == 180) {
             xyz.z += 50;
-        } else if (xyz.rotate == 270) {
+        } else if (rotate.rotateY == 270) {
             xyz.x -= 50;
-        } else if (xyz.rotate < 90) {
+        } else if (rotate.rotateY < 90) {
             //右上方角度
             xyz.x += x;
             xyz.z -= z;
 //            console.log("右上");
-        } else if (xyz.rotate < 180) {
+        } else if (rotate.rotateY < 180) {
             //右下方角度
             xyz.x += x;
             xyz.z -= z;
 //            console.log("右下");
-        } else if (xyz.rotate < 270) {
+        } else if (rotate.rotateY < 270) {
             //左下方角度
             xyz.x += x;
             xyz.z -= z;
 //            console.log("左下");
-        } else if (xyz.rotate < 360) {
+        } else if (rotate.rotateY < 360) {
             //左上方角度
             xyz.x += x;
             xyz.z -= z;
+//            console.log("左上");
+        }
+//        console.log(xyz);
+    }
+
+    //这个毫无疑问就是后退的计算了
+    function goBackAndGetNewValue() {
+        var radian = getRadianFromAngle(rotate.rotateY);
+        var x = Math.sin(radian) * 50;
+        var z = Math.cos(radian) * 50;
+        x = Number(x.toFixed(2));
+        z = Number(z.toFixed(2));
+        //首先让rotate的值是0~359之间
+        if (rotate.rotateY >= 360) {
+            rotate.rotateY -= 360;
+        } else if (rotate.rotateY < 0) {
+            rotate.rotateY += 360;
+        }
+        if (rotate.rotateY == 0) {
+            xyz.z += 50;
+        } else if (rotate.rotateY == 90) {
+            xyz.x -= 50;
+        } else if (rotate.rotateY == 180) {
+            xyz.z -= 50;
+        } else if (rotate.rotateY == 270) {
+            xyz.x += 50;
+        } else if (rotate.rotateY < 90) {
+            //右上方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("右上");
+        } else if (rotate.rotateY < 180) {
+            //右下方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("右下");
+        } else if (rotate.rotateY < 270) {
+            //左下方角度
+            xyz.x -= x;
+            xyz.z += z;
+//            console.log("左下");
+        } else if (rotate.rotateY < 360) {
+            //左上方角度
+            xyz.x -= x;
+            xyz.z += z;
 //            console.log("左上");
         }
 //        console.log(xyz);
@@ -109,121 +229,58 @@
 
     //前进
     function GoAhead() {
-        var transformValue = parent.style.transform;
         goFrontAndGetNewValue();
-        //先设置位移
-        var newString = 'translate3d(' + (-xyz.x) + 'px,' + 0 + 'px,' + (-xyz.z) + 'px)';
-        parent.style.transform = transformValue.replace(/translate3d\([^)]+\)/, newString);
-
-        //然后设置当前旋转中心
-        var originValue = String(250 + xyz.x) + 'px ' + String(250 + xyz.y) + 'px ' + String(xyz.z) + 'px';
-        console.log(originValue);
-        parent.style['transform-origin'] = originValue;
-    }
-
-
-    //这个毫无疑问就是后退的计算了
-    function goBackAndGetNewValue() {
-        var radian = getRadianFromAngle(xyz.rotate);
-        var x = Math.sin(radian) * 50;
-        var z = Math.cos(radian) * 50;
-        x = Number(x.toFixed(2));
-        z = Number(z.toFixed(2));
-        //首先让rotate的值是0~359之间
-        if (xyz.rotate >= 360) {
-            xyz.rotate -= 360;
-        } else if (xyz.rotate < 0) {
-            xyz.rotate += 360;
-        }
-        if (xyz.rotate == 0) {
-            xyz.z += 50;
-        } else if (xyz.rotate == 90) {
-            xyz.x -= 50;
-        } else if (xyz.rotate == 180) {
-            xyz.z -= 50;
-        } else if (xyz.rotate == 270) {
-            xyz.x += 50;
-        } else if (xyz.rotate < 90) {
-            //右上方角度
-            xyz.x -= x;
-            xyz.z += z;
-//            console.log("右上");
-        } else if (xyz.rotate < 180) {
-            //右下方角度
-            xyz.x -= x;
-            xyz.z += z;
-//            console.log("右下");
-        } else if (xyz.rotate < 270) {
-            //左下方角度
-            xyz.x -= x;
-            xyz.z += z;
-//            console.log("左下");
-        } else if (xyz.rotate < 360) {
-            //左上方角度
-            xyz.x -= x;
-            xyz.z += z;
-//            console.log("左上");
-        }
-//        console.log(xyz);
+        setAttributes();
     }
 
     //后退函数
     function GoBackwards() {
-        var transformValue = parent.style.transform;
         goBackAndGetNewValue();
+        setAttributes();
+    }
+
+
+    //根据当前的xyz和rotate设置属性
+    function setAttributes() {
+        //前进后退：
+        var transformValue1 = parent.style.transform;
         //先设置位移
         var newString = 'translate3d(' + (-xyz.x) + 'px,' + 0 + 'px,' + (-xyz.z) + 'px)';
-        parent.style.transform = transformValue.replace(/translate3d\([^)]+\)/, newString);
-
+        parent.style.transform = transformValue1.replace(/translate3d\([^)]+\)/, newString);
         //然后设置当前旋转中心
         var originValue = String(250 + xyz.x) + 'px ' + String(250 + xyz.y) + 'px ' + String(xyz.z) + 'px';
-        console.log(originValue);
         parent.style['transform-origin'] = originValue;
-    }
 
+        //向上向下看：
+        var transformValue2 = parent.style.transform;
+        var newString = 'rotate3d(' + rotate.rotate3d.x + ',' + rotate.rotate3d.y + ','
+                + rotate.rotate3d.z + ',' + rotate.rotate3d.rotate + 'deg)';
+        parent.style.transform = transformValue2.replace(/rotate3d\([^)]+\)/, newString);
 
-    //左转
-    function TurnLeft() {
-        var transformValue = parent.style.transform;
-        xyz.rotate -= 5;
-        if (xyz.rotate >= 360) {
-            xyz.rotate -= 360;
-        } else if (xyz.rotate < 0) {
-            xyz.rotate += 360;
-        }
-        var newString = 'rotateY(' + xyz.rotate + 'deg)';
-        parent.style.transform = transformValue.replace(/rotateY\([^)]+\)/, newString);
-    }
-
-    //右转
-    function TurnRight() {
-        var transformValue = parent.style.transform;
-        xyz.rotate += 5;
-        if (xyz.rotate >= 360) {
-            xyz.rotate -= 360;
-        } else if (xyz.rotate < 0) {
-            xyz.rotate += 360;
-        }
-        var newString = 'rotateY(' + xyz.rotate + 'deg)';
-        parent.style.transform = transformValue.replace(/rotateY\([^)]+\)/, newString);
+        //左转右转：
+        var transformValue3 = parent.style.transform;
+        var newString = 'rotateY(' + rotate.rotateY + 'deg)';
+        parent.style.transform = transformValue3.replace(/rotateY\([^)]+\)/, newString);
     }
 
 
     buttons.addEventListener("click", function (evt) {
-        var oldval = parent.style.transform;
         var classList = evt.target.classList;
-        if (classList.contains("farther")) {
-
-        } else if (classList.contains("nearer")) {
-
+        if (classList.contains("looksky")) {
+            LookSky();
+        } else if (classList.contains("lookearth")) {
+            LookEarth()
         }
     })
 
     document.addEventListener("keydown", function (evt) {
-        if (evt.keyCode < 37 || evt.keyCode > 40) {
-            return;
+        //如果不在37~40之间
+        if (!(evt.keyCode >= 37 && evt.keyCode <= 40)) {
+            //并且不是90或88，则返回
+            if (evt.keyCode !== 90 && evt.keyCode !== 88)
+                return;
         }
-        //37左，38上，39右，40下，
+        //37左，38上，39右，40下，90 Z，88 X
 //        console.log(oldval);
         if (evt.keyCode === 38) {
             GoAhead();
@@ -233,13 +290,19 @@
             TurnLeft();
         } else if (evt.keyCode === 39) {
             TurnRight()
+        } else if (evt.keyCode === 90) {
+            LookSky();
+        } else if (evt.keyCode === 88) {
+            LookEarth()
         }
         var transform = parent.style.transform;
         var origin = parent.style['transform-origin'];
-        nowVal.innerHTML = transform + "<br/>" + origin + "<br/>当前坐标：x:" + xyz.x + ",y:" + xyz.y + ",z:" + xyz.z;
+        nowVal.innerHTML = transform + "<br/>" + origin + "<br/>当前坐标：x:" + xyz.x + ",y:" + xyz.y + ",z:" + xyz.z
+                + "<br/>旋转坐标：(" + rotate.rotate3d.x + ", " + rotate.rotate3d.y + ", " + rotate.rotate3d.z +
+                ", " + rotate.rotate3d.rotate + "deg);";
     });
     //需要设置初始的属性值，方便浏览器查阅并修改（不然默认是空）
-    parent.style.transform = 'translate3d(0px,0px,0px) rotateY(0deg)';
+    parent.style.transform = 'translate3d(0px,0px,0px) rotateY(0deg) rotate3d(1,0,0,0deg)';
     parent.style['transform-origin'] = '250px 250px 0px';
 </script>
 
