@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>构造函数继承</title>
+</head>
+<body>
+<script>
+    //定义被继承的函数
+    function Animal() {
+        var test = 'test';
+        this.species = '动物';    //species是种类的意思
+        this.name = "abc";
+        this.log = function () {
+            console.log(test);
+        }
+    }
+
+    // *** 继承方法一：构造函数继承***
+    function Dog(name, color) {
+        // this是指向Dog的this，而arguments是参数数组，比如就这里而言，是[name, color]
+        // 这里是将Animal这个方法提供给Dog调用。具体来说，相当于执行了一遍Animal这个方法，并且该方法里的this指向的是Dog这个实例的this
+        Animal.apply(this, arguments);
+        this.name = name;
+        this.color = color;
+    }
+
+    // *** 继承完毕，开始调用 ***/
+    var dog = new Dog("哈士奇", "黑白色");
+    console.log(dog);
+
+    // 原构造函数使用参数
+    function Birds(name) {
+        this.nameInBirds = name;
+    }
+    //写一个新的方法，来继承Birds这个构造函数
+    function Pigeon(name, color) {
+        Birds.apply(this, arguments);
+        this.nameInPigeon = name;
+        this.color = color;
+    }
+
+    var aBird = new Pigeon("鸽子", "白色");
+    console.log(aBird);
+    console.log("nameInBirds" in aBird);    //true, 可以访问通过apply继承的属性
+    console.log(aBird.hasOwnProperty("nameInPigeon"));   //true，
+    console.log(aBird.hasOwnProperty("color"));  //true，
+</script>
+<div id="console">请打开console查看</div>
+</body>
+</html>

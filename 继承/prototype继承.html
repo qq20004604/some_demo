@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>prototype继承</title>
+</head>
+<body>
+<script>
+    //定义被继承的函数
+    function Cat(name, color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    //直接写一个继承属性在Cat实例下；
+    Cat.prototype.forTest = "测试用的属性，挂载在prototype下";
+    var mimi = new Cat();
+    console.log(mimi.forTest); //值就是上面那个，说明被正常继承了
+
+    //构造函数，用于被继承
+    function Animal() {
+        var test = 'test';
+        this.species = '动物';    //species是种类的意思
+        this.name = "abc";
+        this.log = function () {
+            console.log(test);
+        }
+    }
+    Cat.prototype = new Animal();   //此时，Cat的constructor指向Aniaml，具体来说，查看Cat实例的constructor属性，可以发现是
+    var lily = new Cat("lily", "白色");
+    console.dir(lily);  //需要自己手动在控制台输入lily.constructor来查看其指向的构造函数
+
+    Cat.prototype.constructor = Cat;    //让其指回Cat
+    var kitty = new Cat("kitty", "褐色"); //创建一个实例
+    console.log(kitty); //注意，此时例如Animal函数中的name属性，species属性，需要在__proto__中才能查看到；
+    //另外，当访问name属性时，根据继承链，先访问Cat实例中的name属性（get到），只有当Cat实例里不存在name属性时，才去找__proto__属性中是否有name属性；
+    //如果有，则获取，没有，则继续往下一层找，直到找到或者找不到为止
+
+    //被覆盖的prototype属性
+    console.log(kitty.forTest); //值是undefined，这是因为原本通过prototype继承的属性，被Animal覆盖了
+
+    console.log("species" in kitty);    //true, 可以直接通过in来访问继承链上的属性
+    console.log(kitty.hasOwnProperty("species"));   //false，不能通过hasOwnProperty来访问Aniaml构造函数中获得的
+    console.log(kitty.hasOwnProperty("name"));  //true， 但是Cat中的是可以的
+</script>
+<div id="console">请打开console查看</div>
+</body>
+</html>
