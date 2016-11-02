@@ -10,7 +10,8 @@
 <button onclick="showArrayWithArgs()">点击调用forEach，存在第二个参数</button>
 <script>
     var arr = [1, 2, 3];
-    var args = null;    //
+    var args = null;
+    console.log("源数组为：[1, 2, 3]");
     function showArr() {
         arr.forEach(function (item, index, Array) {
             console.log(item);    //当前元素
