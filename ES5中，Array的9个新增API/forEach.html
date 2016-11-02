@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>forEach说明</title>
+</head>
+<body>
+<p>请按F12查看console</p>
+<button onclick="showArrayWithoutArgs()">点击调用forEach，且该方法不存在第二个参数</button>
+<button onclick="showArrayWithArgs()">点击调用forEach，存在第二个参数</button>
+<script>
+    var arr = [1, 2, 3];
+    var args = null;    //
+    function showArr() {
+        arr.forEach(function (item, index, Array) {
+            console.log(item);    //当前元素
+            console.log(index);     //当前元素的索引
+            console.log(Array);  //遍历的数组
+            console.log(this);
+        }, args);
+    }
+
+    function showArrayWithoutArgs() {
+        args = null;
+        showArr();
+    }
+
+    function showArrayWithArgs(){
+        args = {
+            note: "当有这个参数时，this将指向这个参数"
+        }
+        showArr();
+    }
+</script>
+</body>
+</html>
