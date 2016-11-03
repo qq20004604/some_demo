@@ -113,3 +113,48 @@
             return temp;
         }
     }
+    
+#reduce
+
+原型：
+
+    //标准
+    reduce(callback[,initialValue])
+    
+    //简单示例
+    arr.reduce(function (previousValue, item, index, Array) {
+        return xxx;    //xxx表示省略
+    });
+    
+简单说明：
+
+    首先看回调函数，他有四个参数，
+    item是当前元素，别的地方写的是currentValue表示当前值，为了方便理解，我这里写item和上面统一风格
+    index是当前元素的索引；
+    Array是整个数组（可以通过这个修改源数组）；
+    上面3个都很好理解。
+    
+    第一个参数previousValue是核心。他表示上一次执行回调函数时的返回值。
+    例如，有数组[1, 2, 3, 4]
+    当我遍历到第二个元素时，回调函数的previousValue的值是1，item的值为2，
+    return我写为：return previousValue + item
+    那么当遍历到第三个元素时，回调函数的previousValue的值则为3（因为1+2），item的值为3
+    当遍历到第四个元素时，previous的值则为6（因为3+3），
+    最终reduce的返回值为10（因为6+4）
+    
+    那么问题来了，为什么没提到遍历第一个元素？
+    原因是，当reduce没有第二个参数时，遍历从数组的第二个元素开始，
+    第一次执行回调函数的previousValue的值是数组第一个元素的值
+    
+    当reduce存在第二个参数时（哪怕是null或者undefined），遍历都将从第一个元素开始；
+    第一次执行回调函数时（遍历第一个元素），previousValue的值是第二个参数的值，而item是第一个元素的值
+    
+    所以在使用的时候需要注意，如果需要执行和数组元素个数一样次数的回调函数，那么必须设置reduce的第二个参数；
+    如果不设置，那么回到函数次数执行的次数，将比数组元素个数少1。
+    
+    具体参见demo，我写了3种情况
+    第一种是将数组的值相加；
+    第二种是将数组的值相乘；
+    第三种是将数组的值从reduce给的第二个参数中减去。
+    事实上，还可以写第四种，比如说，将数组的值先相乘，然后加上一个数字，再用其结果和下个数组元素。
+    即return previousValue * item + 5;这样的，具体写什么，应该根据实际需求来。
