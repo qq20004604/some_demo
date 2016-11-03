@@ -69,3 +69,47 @@
             return temp;
         }
     }
+    
+
+#map
+
+原型：
+
+    //标准
+    map(callback[,thisArg])
+    
+    //简单示例
+    Array.map(function(item, index, array){
+        //回调函数内容
+    }, args);
+    
+简单说明：
+
+    3个参数同forEach，args也同forEach，唯一不同的是，函数有回调函数里有return返回值。
+    
+    简单来说，该方法的返回值也是一个数组（类filter）；
+    和filter的区别在于，filter是将原数组元素，选择性加入到新数组中。
+    map是将原数组的每个元素，进行处理后，放到新数组中。
+    
+    例如：[1,2,3]作为原数组，map回调函数内的代码为：
+    return item + 10;
+    那么就相当于将1+10放到数组中，然后将2+10放到数组中，再将3+10放到数组中。
+    结果为：[11, 12, 13]
+    
+    当然，也可以写更复杂的逻辑，比如if(item>3)时+10，然后else if(item>2)时+5，否则else -10
+    那么结果就是[-9, 7, 13]
+    
+    见DEMO
+    
+兼容性扩展：
+
+    if(!Array.prototype.map) {
+        Array.prototype.map = function (callback, thisArg) {
+            var temp = [];
+            for (var i = 0; i < this.length; i++) {
+                var newItem = callback.call(thisArg,this[i]);
+                temp.push(newItem); //将callback返回的新元素压入temp中
+            }
+            return temp;
+        }
+    }
