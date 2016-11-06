@@ -16,13 +16,14 @@
     
     当存在第二个参数args时，this指向args。
     
-兼容性扩展（对不支持ES5的进行扩展）：
+兼容性扩展（对不支持ES5的进行扩展）（下面的兼容性扩展，是根据别人的然后拿来再优化的）：
 
     if (!Array.prototype.forEach) {
         Array.prototype.forEach = function (callback, thisArg) {
             for (var i = 0; i < this.length; i++) {
                 //当thisArg为undefined时，JS引擎会将window作为其调用者
-                callback.call(thisArg, this[i], i, this.toString());
+                if (this[i])
+                    callback.call(thisArg, this[i], i, this);
             }
         }
     }
@@ -57,19 +58,21 @@
     
 兼容性扩展：
 
-    if(!Array.prototype.filter) {
+    if (!Array.prototype.filter) {
         Array.prototype.filter = function (callback, thisArg) {
             var temp = [];
             for (var i = 0; i < this.length; i++) {
-                if(callback.call(thisArg,this[i])){
-                    //如果callback返回true,则该元素符合过滤条件，将元素压入temp中
-                    temp.push(this[i]);
+                if (this[i]) {
+                    if (callback.call(thisArg, this[i], i, this)) {
+                        //如果callback返回true,则该元素符合过滤条件，将元素压入temp中
+                        temp.push(this[i]);
+                    }
                 }
             }
             return temp;
         }
     }
-    
+
 
 #map
 
@@ -103,12 +106,14 @@
     
 兼容性扩展：
 
-    if(!Array.prototype.map) {
+    if (!Array.prototype.map) {
         Array.prototype.map = function (callback, thisArg) {
             var temp = [];
             for (var i = 0; i < this.length; i++) {
-                var newItem = callback.call(thisArg,this[i]);
-                temp.push(newItem); //将callback返回的新元素压入temp中
+                if (this[i]) {
+                    var newItem = callback.call(thisArg, this[i], i, this);
+                    temp[i] = newItem//将callback返回的新元素压入temp中
+                }
             }
             return temp;
         }
@@ -158,3 +163,59 @@
     第三种是将数组的值从reduce给的第二个参数中减去。
     事实上，还可以写第四种，比如说，将数组的值先相乘，然后加上一个数字，再用其结果和下个数组元素。
     即return previousValue * item + 5;这样的，具体写什么，应该根据实际需求来。
+    
+更多：
+
+    数组中有空元素时，不会报错。
+    例如：var arr = [1, 2, 3, 4, , 6, 7];
+    他会自动跳过4和6中间的元素。
+    但下面的兼容性扩展会，
+    
+兼容性扩展：
+
+    if (!Array.prototype.reduce) {
+        Array.prototype.reduce = function (callback, initialValue) {
+            var previousValue = initialValue || this[0];//如果不指定intialValue,则默认为数组的第一个元素
+            //如果不指定initialValue（即第二个参数），i从1（第二个元素）开始遍历，否则就从0（第一个元素）开始遍历
+            for (var i = initialValue ? 0 : 1; i < this.length; i++) {
+                //previousValue 累加每一次返回的结果
+                if (this[i])
+                    previousValue = callback(previousValue, this[i], i, this.toString());
+            }
+            return previousValue;
+        }
+    }
+    
+
+#reduceRight
+
+原型：
+
+    //标准
+    reduceRight(callback[,initialValue])
+    
+    //简单示例
+    arr.reduceRight(function (previousValue, item, index, Array) {
+        return xxx;    //xxx表示省略
+    });
+    
+简单说明：
+
+    和reduce几乎一样，唯一区别是，他从数组的最右边开始。只要理解了reduce就能理解这个
+    
+兼容性扩展：
+
+    if (!Array.prototype.reduceRight) {
+        Array.prototype.reduceRight = function (callback, initialValue) {
+            var previousValue = initialValue || this[this.length - 1];//如果不指定intialValue,则默认为数组的第一个元素
+            //如果不指定initialValue（即第二个参数），i从1（第二个元素）开始遍历，否则就从0（第一个元素）开始遍历
+            for (var i = (initialValue ? this.length - 1 : this.length - 2); i > -1; i--) {
+                //previousValue 累加每一次返回的结果
+                if (this[i])
+                    previousValue = callback(previousValue, this[i], i, this);
+            }
+            return previousValue;
+        }
+    }
+    
+

@@ -9,9 +9,20 @@
 <button onclick="showArrayWithoutArgs()">点击调用forEach，且该方法不存在第二个参数</button>
 <button onclick="showArrayWithArgs()">点击调用forEach，存在第二个参数</button>
 <script>
-    var arr = [1, 2, 3];
+    var arr = [1, 2, 3, 4, , 6, 7];
     var args = null;
-    console.log("源数组为：[1, 2, 3]");
+    console.log("源数组为：[" + arr + "]");
+
+    if (!Array.prototype.forEach) {
+        Array.prototype.forEach = function (callback, thisArg) {
+            for (var i = 0; i < this.length; i++) {
+                //当thisArg为undefined时，JS引擎会将window作为其调用者
+                if (this[i])
+                    callback.call(thisArg, this[i], i, this);
+            }
+        }
+    }
+
     function showArr() {
         arr.forEach(function (item, index, Array) {
             console.log(item);    //当前元素
@@ -26,7 +37,7 @@
         showArr();
     }
 
-    function showArrayWithArgs(){
+    function showArrayWithArgs() {
         args = {
             note: "当有这个参数时，this将指向这个参数"
         }

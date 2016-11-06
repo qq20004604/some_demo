@@ -9,9 +9,20 @@
 <button onclick="mapBySquare()">点击调用map，让原数组每个数都乘以自己后返回一个新数组</button>
 <button onclick="mapByHundred()">点击调用map，让原数组每个数都加上100后，返回一个新数组</button>
 <script>
-    var arr = [1, 2, 3];
-    console.log("源数组为：[1, 2, 3]");
-
+    var arr = [1, 2, 3, 4, , 6, 7];
+    console.log("源数组为：[" + arr + "]");
+    if (!Array.prototype.map) {
+        Array.prototype.map = function (callback, thisArg) {
+            var temp = [];
+            for (var i = 0; i < this.length; i++) {
+                if (this[i]) {
+                    var newItem = callback.call(thisArg, this[i], i, this);
+                    temp[i] = newItem//将callback返回的新元素压入temp中
+                }
+            }
+            return temp;
+        }
+    }
     function mapArr(callback) {
         var result = arr.map(function (item, index, Array) {
             //以下四个console同forEach，故注释掉省略。如果需要查看，请自行删除注释状态即可
@@ -30,6 +41,7 @@
         function square(item) {
             return item * item;
         }
+
         mapArr(square);
     }
 
@@ -38,6 +50,7 @@
         function addHundred(item) {
             return item + 100;
         }
+
         mapArr(addHundred);
     }
 </script>

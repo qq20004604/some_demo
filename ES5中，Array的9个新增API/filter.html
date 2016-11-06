@@ -9,16 +9,29 @@
 <button onclick="Filter()">点击调用filter，输出大于1的</button>
 <button onclick="AnotherFilter()">点击调用filter，输出小于3的</button>
 <script>
-    var arr = [1, 2, 3];
-    console.log("源数组为：[1, 2, 3]");
-
+    var arr = [1, 2, 3, 4, , 6, 7];
+    console.log("源数组为：[" + arr + "]");
+    if (!Array.prototype.filter) {
+        Array.prototype.filter = function (callback, thisArg) {
+            var temp = [];
+            for (var i = 0; i < this.length; i++) {
+                if (this[i]) {
+                    if (callback.call(thisArg, this[i], i, this)) {
+                        //如果callback返回true,则该元素符合过滤条件，将元素压入temp中
+                        temp.push(this[i]);
+                    }
+                }
+            }
+            return temp;
+        }
+    }
     function filterArr(callback) {
         var result = arr.filter(function (item, index, Array) {
             //以下四个console同forEach，故注释掉省略。如果需要查看，请自行删除注释状态即可
-            //console.log(item);    //当前元素
-            //console.log(index);     //当前元素的索引
-            //console.log(Array);  //遍历的数组
-            //console.log(this);
+            console.log(item);    //当前元素
+            console.log(index);     //当前元素的索引
+            console.log(Array);  //遍历的数组
+            console.log(this);
             return callback(item);
         });
         console.log("过滤结果：");
@@ -32,6 +45,7 @@
             else
                 return false;
         }
+
         //这里将函数作为参数传递进去，然后被用在filter函数的回调函数中
         filterArr(filterByOverOne);
     }
@@ -44,6 +58,7 @@
                 return false;
             }
         }
+
         filterArr(filterByBelowThree);
     }
 </script>

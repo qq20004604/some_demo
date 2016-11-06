@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>reduce说明</title>
+    <title>reduceRight说明</title>
 </head>
 <body>
 <p>请按F12查看console</p>
-<button onclick="ReduceAdd()">点击调用reduce，将数组的值累加，然后返回累加结果</button>
+<button onclick="ReduceRightAdd()">点击调用reduce，将数组的值累加，然后返回累加结果</button>
 <br/>
-<button onclick="ReduceMul()">点击调用reduce，输出阶乘的结果</button>
+<button onclick="ReduceRightMul()">点击调用reduce，输出阶乘的结果</button>
 <br/>
-<button onclick="ReduceMinus()">点击调用reduce，从初始值100中减去数组中每个元素的值</button>
+<button onclick="ReduceRightMinus()">点击调用reduce，从初始值100中减去数组中每个元素的值</button>
 <script>
     var arr = [1, 2, 3, 4, , 6, 7];
     console.log("源数组为：[" + arr + "]");
-    if (!Array.prototype.reduce) {
-        Array.prototype.reduce = function (callback, initialValue) {
-            var previousValue = initialValue || this[0];//如果不指定intialValue,则默认为数组的第一个元素
+    if (!Array.prototype.reduceRight) {
+        Array.prototype.reduceRight = function (callback, initialValue) {
+            var previousValue = initialValue || this[this.length - 1];//如果不指定intialValue,则默认为数组的第一个元素
             //如果不指定initialValue（即第二个参数），i从1（第二个元素）开始遍历，否则就从0（第一个元素）开始遍历
-            for (var i = initialValue ? 0 : 1; i < this.length; i++) {
+            for (var i = (initialValue ? this.length - 1 : this.length - 2); i > -1; i--) {
                 //previousValue 累加每一次返回的结果
                 if (this[i])
                     previousValue = callback(previousValue, this[i], i, this);
@@ -28,11 +28,11 @@
     }
     function ReduceArr(callback) {
         console.log("注：请记住，数组的第一个元素索引为0");
-        var result = arr.reduce(function (previousValue, item, index, Array) {
+        var result = arr.reduceRight(function (previousValue, item, index, Array) {
             //以下四个console同forEach，故注释掉省略。如果需要查看，请自行删除注释状态即可
-            //console.log(item);    //当前元素
-            //console.log(index);     //当前元素的索引
-            console.log(Array);  //遍历的数组
+//            console.log(item);    //当前元素
+//            console.log(index);     //当前元素的索引
+//            console.log(Array);  //遍历的数组
 //            console.log(this);
             console.log("当前元素索引为：" + index + "，当前累计的结果（未计入当前元素）为：" + previousValue);
             return callback(previousValue, item);
@@ -41,31 +41,32 @@
         console.log(result);
     }
 
-    function ReduceAdd() {
+    function ReduceRightAdd() {
         console.log("当前执行：将数组每个元素加在一起的运算")
         ReduceArr(function (previousValue, currentValue) {
             return previousValue + currentValue;
         })
     }
 
-    function ReduceMul() {
+    function ReduceRightMul() {
         console.log("当前执行：将数组每个元素乘在一起的运算")
         ReduceArr(function (previousValue, currentValue) {
             return previousValue * currentValue;
         })
     }
 
-    function ReduceMinus() {
+    function ReduceRightMinus() {
         console.log("当前执行：从初始值100中，减去数组中每个元素的值的运算")
         console.log("注：请记住，数组的第一个元素索引为0");
         var initialValue = 100;
-        var result = arr.reduce(function (previousValue, item, index, Array) {
+        var result = arr.reduceRight(function (previousValue, item, index, Array) {
             console.log("当前元素索引为：" + index + "，当前累计的结果（未计入当前元素）为：" + previousValue);
             return previousValue - item;
         }, initialValue);
         console.log("输出结果：");
         console.log(result);
     }
+
 </script>
 </body>
 </html>
