@@ -218,4 +218,125 @@
         }
     }
     
+#every
 
+原型：
+
+    //标准
+    every(callback, thisArg);
+    
+    //简单示例
+    arr.every(function(item, index, array){
+        return item > xx;
+    });
+    
+简单说明：
+
+    返回值是true或者false
+    初始情况下是true；
+    然后遍历数组，有一个不满足，则为false，并且终止遍历过程。
+    
+    回调函数的this依然默认指向window，或者是every的第二个参数。
+    
+    空数组的every返回结果是true。
+    
+兼容性扩展：
+
+    if (!Array.prototype.every) {
+        Array.prototype.every = function (callback, thisArg) {
+            var result = true;
+            for (var i = 0; i < this.length; i++) {
+                if (this[i]) {
+                    if (!callback.call(thisArg ? thisArg : window, this[i], i, this)) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+            return result; //所有元素都符合条件，返回true
+        }
+    }
+    
+
+#indexOf
+
+原型：
+
+    //标准
+    arr.indexOf(searchElement, fromIndex);
+    
+    //简单示例
+    [1,2,3].indexOf(2);    //1（数组的第二个元素）
+    [1,2,3].indexOf(4);    //-1（未找到，注意，-1不是false，隐式转换后他的值为true）
+    
+简单说明：
+
+    用于查找第一个参数是否在数组中；
+    如果不在，返回-1；
+    如果在，返回在数组中遇见的第一个的下标；
+    例如：[1,2,3,2].indexOf(2)的返回值是1，虽然第二个和第四个元素都是，但是先遇见第二个，而第二个的下标是1
+        
+    如果indexOf有第二个参数，那么从数组中第二个参数所指向的下标位置开始往后找；
+    例如：[1,2,3,2].indexOf(2,2)的返回值是3，因为开始下标是2（即第三个元素3），因此从第三个开始，遇见的第一个2的下标是2；
+    判断时含第二个参数所指向的数组元素
+    
+兼容性写法：
+
+    if (!Array.prototype.indexOf) {
+        Array.prototype.indexOf = function (searchElement, fromIndex) {
+            var result = -1;
+            for (var i = fromIndex ? fromIndex : 0; i < this.length; i++) {
+                if (this[i]) {
+                    if (searchElement === this[i]) {
+                        result = i;
+                        break;
+                    }
+                }
+            }
+            return result; //所有元素都符合条件，返回true
+        }
+    }
+    
+#lastIndexOf
+
+注意：
+
+    Index的I是大写
+
+原型：
+
+    //标准
+    arr.lastIndexOf(searchElement, fromIndex);
+    
+    //简单示例
+    [1,2,1].lastIndexOf(1);    //2
+    [1,2,1].lastIndexOf(1, 1);    //0
+    
+简单说明：
+
+    和indexOf几乎一样，唯一区别是从后往前找；
+    
+    下标指的是正常的下标（即从前往后的），不要想多了。
+    
+兼容性写法：
+
+    if (!Array.prototype.lastIndexOf) {
+        Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
+            var result = -1;
+            for (var i = (fromIndex ? fromIndex : this.length - 1); i > -1; i--) {
+                if (this[i]) {
+                    if (searchElement === this[i]) {
+                        result = i;
+                        break;
+                    }
+                }
+            }
+            return result; //所有元素都符合条件，返回true
+        }
+    }
+    
+#更多array方法
+
+见MDN：
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array

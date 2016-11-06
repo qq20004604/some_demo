@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>every说明</title>
+</head>
+<body>
+<p>请按F12查看console</p>
+<button onclick="overTwo()">点击调用every，判断是否大于2</button>
+<br/>
+<button onclick="belowTen()">点击调用every，判断是否小于10</button>
+<br/>
+<button onclick="overZero()">点击调用every，判断是否大于0</button>
+<br/>
+<button onclick="everyEmptyArray()">点击调用every，判断空数组返回结果</button>
+<script>
+    var arr = [1, 2, 3, 4, , 3, 2];
+    console.log("源数组为：[" + arr + "]");
+
+    if (!Array.prototype.every) {
+        Array.prototype.every = function (callback, thisArg) {
+            var result = true;
+            for (var i = 0; i < this.length; i++) {
+                if (this[i]) {
+                    if (!callback.call(thisArg ? thisArg : window, this[i], i, this)) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+            return result; //所有元素都符合条件，返回true
+        }
+    }
+
+    function EveryArr(callback) {
+        var result = arr.every(function (item, index, Array) {
+            console.log("当前元素为：" + item + "，索引为：" + index);
+            return callback(item);
+        });
+        console.log("输出结果：");
+        console.log(result);
+    }
+
+    function overTwo() {
+        console.log("——————————————")
+        console.log("是否大于2？")
+        EveryArr(function (item) {
+            return item > 2;
+        })
+    }
+
+    function belowTen() {
+        console.log("——————————————")
+        console.log("是否小于10？")
+        EveryArr(function (item) {
+            return item < 10;
+        })
+    }
+
+    function overZero() {
+        console.log("——————————————")
+        console.log("是否大于0（不包括0）")
+        EveryArr(function (item) {
+            return item > 0;
+        })
+    }
+
+    function everyEmptyArray() {
+        var empty = [];
+        var result = empty.every(function (item) {
+            return item > 0;
+        })
+        console.log("——————————————")
+        console.log("空数组的every结果：")
+        console.log(result);
+    }
+</script>
+</body>
+</html>

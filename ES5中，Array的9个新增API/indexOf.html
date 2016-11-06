@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>indexOf说明</title>
+</head>
+<body>
+<p>请按F12查看console</p>
+<button onclick="normal()">点击调用indexOf，查找元素为：2</button>
+<br/>
+<button onclick="fromFourth()">点击调用indexOf，查找元素为：2，从下标为4的地方开始查找</button>
+<br/>
+<button onclick="searchFive()">点击调用indexOf，查找元素为：5，</button>
+<br/>
+<button onclick="emptyArguments()">点击调用indexOf，参数为空</button>
+<script>
+    var arr = [1, 2, 3, 4, , 3, 2];
+    console.log("源数组为：[" + arr + "]");
+
+    if (!Array.prototype.indexOf) {
+        Array.prototype.indexOf = function (searchElement, fromIndex) {
+            var result = -1;
+            for (var i = fromIndex ? fromIndex : 0; i < this.length; i++) {
+                if (this[i]) {
+                    if (searchElement === this[i]) {
+                        result = i;
+                        break;
+                    }
+                }
+            }
+            return result; //所有元素都符合条件，返回true
+        }
+    }
+
+    function normal() {
+        console.log("——————————————")
+        var result = arr.indexOf(2);
+        console.log("查找元素为：2，查找结果：");
+        console.log(result);
+    }
+
+    function fromFourth() {
+        console.log("——————————————")
+        var result = arr.indexOf(2, 4);
+        console.log("查找元素为：2，从下标为4的地方开始查找，查找结果：");
+        console.log(result);
+    }
+
+    function searchFive() {
+        console.log("——————————————")
+        var result = arr.indexOf(5);
+        console.log("查找元素为：5，查找结果：");
+        console.log(result);
+    }
+
+    function emptyArguments() {
+        console.log("——————————————")
+        var result = arr.indexOf();
+        console.log("参数为空，查找结果：");
+        console.log(result);
+    }
+</script>
+</body>
+</html>

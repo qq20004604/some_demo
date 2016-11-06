@@ -43,15 +43,15 @@
 
     function ReduceRightAdd() {
         console.log("当前执行：将数组每个元素加在一起的运算")
-        ReduceArr(function (previousValue, currentValue) {
-            return previousValue + currentValue;
+        ReduceArr(function (previousValue, item) {
+            return previousValue + item;
         })
     }
 
     function ReduceRightMul() {
         console.log("当前执行：将数组每个元素乘在一起的运算")
-        ReduceArr(function (previousValue, currentValue) {
-            return previousValue * currentValue;
+        ReduceArr(function (previousValue, item) {
+            return previousValue * item;
         })
     }
 
