@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>from</title>
+</head>
+<body>
+<script>
+    //Array.from()
+    console.log("Array.from()");
+    var result = Array.from("abc", function (item, index) {
+//        console.log(this);
+//        console.log(item);
+//        console.log(index);
+        return item + "1";
+    }, "test");
+    console.log(result);
+
+    //Array.isArray()
+    console.log("Array.isArray()");
+    console.log(Array.isArray([1, 2])); //true
+    console.log(Array.isArray({a: [1, 2]}));    //false
+    console.log(Array.isArray("test")); //false
+    console.log(Array.isArray(1));  //false
+    console.log(Array.isArray(Array));    //false
+    console.log(Array.isArray(new Array()));    //true
+    console.log(Array.isArray(Array.prototype));    //true
+
+
+</script>
+
+
+</body>
+</html>
