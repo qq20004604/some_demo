@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    var test1 = {
+        str: "字符串",
+        num: 123,
+        obj: {
+            obj1: "1",
+            obj2: 2
+        }
+    };
+    var result1 = JSON.stringify(test1, function (key, val) {
+        console.log(this);
+        console.log(key);
+        console.log(val);
+        return typeof val === 'string' ? val + "←处理过" : val;
+    }, 4);
+    console.log(result1);
+    console.log("————————分割线————————")
+    var result2 = JSON.parse(result1, function (key, val) {
+        console.log(this);
+        console.log(key);
+        console.log(val);
+        return key === 'obj' ? undefined : val;
+    })
+    console.log(result2);
+</script>
+</body>
+</html>
