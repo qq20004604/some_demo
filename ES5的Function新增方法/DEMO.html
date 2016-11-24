@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Function的bind方法</title>
+</head>
+<body>
+<script>
+    // 兼容性写法
+    if (!Function.prototype.bind) {
+        Function.prototype.bind = function () {
+            var self = this; // 保存原函数
+            var context = [].shift.call(arguments); // 需要绑定的this上下文，shift表示从数组最前面拿出一个元素
+            var args = [].slice.call(arguments); // 剩余的参数转成数组，slice方法会返回一个全新的数组（避免数组按引用传递）
+            return function () { // 返回一个新函数
+                // 执行新函数时，将传入的上下文context作为新函数的this
+                // 并且组合concat两次分别传入的参数，作为新函数的参数
+                // 这里的arguments指的是新函数的参数了（bind结束后调用时，是个数组），而不是bind时的参数
+                return self.apply(context, [].concat.call(args, [].slice.call(arguments)));
+            }
+        };
+    }
+
+    function test(a, b) {
+        console.log(this);
+        console.log(a);
+        console.log(b);
+        return this.m + a + b;
+    }
+    var number = {
+        m: 1
+    }
+
+    // bind只有一个参数时
+    var onlyOne = test.bind(number);
+    console.log(onlyOne(2, 3));
+
+    // bind有两个参数时：
+    var haveTwo = test.bind(number, 2);
+    console.log(haveTwo(10, 20));
+
+    // bind有三个参数时：
+    var threeArguments = test.bind(number, 2, 3);
+    console.log(threeArguments(10, 20));
+
+</script>
+</body>
+</html>
