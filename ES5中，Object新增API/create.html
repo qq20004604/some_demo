@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object.create方法</title>
+</head>
+<body>
+<script>
+    var n = Object.create(null, {
+        prop1: {
+            value: 'val1',
+            enumerable: true,   //能否被枚举
+            configurable: true, //属性的特性能否被修改/删除
+            writable: true      //能否被修改
+        },
+        prop2: {
+            value: 'val2',
+            enumerable: false,   //能否被枚举
+            configurable: false, //属性的特性能否被修改/删除
+            writable: false      //能否被修改
+        },
+        prop3: {
+            value: 'val3',
+            enumerable: false,   //能否被枚举
+            configurable: false, //属性的特性能否被修改/删除
+            writable: true      //能否被修改
+        }
+    })
+    console.log("测试enumerable影响下能否遍历");
+    // 测试enumerable影响下能否遍历
+    console.log(n);
+    for (var i in n) {
+        console.log(i, n[i]);
+    }
+
+    console.log("测试writable影响下能否被修改");
+    // 测试writable影响下能否被修改
+    n.prop1 = 'test';
+    n.prop2 = 'test';
+    console.log(n);
+
+    console.log("测试configurable影响下能否被修改");
+    // 测试configurable影响下能否被修改
+    delete n.prop1; //删除属性prop1（true，成功删除）
+    delete n.prop2; //删除属性prop2（false，删除失败）
+    delete n.prop3; //删除属性prop3（false，删除失败）
+    n.prop3 = "test";
+    //以下代码是修改n的prop3的writable属性为false（禁止其修改）
+    Object.defineProperty(n, 'prop3', {
+        writable: false
+    });
+    n.prop3 = "test2";
+    console.log(n);
+
+    try {
+        Object.defineProperty(n, 'prop3', {
+            writable: true
+        }); //这里会报错（因为configurable是false），并且会终止执行之后的代码
+    }
+    catch (err) {
+        console.error(err);
+    }
+    n.prop3 = "test3";  //最终还是修改失败，说明在configurable是false的影响下，修改是单向的
+    console.log(n);
+</script>
+</body>
+</html>
