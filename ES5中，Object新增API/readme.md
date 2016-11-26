@@ -44,6 +44,16 @@
     4. setter和getter在使用时，会和value以及writable有冲突，具体同样参照下面的说明；
     5. setter和getter，就是指set方法和get方法（To 那些诧异setter和getter与set和get之间关系的人）；
 
+关于writable：
+
+    1. 有些类似const；
+    2. 假如值是字符串（或其他），那么无法被修改为其他字符串/数值/对象的；
+    3. 假如值是对象/数组等按引用传递类型，虽然依然不能被修改其指向的对象/数组，但是可以直接修改其子属性的值/添加删除数组；
+    4. 例如test.props的值是{} 空对象，那么test.props = "abc";是失败的。
+    5. 但是test.props.a = 'abc'; 是被允许的。
+    6. 数组类似，可以通过.push像数组新增，或者其他；
+    7. 也就是说，对于按引用传递类型，不能修改其指向的对象，但是修改其指向对象的值。
+
 
 ###Object.defineProperties(obj, props)
 
@@ -108,4 +118,22 @@
     4. 第三个参数的写法可以参照上面Object.defineProperties的说明，没有什么不同；
     5. 还不懂的话就看DEMO吧。
 
+关于继承：
 
+    1. MDN网站说某些选项可能不是自身属性（继承来的），因此要考虑到这种情况；
+    2. 为了保留这些东西，因此可能要在修改之前冻结Object.prototype（避免因修改而导致源属性也被修改）；
+    3. 也可以将__proto__指向null；
+    4. 我不是很懂他的意思，我觉得主要是我没明确他指的这件事发生的场景是什么
+    5. 无论如何，给个链接吧
+    https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+    
+
+###Object.keys(obj)
+
+说明：
+
+    1. 效果很简单直白，类似for in，遍历对象，然后把key放在数组里，返回这个数组；
+    2. 不能被枚举的属性（例如enumerable值为false的），不会被放入；
+    3. 不能被枚举的属性，假如其子属性可以被枚举到，那么也不会被添加进去；
+    4. 但是若直接以不能被枚举的属性作为Object.keys的参数，那么子属性假如可以被枚举，则会被添加进去；
+    

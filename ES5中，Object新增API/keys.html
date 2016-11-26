@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object.keys说明</title>
+</head>
+<body>
+<div>
+    按下F12，查看console
+</div>
+<script>
+    //初始
+    var test = {
+        a: 1
+    };
+    console.log(Object.keys(test));
+
+    //添加可枚举属性
+    console.log("");
+    Object.defineProperties(test, {
+        props1: {
+            value: "props1",
+            enumerable: true    //可枚举
+        }
+    });
+    console.log(Object.keys(test));
+
+    //添加不可枚举属性
+    console.log("");
+    Object.defineProperties(test, {
+        props2: {
+            value: "props2" //默认是不可枚举的
+        }
+    });
+    console.log(Object.keys(test));
+
+    //不可枚举属性是对象，并且设置其子属性为可枚举
+    console.log("");
+    Object.defineProperties(test, {
+        props3: {
+            value: {}   //空对象，不可枚举
+        }
+    });
+    //设置属性
+    Object.defineProperties(test.props3, {
+        toTry: {
+            value: "can enumerable",
+            enumerable: true    //可枚举
+        }
+    });
+    console.log(Object.keys(test)); //无法通过test来遍历到toTry属性
+    console.log(Object.keys(test.props3)); //但可以通过test.props3来获取到toTry属性
+</script>
+</body>
+</html>
