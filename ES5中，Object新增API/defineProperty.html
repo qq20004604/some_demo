@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object.defineProperty说明</title>
+</head>
+<body>
+<div>
+    按下F12，查看console
+</div>
+<script>
+    //初始
+    var test = {
+        a: 1,
+    }
+    console.log(test);
+    console.log("");
+
+    //修改已有属性
+    Object.defineProperty(test, "a", {
+        value: "abc",
+        writable: true,
+        configurable: true,
+        enumerable: true
+    });
+    console.log(test);
+
+    //新增属性
+    Object.defineProperty(test, "b", {
+        value: "The word is b"
+    });
+    console.log(test);
+    //修改失败
+    test.b = "I can't modify this value";
+    console.log(test);
+</script>
+</body>
+</html>

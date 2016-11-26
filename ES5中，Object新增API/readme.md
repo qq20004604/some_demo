@@ -36,6 +36,14 @@
     8. 但假如在上一步的情况下，writable修改为false，那么就无法改回来了（因为configurable的原因）
     9. 修改这三个属性，需要用Object.defineProperty方法来进行，而不能直接通过例如obj.prop.writable这样
 
+关于set和get：
+
+    1. 虽然在上面没有写setter和getter，但Object.create创建的属性，的确也是可以用setter和getter的；
+    2. 虽然没有一一验证，但是可以推断出，类似的方法，应该都可以使用setter和getter，以及上面四个属性的（虽然他们之间会有冲突）；
+    3. setter和getter的介绍请参照Object.defineProperties部分；
+    4. setter和getter在使用时，会和value以及writable有冲突，具体同样参照下面的说明；
+    5. setter和getter，就是指set方法和get方法（To 那些诧异setter和getter与set和get之间关系的人）；
+
 
 ###Object.defineProperties(obj, props)
 
@@ -88,4 +96,16 @@
 兼容性写法：
 
     好像没有很好能兼容的，见过的就算有，代码也很长，所以IE9以下的基本不要考虑了吧
+
+
+###Object.defineProperty(obj, prop, descriptor)
+
+说明：
+
+    1. 类似Object.defineProperties，不过本方法一次只能新增/修改一个属性；
+    2. 第二个参数写Object.defineProperties中的key，类型是字符串；
+    3. 第三个参数是Object.defineProperties中的val，类型是对象；
+    4. 第三个参数的写法可以参照上面Object.defineProperties的说明，没有什么不同；
+    5. 还不懂的话就看DEMO吧。
+
 
