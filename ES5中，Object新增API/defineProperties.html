@@ -5,6 +5,9 @@
     <title>Object.defineProperties说明</title>
 </head>
 <body>
+<div>
+    按下F12，查看console
+</div>
 <script>
     var test = {
         a: 1
@@ -47,7 +50,7 @@
             value: "props3",
             writable: true,
             configurable: true,
-            enumerable: true    //当这里为true时，在chrome显示时会放在false属性的前面（并没有什么卵用）
+            enumerable: true    //当这里为true时，在chrome显示时会放在false属性的前面（并没有什么卵用）（注意，这个枚举属性还是生效的）
         }
     });
     console.log(test);
