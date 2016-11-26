@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object.defineProperties说明</title>
+</head>
+<body>
+<script>
+    var test = {
+        a: 1
+    }
+    var result = Object.defineProperties(test, {
+        props1: {
+            value: 'props1',
+        },
+        props2: {
+            value: "props2",
+            writable: true
+        }
+    });
+
+    // 测试返回对象和被修改的对象是否是同一个对象
+    console.log("——返回对象和被修改的对象的值——");
+    console.log(test);
+    console.log(result);
+    console.log("");
+    console.log("——测试返回对象和被修改的对象是否是同一个对象——");
+    console.log(result === test);   //true
+
+    // 测试props1能否修改
+    console.log("");
+    console.log("——测试默认情况下props1能否修改——");
+    test.props1 += "  abc";
+    console.log(test);  //修改失败
+
+    // 测试props2能否修改
+    console.log("");
+    console.log("——测试props2能否修改——");
+    test.props2 += "  abc";
+    console.log(test);  //修改成功
+
+    //可以多次调用该方法修改
+    console.log("");
+    console.log("——可以多次调用该方法修改——");
+    Object.defineProperties(test, {
+        props3: {       //这里是就是Object.create定义的三个属性了
+            value: "props3",
+            writable: true,
+            configurable: true,
+            enumerable: true    //当这里为true时，在chrome显示时会放在false属性的前面（并没有什么卵用）
+        }
+    });
+    console.log(test);
+
+    // 因此可遍历
+    console.log("");
+    console.log("——因此可遍历——");
+    for (var i in test) {
+        console.log(i); //a, props3
+    }
+
+    // 另外还可以设置setter和getter
+    console.log("");
+    console.log("——另外还可以设置setter和getter——");
+    Object.defineProperties(test, {
+        props4: {
+            enumerable: true,
+            set: function (val) {
+                console.log("调用了set方法，输入值为：" + val);
+                this.props4Value = val;
+            },
+            get: function () {
+                console.log("调用了get方法，并且对其值进行修改，变为数组");
+                return [this.props4Value];
+            }
+        }
+    })
+    //设置props4的值：
+    console.log("");
+    console.log("——通过set设置props4的值——注意，在有set没有get的情况下，是无法获取props4的值的——");
+    console.log("——1、要么是value属性，要么是set和get成对出现，否则报错——");
+    console.log("——2、在有set没有get的情况下，是无法获取props4的值的：显示undefined——");
+    console.log("——3、有get没set，会报错——");
+    console.log("——4、当get方法修改返回值时，直接获取该属性值test.props4和通过test来查看属性值时，其值是可能有区别的——");
+    console.log("——5、在set和get方法内，设置和获取属性的形式是，相当于通过另外一个本对象的属性来间接获取/设置——");
+    test.props4 = "props4";
+    console.log(test);
+    console.log(test.props4)
+
+    //但是注意此时console.log是会显示出我们间接存储的这个值（props4Value）
+    //因此我们专门定义一个用于存放setter和getter间接存储属性的属性
+    //注意，属性名是_temp的话（有下划线前缀），在chrome里是无法直接通过console.log(test)来看到
+    //如果没有下划线前缀是可以的，但无论如何不会被枚举到（通过test来枚举）（包括他的子属性，即使他的子属性的enumerable设置为true）
+    Object.defineProperties(test, {
+        _temp: {
+            value: {},
+            writable: true
+        }
+    });
+    //这个时候新建一个props5，然后把间接属性存储到__temp之中
+    Object.defineProperties(test, {
+        props5: {
+            enumerable: true,
+            set: function (val) {
+                this._temp.props5 = val;
+            },
+            get: function () {
+                return this._temp.props5 + " →extends words";
+            }
+        }
+    });
+    //查看test，是无法直接查看到_temp对象的
+    console.log("");
+    console.log("——查看test，是无法直接查看到_temp对象的——");
+    console.log(test);
+
+    //设置props5，此时无法看到间接属性test._temp.props5
+    console.log("");
+    console.log("——test.props5——");
+    test.props5 = "props5";
+    console.log(test.props5);
+
+    //但注意，若修改了test._temp.props5的值的话，那么test.props5的值也会随之改变
+    console.log("");
+    console.log("——若修改了test._temp.props5的值的话，那么test.props5的值也会随之改变——");
+    test._temp.props5 = "modify test._temp.props5";
+    console.log(test.props5);
+
+
+</script>
+</body>
+</html>
