@@ -50,6 +50,16 @@
     });
     console.log(Object.keys(test)); //无法通过test来遍历到toTry属性
     console.log(Object.keys(test.props3)); //但可以通过test.props3来获取到toTry属性
+
+    //只能枚举到直接子属性，而不能枚举到间接子属性（即无法递归）
+    var obj = {
+        test: {
+            test1: 'value'
+        }
+    }
+    console.log("");
+    console.log(Object.keys(obj));
+    console.log(Object.keys(obj.test));
 </script>
 </body>
 </html>
