@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Object.freeze说明</title>
+</head>
+<body>
+<script>
+    var test = {
+        a: 1
+    }
+    var result = Object.freeze(test);
+    //查看被冻结的对象和返回值是否相同
+    console.log("result === test");
+    console.log(result === test);
+
+    //查看能否修改属性值
+    console.log("");
+    console.log("查看能否修改属性值");
+    test.a = 2;
+    console.log(test);
+    console.log("查看test是否冻结成功");
+    console.log(Object.isFrozen(test));
+
+    //查看能否修改指向的对象
+    console.log("");
+    console.log("查看能否修改指向的对象");
+    var test = {
+        b: 2
+    }
+    console.log(test);    //可以
+
+    //更改指向对象后能否被修改
+    console.log("");
+    console.log("更改指向对象后能否被修改");
+    test.b = 3;
+    console.log(test);
+
+    //冻结对象是个字符串
+    var test2 = "test string";
+    Object.freeze(test2);
+    console.log("");
+    console.log("冻结对象是个字符串");
+    console.log(test2);
+    console.log("查看test2是否冻结成功");
+    console.log(Object.isFrozen(test2));    //虽然冻结成功但感觉并没有什么卵用
+
+    //冻结的字符串对象能否被修改
+    console.log("");
+    console.log("冻结的字符串对象能否被修改");
+    test2 = "have modify";
+    console.log(test2);
+
+    //冻结对象是个数组
+    var test3 = [1, 2];
+    Object.freeze(test3);
+    console.log("");
+    console.log("冻结对象是个数组");
+    console.log(test3);
+    console.log("查看test3是否冻结成功");
+    console.log(Object.isFrozen(test3));
+
+    //冻结的数组对象能否被修改
+    console.log("");
+    console.log("冻结的数组对象能否被修改");
+    test3[2] = 3;   //注意，不能调用push，shift等
+    console.log(test3);     //修改失败
+
+</script>
+</body>
+</html>

@@ -144,3 +144,32 @@
         }
         使用Object.keys(obj);返回的数组是['test']，而不是['test', 'test1']；
         如果使用Object.keys(obj.test); 返回值的数组则为['test1']
+        
+
+###Object.freeze(obj)
+
+说明：
+
+    1. 效果是，让一个对象被冻结。禁止新增、删除、修改属性（包括例如enumerable等数据描述符和存储描述符）；
+    2. 返回值是被冻结的对象（返回值 === obj的结果是true）；
+    3. 总而言之，如果想让一个对象不能做任何修改，用这个就可以了；
+    4. 被冻结后无法恢复；
+    5. 对象不能被修改，但是可以修改指向的对象。例如var test = {a:1};
+       然后test被冻结了，此时冻结的是对象（还记不记得对象是按引用传递）；
+       然后此时你让test={b:2};那么虽然{a:1}这个对象依然不能被修改，但是此时test已经指向的是{b:2}了
+       所以此时的test可以被修改。
+    6. 可以冻结的是对象和数组（按引用传递）；
+    7. 无法冻结的是string，number类型等（非按引用传递），准确的说，是冻结成功但依然可以被修改。
+
+具体见DEMO
+
+###Object.isFrozen(obj)
+
+说明：
+
+    1. 查看一个对象是否被冻结；
+    2. 被Object.freeze()冻结的对象返回是true；
+    3. 空对象被Object.preventExtensions()后的返回值，用本方法查看的话返回值是true。但非空对象用同样流程，本方法返回值是false
+    4. 非空对象在删除所有属性后，使用Object.preventExtensions()设置，然后再用本方法检查，返回值是true，否则false
+    5. 更多的参照：https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isFrozen
+
