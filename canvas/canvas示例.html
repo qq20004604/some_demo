@@ -1,0 +1,111 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas示例</title>
+    <style>
+        .circle {
+            border: 1px solid black;
+        }
+
+    </style>
+</head>
+<body>
+<canvas id="circle1" class="circle" height="100" width="100"></canvas>
+<canvas id="circle2" class="circle" height="100" width="100"></canvas>
+<canvas id="circle3" class="circle" height="100" width="100"></canvas>
+<canvas id="circle4" class="circle" height="100" width="100"></canvas>
+<br>
+<canvas id="circle5" class="circle" height="500" width="500"></canvas>
+<script type="text/javascript">
+    //    矩形
+    (function () {
+        var canvas = document.querySelector("#circle1"); //获取dom结点
+        //检测兼容性
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');  //获得其渲染上下文和绘图功能
+            console.log(ctx);
+        } else {
+            alert("你的浏览器不支持绘图");
+        }
+
+        //画2个矩形
+        ctx.fillStyle = "#aa0";
+        ctx.fillRect(10, 20, 50, 50);   //依次是左上角的x、y坐标和宽高，形成一个矩形，具体见文档
+        ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
+        ctx.clearRect(30, 30, 55, 50);
+    })();
+
+    //    圆形
+    (function () {
+        var canvas = document.querySelector("#circle2"); //获取dom结点
+        var ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        ctx.strokeStyle = 'blue';
+        ctx.fillStyle = "red";
+        ctx.arc(50, 50, 50, 0, 1.5 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = "yellow";
+        ctx.beginPath();
+        ctx.arc(50, 50, 50, 1.5 * Math.PI, 2 * Math.PI);
+        ctx.stroke();
+    })();
+
+    //    扇形
+    (function () {
+        var canvas = document.querySelector("#circle3"); //获取dom结点
+        var ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        ctx.strokeStyle = 'blue';
+        ctx.fillStyle = "red";
+        ctx.moveTo(50, 50);
+        ctx.arc(50, 50, 50, 0, 1.5 * Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(50, 50);
+        ctx.fillStyle = "yellow";
+        ctx.arc(50, 50, 50, 1.5 * Math.PI, 2 * Math.PI);
+        ctx.stroke();
+    })();
+
+    //使用图片作为颜色
+    (function () {
+        var c = document.getElementById("circle4");
+        var ctx = c.getContext("2d");
+        var img = new Image();
+        img.src = "./02.png";
+        img.onload = function () {
+            var pat = ctx.createPattern(img, 'repeat');
+            ctx.fillStyle = pat;
+            ctx.beginPath();
+            ctx.moveTo(60, 50);
+            ctx.arc(60, 50, 40, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    })();
+
+
+    //使用渐变色作为颜色
+    (function () {
+        var c = document.getElementById("circle5");
+        var ctx = c.getContext("2d");
+//        var gradient = ctx.createLinearGradient(50, 50, 50, 50);   //创建一个线性渐变对象
+        var gradient = ctx.createRadialGradient(200, 250, 150, 300, 250, 200);   //创建一个圆形渐变对象
+        gradient.addColorStop(0, "red"); //渐变色阶设置
+        gradient.addColorStop(0.5, "green"); //渐变色阶设置
+        gradient.addColorStop(1, "yellow");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 500, 500);
+
+        //以下代码用于画出图形，方便理解渲染原理
+        ctx.beginPath();
+        ctx.fillStyle = "#000";
+        ctx.arc(200, 250, 150, 0, 2 * Math.PI);
+        ctx.moveTo(500, 250);
+        ctx.arc(300, 250, 200, 0, 2 * Math.PI);
+        ctx.stroke();
+    })();
+
+
+</script>
+</body>
+</html>
