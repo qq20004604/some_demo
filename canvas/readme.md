@@ -2,29 +2,26 @@
 
 ###**绘图前提**
 
-1. 先有一个canvas的html标签：\<canvas>\</canvas>
+1. 先有一个canvas的html标签：```<canvas></canvas>```
 2. 标签通常请客下，只有height和width两个宽高属性，  
-   例如：\<canvas width='200' height='200'>\</canvas>  
+   例如：```<canvas width='200' height='200'></canvas>  ```
    表示这个画布是宽高是200px，他所在的范围，就是画图的范围（超出部分无法绘图）
 3. 前获取的canvas标签所在的DOM，和正常获取一个DOM方法一致（比如document.getElementById()）
 4. 假设之前获取的DOM被赋给变量canvas，然后获取绘图用的渲染上下文，具体方法是：  
-   var ctx = canvas.getContent('2d');  
+   ```var ctx = canvas.getContent('2d');```  
    这个ctx就是我们需要的绘图用的对象。  
    **调用接口时，如无特殊声明，都指的是通过这个ctx对象来调用**
    
+###**0. 填充颜色和线条颜色**
 
-##**接口**
-
-####**0. 填充颜色和线条颜色**
-
-####0.1 线条颜色####
+###0.1 线条颜色####
 
 **ctx.strokeStyle = color**
 
     1. 指线条，即stroke类方法描绘的轮廓的颜色；
     2. 该颜色不影响fill类方法填充时的颜色；
 
-####0.2 填充颜色####
+###0.2 填充颜色####
 
 **ctx.fillStyle = color**
 
@@ -35,7 +32,8 @@
     1. 用于使用渐变色，分为线性渐变和镜像渐变；
     2. 值是一个特殊对象，通过ctx来调用对应的API（线性或者镜像）创建；
 
-镜像渐变：ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+镜像渐变：  
+ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
 
     1. 简单来说，通过两个圆来形成渐变背景图形；
     2. 第一个圆是渐变起始，第二个圆是渐变终止；
@@ -58,7 +56,7 @@
         
     如图，图中左边的为起始圆，右边的为终止圆，起始颜色为红色，终止颜色为黄色，渐变中间色是绿色（即红-绿-黄）
         
-![image](./01.png)
+![image](https://github.com/qq20004604/some_demo/blob/master/canvas/01.png)
         
         这样画出来的两条线（AC和BD），
         如果平行，则将染色区域划分为最多三部分：
@@ -90,7 +88,8 @@
     4.6 color可以是"#000"这样或者rgb或者rgba，类型是字符串；
     4.7 然后使用ctx.fillStyle = gradient;赋值颜色即可；
     
-线性渐变：ctx.createLinearGradient(x0, y0, x1, y1)
+线性渐变：  
+ctx.createLinearGradient(x0, y0, x1, y1)
 
     1. 和镜像渐变类似，只不过线性渐变是从某位置渐变到另外一个位置（点到点，镜像渐变是圆到圆）；
     2. x0和y0是渐变起始坐标；
@@ -132,7 +131,7 @@
     12. 即使改变HTML图片元素的margin属性、background-position属性或者其他属性都无法影响；
     13. 如果有办法，请加我QQ：20004604，或者发邮件到20004604@qq.com告诉我，谢谢。
 
-####**1. 绘制矩形**
+###**1. 绘制矩形**
 
 **fillRect(x, y, width, height)**
 
@@ -156,7 +155,7 @@
     2. 该矩形区域内内容被清除，变为透明；
 
 
-####**2. 绘制路径**
+###**2. 绘制路径**
 
 解释：
 
@@ -218,7 +217,7 @@ API：
     5. anticlockwise表示顺逆时针，false为顺时针，true为逆时针；
     6. 起始坐标是圆的正右方位置
 
-####**3. 画矩形**
+###**3. 画矩形**
 
 0.颜色
 
@@ -244,7 +243,7 @@ API：
     2. 先按照2的方式画个矩形；
     3. 然后使用clearRect(x, y, width, height)清空小矩形区域的图形即可；
     
-####**4. 画圆形**
+###**4. 画圆形**
 
 0.颜色
 

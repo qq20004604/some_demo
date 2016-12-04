@@ -72,8 +72,8 @@
         var c = document.getElementById("circle4");
         var ctx = c.getContext("2d");
         var img = new Image();
-        img.src = "./02.png";
-        img.onload = function () {
+        img.src = "https://github.com/qq20004604/some_demo/blob/master/canvas/02.png";
+        img.onload = function () {  //图片加载完毕之后再绘图
             var pat = ctx.createPattern(img, 'repeat');
             ctx.fillStyle = pat;
             ctx.beginPath();
