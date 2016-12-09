@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>绘制图片</title>
+    <style>
+        #test {
+            border: 1px solid #000;
+        }
+
+    </style>
+</head>
+<body>
+<canvas id="test" height="500" width="700"></canvas>
+<script>
+    var canvas = document.querySelector("#test");
+    var ctx = canvas.getContext("2d");
+    var image = new Image();
+    image.src = './02.png';
+
+    image.onload = function () {
+        //参数：图片，在画布上的x坐标，在画布上的y坐标
+        //此时图片在画布上的高度和宽度取图片默认值
+        ctx.drawImage(image, 100, 100);
+
+        //参数：图片，在画布上的x坐标，在画布上的y坐标，图片在画布上的宽度，图片在画布上的高度
+        ctx.drawImage(image, 400, 100, 30, 40);
+
+        //参数：图片，从图片的x坐标开始取图，从图片的y坐标开始取图，取图片的宽度，取图片的高度，
+        //      在画布上的x坐标，在画布上的y坐标，图片在画布上的宽度，图片在画布上的高度
+        //假如取的宽高超出图片本身范围，那么缩放时计算在内，但超出部分在绘制的时候视为透明（不绘制）
+        ctx.drawImage(image, 50, 50, 200, 250, 500, 100, 100, 100);
+    }
+</script>
+</body>
+</html>
+</html>
