@@ -1,0 +1,351 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        #test {
+            border: 1px solid black;
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<script src="./jquery.js"></script>
+<body>
+<div id="test">
+
+</div>
+<script>
+    var dom = document.getElementById("test");    //数据源，这里是模拟生成的
+    //数据生成函数
+    var caseInfo = (function () {
+        var caseInfo = [];
+        //最大值，实际使用中不要用这一条，这个只是用来生成数据的
+        var max = Math.pow(10, parseInt(Math.random() * 5));
+
+        for (let i = 0; i < 12; i++) {
+            caseInfo.push(parseInt(max * Math.random()));
+        }
+        console.log(caseInfo);
+        return caseInfo;
+    })();
+    //    caseInfo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    var dateText = ["2014/2", "2014/3", "2014/4", "2014/5", "2014/6", "2014/7", "2014/8", "2014/9", "2014/10", "2014/11", "2014/12", "2015/1"];
+
+    drawCanvas(dom, caseInfo, dateText);
+
+    //  绘图函数的类，传入的参数依次为，canvas标签应该被放置的父Dom，数据，时间
+    //  1、父dom：支持自适应，最小宽高（此时会设置父dom的overflow为auto）
+    //  2、数据：标准的为12个数据，类型为number，不足12个会自动用0填充满（填充在数组的开始部分）；
+    //  3、时间要求格式为：年份/月份，例如2016/12，类型为字符串，非该格式的会被识别为错误并报错（如需修改请自行更改相关判断部分）；
+    //  4、y轴坐标的刻度会根据数据的最大值而自动变化；
+    //  5、x轴坐标的刻度自动设为12格
+    function drawCanvas(Dom, caseInfoArray, dateTextArray) {
+        //  设置
+        var color = {
+            xyAxisLine: "#000", //x、y坐标轴的颜色
+            xScale: "#000",      //x轴刻度文字的颜色
+            yScale: "#000",    //y轴刻度文字的颜色
+            referenceLine: "#bbb",  //参考线带颜色
+            dataLine: "#f6793c",     //数据线条的颜色
+            errorMessage: "#000"    //错误提示的颜色
+        };
+        var font = {
+            yScale: "Bold 10px Arial",  //y轴刻度文字
+            xScale: "Bold 8px Arial"    //x轴刻度文字
+        };
+        var dataLineWidth = 3;   //数据线条的宽度
+        var error = {
+            errorCaseInfo: "错误的数据",
+            errorCaseTpye: "数据类型不是数字，无法绘图",
+            errorDate: "错误的时间输入"
+        }
+        //  设置完
+
+        //获取基础数据
+        var canvas = document.createElement("canvas");
+        Dom.appendChild(canvas);
+        var ctx = canvas.getContext("2d");
+        var caseInfo = caseInfoArray;
+        var dateText = dateTextArray;
+
+        //获得并设置canvas标签的最小宽高，然后返回canvas中，绘图区域坐标
+        var setWidthWithHeight = function (Dom, canvas) {
+            //在dojo中，用aspect.after改造
+            //    window.onresize，每次触发事件时重置一次，并且绘制一次
+            //获得画布区域的宽度和高度，并重置
+            if (Dom.clientWidth < 700) {
+                canvas.width = 700;
+                Dom.style.overflowX = "auto";
+            } else {
+                canvas.width = Dom.clientWidth;
+            }
+            if (Dom.clientHeight < 250) {
+                canvas.height = 250;
+                Dom.style.overflowY = "auto";
+            } else {
+                canvas.height = Dom.clientHeight;
+            }
+
+            //坐标轴区域
+            //注意，实际画折线图区域还要比这个略小一点
+            return {
+                x: 60 - 0.5,    //坐标轴在canvas上的left坐标
+                y: 40 - 0.5,    //坐标轴在canvas上的top坐标
+                maxX: canvas.width - 60.5,   //坐标轴在canvas上的right坐标
+                maxY: canvas.height - 40.5   //坐标轴在canvas上的bottom坐标
+            };
+        }
+
+        // 获得Y轴的最大尺度
+        var getMAXrectY = function (caseInfo) {
+            var theMaxCaseInfo = 0;
+            //用于获取最大值
+            caseInfo.forEach(function (item) {
+                if (item > theMaxCaseInfo) {
+                    theMaxCaseInfo = item;
+                }
+            });
+
+            //返回计算出的最大数字
+            return (function (str) {
+                var number = null;
+                //用于计量坐标轴y轴的最大数字
+                if (str[0] == 1) {
+                    if (str[0] + str[1] >= 18) {
+                        number = '20';
+                    } else {
+                        if (Number(str[1]) % 2) {
+                            number = str[0] + String(Number(str[1]) + 1);
+                        } else {
+                            number = str[0] + String(Number(str[1]) + 2);
+                        }
+                    }
+                    for (let i = 2; i < str.length; i++) {
+                        number += '0';
+                    }
+                } else {
+                    number = String(Number(str[0]) + 1);
+                    for (let i = 1; i < str.length; i++) {
+                        number += '0';
+                    }
+                }
+                return number;
+            })(String(theMaxCaseInfo));
+        }
+
+        //  绘制x、y坐标轴（不包含刻度）
+        var drawAxis = function (ctx, axis) {
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color.xyAxisLine;
+            ctx.moveTo(axis.x, axis.maxY);
+            ctx.lineTo(axis.x, axis.y);
+            ctx.lineTo(axis.x - 5, axis.y + 5);
+            ctx.moveTo(axis.x, axis.y);
+            ctx.lineTo(axis.x + 5, axis.y + 5);
+            ctx.stroke();
+
+            //  再画X轴
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color.xyAxisLine;
+            ctx.moveTo(axis.x, axis.maxY);
+            ctx.lineTo(axis.maxX, axis.maxY);
+            ctx.lineTo(axis.maxX - 5, axis.maxY + 5);
+            ctx.moveTo(axis.maxX, axis.maxY);
+            ctx.lineTo(axis.maxX - 5, axis.maxY - 5);
+            ctx.stroke();
+
+            // 写y轴原点的数字（注意，虽然是坐标原点，但这个是y轴的）
+            ctx.font = font.yScale;
+            ctx.textAlign = "right";
+            ctx.fillStyle = color.referenceLine;
+            // 设置字体内容，以及在画布上的位置
+            ctx.fillText("0", axis.x - 5, axis.maxY);
+        }
+
+        //划线和确定单元格的逻辑在这里，逻辑确定好后是将单元格放在rectYArray这个数组中
+        var getDrawYLineLaw = function (MAXrectY) {
+            var rectYArray = [];
+            //当最大案件数小于等于10时，以2为一格
+            if (MAXrectY <= 10) {
+                console.log(MAXrectY);
+                rectYArray.push(2, 4, 6, 8, 10);
+            } else {
+                var str = String(MAXrectY);
+                var zeroNumber = MAXrectY.length - 2;
+
+                //  用于填充的0的数量，原因是判断时只判断前一位或两位
+                var fillZero = String(Math.pow(10, zeroNumber)).replace('1', '');
+
+                //  然后先判断首位，如果是1，则最大是之前获取到的最大数值，以2/格为单位
+                //  如果是2~5，则以5/格为单位
+                //  如果是6~9，则以10/格为单位
+                if (Number(str[0]) === 1) {
+                    for (var i = 0; i < Number(str[0] + str[1]); i = i + 2) {
+                        rectYArray.push(i + 2 + fillZero);
+                    }
+                } else if (Number(str[0]) >= 2 && Number(str[0]) < 6) {
+                    for (var i = 0; i < Number(str[0] + str[1]); i = i + 5) {
+                        rectYArray.push(i + 5 + fillZero);
+                    }
+                } else if (Number(str[0]) >= 6 && Number(str[0]) < 10) {
+                    for (var i = 0; i < Number(str[0] + str[1]); i = i + 10) {
+                        rectYArray.push(i + 10 + fillZero);
+                    }
+                }
+            }
+            console.log(rectYArray);
+            return rectYArray;
+        }
+
+        //画y轴参考线和坐标数字
+        var DrawYLine = function (ctx, axis, YLineLaw) {
+            //  在得到单元格后，开始绘图，绘出y轴上每个单元格的直线
+            //  Y轴参考线的x坐标是从0到axis.maxX - 10
+
+            var yMaxPoint = axis.y + 20;    //最上面的y轴坐标
+            var xMaxPoint = axis.maxX - 10; //最右边的x轴坐标
+            ctx.strokeStyle = color.referenceLine;
+            for (let i = 0; i < YLineLaw.length; i++) {
+                ctx.beginPath();
+                //  当前绘制线条的y坐标
+                let yLine = (YLineLaw[i] - YLineLaw[0] ) / YLineLaw[YLineLaw.length - 1] * (axis.maxY - yMaxPoint) + yMaxPoint;
+                ctx.moveTo(axis.x, yLine);
+                ctx.lineTo(xMaxPoint, yLine);
+                ctx.stroke();
+                //绘完线条写文字
+                ctx.font = font.yScale;
+                ctx.textAlign = "right";
+                ctx.fillStyle = color.yScale;
+                // 设置字体内容，以及在画布上的位置
+                ctx.fillText(YLineLaw[YLineLaw.length - i - 1], axis.x - 5, yLine + 5);
+            }
+        }
+
+        //绘制数据
+        var DrawData = function (ctx, axis, caseInfo, YLineMax, dateText) {
+            //  折线绘图区域的x轴从x=0开始绘图，绘制的最右边是axis.maxX-20（参考线是-10）
+            //  y轴是从y=0开始绘制，绘制的最顶部是最顶部参考线的位置(axis.y+20)
+            //  参数依次为：绘图对象ctx，坐标轴区域坐标axis，绘图用的数据caseInfo，Y轴最大值YLineMax，x轴横坐标文字dateText
+            var rect = {
+                left: axis.x,           //折线绘图区域的left
+                top: axis.y + 20,       //折线绘图区域的top
+                height: axis.maxY - axis.y - 20,      //折线绘图区域的bottom
+                width: axis.maxX - 20 - axis.x   //折线绘图区域的right
+            };
+            //绘制数据的折线
+            ctx.beginPath();
+            ctx.strokeStyle = color.dataLine;
+            ctx.lineWidth = dataLineWidth;
+            var firstPoint = {
+                x: rect.left + 0.5, //之所以+0.5，是因为rect.x来源于axis.x表示划线，因此少了0.5px宽，这里要弥补上
+                y: rect.top + (1 - caseInfo[0] / YLineMax) * rect.height + 0.5
+            }
+//            console.log(firstPoint);
+            ctx.moveTo(firstPoint.x, firstPoint.y);
+            for (let i = 0; i < caseInfo.length; i++) {
+                var point = {
+                    x: rect.left + i / 11 * rect.width + 0.5,
+                    y: rect.top + (1 - caseInfo[i] / YLineMax) * rect.height
+                };
+                ctx.lineTo(point.x, point.y);
+                //写x轴坐标文字
+                ctx.font = font.xScale;
+                ctx.textAlign = "center";
+                ctx.fillStyle = color.xScale;
+                ctx.fillText(dateText[i], point.x, rect.top + rect.height + 15);
+            }
+            ctx.stroke();
+        }
+
+        //错误检查
+        var inputError = function () {
+            //不是数组
+            if (!(caseInfo instanceof Array)) {
+                return error.errorCaseInfo;
+            }
+            //  数组数目不足12，用0填充靠前的部分
+            //  大于12，移除前面的部分
+            if (caseInfo.length < 12) {
+                while (caseInfo.length < 12) {
+                    caseInfo.unshift(0);
+                }
+            } else if (caseInfo.length > 12) {
+                while (caseInfo.length > 12) {
+                    caseInfo.shift(0);
+                }
+            }
+
+            //判断数组每个元素的类型是否是number或者能否转换为number
+            var checkElementType = caseInfo.every(function (item) {
+                //如果强制转换后为NaN，那么
+                if (typeof item !== "number") {
+                    return false;
+                } else {
+                    return true;
+                }
+            })
+            if (!checkElementType) {
+                return error.errorCaseTpye;
+            }
+
+            //  月份应该是字符串，如2016/2
+            //  如果被/分割拆分后数组长度不是2，或者拆分后元素0的长度不是4，或者拆分后元素1的长度不是1或2
+            //  或者parseInt转换后为NaN
+            var checkDateText = dateText.every(function (item) {
+                var date = item.split("/");
+                if (date.length !== 2 || date[0].length !== 4 || date[1].length < 1 || date[1].length > 2 ||
+                        isNaN(parseInt(date[0])) || isNaN(parseInt(date[1]))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            })
+            if (!checkDateText) {
+                return error.errorDate
+            }
+            return false;
+        }
+
+        //绘图函数
+        this.toDraw = function () {
+            //  设置canvas的Dom的宽高
+            var axis = setWidthWithHeight(Dom, canvas);
+            //  绘制x、y坐标轴（不包含刻度）
+            drawAxis(ctx, axis);
+            //如果检测返回false
+
+            //  如果没问题，则返回false，否则值可以隐式转换为true
+            var errorMessage = inputError();
+            if (errorMessage) {
+                ctx.font = "Bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillStyle = color.errorMessage;
+                ctx.fillText(errorMessage, (axis.x + axis.maxX) / 2, (axis.y + axis.maxY) / 2);
+                return;
+            }
+            //  获得Y轴的最大尺度
+            var MAXrectY = getMAXrectY(caseInfo);
+            //  获得y轴划参考线规则
+            var YLineLaw = getDrawYLineLaw(MAXrectY);
+            //  绘制Y轴参考线
+            DrawYLine(ctx, axis, YLineLaw);
+            //  绘制数据
+            DrawData(ctx, axis, caseInfo, YLineLaw[YLineLaw.length - 1], dateText);
+        };
+
+        //启动本实例时绘图一次
+        this.toDraw();
+        var self = this;
+        $(window).resize(function () {
+            self.toDraw();
+        })
+    }
+
+</script>
+</body>
+</html>
