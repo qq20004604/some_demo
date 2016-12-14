@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>seal的说明</title>
+</head>
+<body>
+<div>
+    按下F12，查看console
+</div>
+<script>
+    var test = {
+        a: 1,
+        b: 2
+    };
+    var result = Object.seal(test);
+
+    //查看被锁定的对象和返回值是否是同一个
+    console.log("");
+    console.log("查看被锁定的对象和返回值是否是同一个");
+    console.log(result === test);
+
+    //查看被锁定的对象能否修改
+    console.log("");
+    console.log("查看被锁定的对象能否新增、修改、移除");
+    test.c = 3;     //新增不可
+    test.a = 2;     //修改可
+    delete test.b;  //移除不可
+    console.log(test);
+
+    //查看被锁定对象的锁定状态
+    console.log("");
+    console.log("查看被锁定对象的锁定状态");
+    console.log(Object.isSealed(test));
+</script>
+</body>
+</html>

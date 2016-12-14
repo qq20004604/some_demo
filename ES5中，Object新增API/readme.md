@@ -153,13 +153,15 @@
     1. 效果是，让一个对象被冻结。禁止新增、删除、修改属性（包括例如enumerable等数据描述符和存储描述符）；
     2. 返回值是被冻结的对象（返回值 === obj的结果是true）；
     3. 总而言之，如果想让一个对象不能做任何修改，用这个就可以了；
-    4. 被冻结后无法恢复；
+    4. 冻结后无法恢复；
     5. 对象不能被修改，但是可以修改指向的对象。例如var test = {a:1};
        然后test被冻结了，此时冻结的是对象（还记不记得对象是按引用传递）；
        然后此时你让test={b:2};那么虽然{a:1}这个对象依然不能被修改，但是此时test已经指向的是{b:2}了
        所以此时的test可以被修改。
     6. 可以冻结的是对象和数组（按引用传递）；
     7. 无法冻结的是string，number类型等（非按引用传递），准确的说，是冻结成功但依然可以被修改。
+    8. 当需要对被冻结的对象进行修改，又因为冻结无法修改的解决办法：
+       创建一个新对象，然后通过克隆一个具有相同属性的对象，并用这个新对象来替代已被冻结的对象。
 
 具体见DEMO
 
@@ -173,3 +175,63 @@
     4. 非空对象在删除所有属性后，使用Object.preventExtensions()设置，然后再用本方法检查，返回值是true，否则false
     5. 更多的参照：https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isFrozen
 
+###Object.seal(obj)
+
+说明：
+
+    1. 阻止属性的添加和删除；
+    2. 已有属性可以被修改；
+    3. 被锁定的对象可以被Object.isSealed检查并返回true;
+    4. 锁定后不可逆；
+    5. 想要修改的解决办法：克隆一个新的，然后用新的。
+    6. 可以锁定数组，数组被锁定后，无法添加新的、删除旧的，但是可以修改已有的；
+    7. 对锁定数组的push等操作，会抛出异常TypeError；
+    8. 会将属性的configurable属性（通过defineProperties设置的），设置为false（禁止修改属性）；
+
+
+###Object.isSealed(obj)
+
+说明：
+
+    1. 检查是否被锁定，是则返回true；
+    2. ES5下对非object对象操作会抛出异常，ES6下不会；
+    3. 被freeze冻结的对象，本方法也会返回true；
+    4. 被禁止新增扩展的对象，返回false；
+
+###Object.preventExtensions(obj)
+
+说明：
+
+    1. 阻止属性的添加；（这个，freeze和seal都会阻止属性的添加和删除）
+    2. 不会阻止属性的删除；（seal和freeze会阻止属性的删除）
+    2. 已有属性可以被修改；（这个和seal都可以做到）
+    4. 锁定后不可逆；
+    5. 想要修改的解决办法：克隆一个新的，然后用新的。
+    
+
+
+###Object.isExtensible(obj)
+
+说明：
+
+    1. 检查属性是否可扩展，可扩展则返回true；（注意！以上是被锁定/冻结返回true，这个是 没有 被禁止扩展返回true）
+    2. 被冻结、锁定、和禁止属性添加，都会返回false；
+    3. 用于检查是否可以给对象添加属性；
+    4. 通过Object.defineProperty设置属性，
+       假如属性原本是对象/数组，那么无论三个属性怎么设置，由于不影响该属性添加/删除/修改，因此返回值是true；
+       如果属性原本不是对象和数组，因此显然不能添加新属性，因此返回值为false；
+
+
+##**控制对象状态**
+
+转自http://huangtengfei.com/2015/03/the-standard-library-of-javascript/
+
+1. JavaScript提供了三种方法，精确控制一个对象的读写状态，防止对象被改变。最弱一层的保护是preventExtensions，其次是seal，最强的freeze。
+
+2. Object.preventExtensions方法可以使得一个对象无法再添加新的属性，但可以用delete命令删除它的现有属性。Object.isExtensible方法可以用来检查是否可以为一个对象添加属性。
+
+3. Object.seal方法使得一个对象既无法添加新属性，也无法删除旧属性。Object.seal还把现有属性的attributes对象的configurable属性设为false，使得attributes对象不再能改变。Object.isSealed方法用于检查一个对象是否使用了Object.seal方法。
+
+4. Object.freeze方法可以使得一个对象无法添加新属性、无法删除旧属性、也无法改变属性的值，使得这个对象实际上变成了常量。Object.isFrozen方法用于检查一个对象是否使用了Object.freeze()方法。
+
+5. 使用上面这些方法锁定对象的可写性，但是依然可以通过改变该对象的原型对象，来为它增加属性。

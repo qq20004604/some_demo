@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>preventExtensions</title>
+</head>
+<body>
+
+<div>
+    按下F12，查看console
+</div>
+<script>
+    var test = {
+        a: 1,
+        b: 2
+    };
+    var result = Object.preventExtensions(test);
+
+    //查看被禁止新增属性的对象和返回值是否是同一个
+    console.log("");
+    console.log("查看被禁止新增属性的对象和返回值是否是同一个");
+    console.log(result === test);
+
+    //查看被禁止新增属性的对象能否修改
+    console.log("");
+    console.log("查看被禁止新增属性的对象能否新增、修改、移除");
+    test.c = 3;     //新增不可
+    test.a = 2;     //修改可
+    delete test.b;  //移除可
+    console.log(test);
+
+    //查看被禁止新增属性的对象被isExtensible检测后的返回值
+    console.log("");
+    console.log("查看被禁止新增属性的对象被isExtensible检测后的返回值");
+    console.log(Object.isExtensible(test));
+
+    //检查普通对象被检测的返回值
+    console.log("");
+    console.log("检查普通对象被检测的返回值");
+    console.log(Object.isExtensible({}));
+</script>
+</body>
+</html>
