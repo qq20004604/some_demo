@@ -11,11 +11,8 @@
         }
     </style>
 </head>
-<script src="./jquery.js"></script>
 <body>
-<div id="test">
-
-</div>
+<div id="test"></div>
 <script>
     var dom = document.getElementById("test");    //数据源，这里是模拟生成的
     //数据生成函数
@@ -341,9 +338,11 @@
         //启动本实例时绘图一次
         this.toDraw();
         var self = this;
-        $(window).resize(function () {
+        //浏览器窗口大小变化时，绘图一次
+        //潜在缺点：会覆盖其他的这个方法，建议用jquery的$(window).resize来替代
+        window.onresize = function () {
             self.toDraw();
-        })
+        };
     }
 
 </script>
