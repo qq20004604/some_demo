@@ -1,22 +1,31 @@
 ﻿<html>
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>用Canvas绘制折线图</title>
     <style>
         #test {
             border: 1px solid black;
-            height: 100%;
-            width: 100%;
+            height: 50%;
+            width: 50%;
             box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 <div id="test"></div>
+<button id="random">随机生成数据，并更新表格</button>
+<br/>
+<br/>
+<div>关于保存和恢复的功能：</div>
+<div>注意：潜在缺陷：当canvas的大小变化时，无法完美恢复到保存时的情况</div>
+<div>保存状态：<span id="saveStatus" style="color:red">无</span></div>
+<button id="save">点击保存当前折线图（本方法不是通过保存数据，而是通过保存画面来保存的）</button>
+<br/>
+<button id="load">点击恢复保存时的状态</button>
 <script>
     var dom = document.getElementById("test");    //数据源，这里是模拟生成的
     //数据生成函数
-    var caseInfo = (function () {
+    var randomCaseInfo = function () {
         var caseInfo = [];
         //最大值，实际使用中不要用这一条，这个只是用来生成数据的
         var max = Math.pow(10, parseInt(Math.random() * 5));
@@ -26,12 +35,13 @@
         }
         console.log(caseInfo);
         return caseInfo;
-    })();
-    //    caseInfo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    };
+    var caseInfo = randomCaseInfo();
+    //    var caseInfo = [0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0];
 
     var dateText = ["2014/2", "2014/3", "2014/4", "2014/5", "2014/6", "2014/7", "2014/8", "2014/9", "2014/10", "2014/11", "2014/12", "2015/1"];
 
-    drawCanvas(dom, caseInfo, dateText);
+    var draw = new drawCanvas(dom, caseInfo, dateText);
 
     //  绘图函数的类，传入的参数依次为，canvas标签应该被放置的父Dom，数据，时间
     //  1、父dom：支持自适应，最小宽高（此时会设置父dom的overflow为auto）
@@ -50,8 +60,8 @@
             errorMessage: "#000"    //错误提示的颜色
         };
         var font = {
-            yScale: "Bold 10px Arial",  //y轴刻度文字
-            xScale: "Bold 8px Arial"    //x轴刻度文字
+            yScale: "Microsoft YaHei 12px",  //y轴刻度文字
+            xScale: "Microsoft YaHei 12px"    //x轴刻度文字
         };
         var dataLineWidth = 3;   //数据线条的宽度
         var error = {
@@ -96,6 +106,37 @@
             };
         }
 
+        //  绘制x、y坐标轴（不包含刻度）
+        var drawAxis = function (ctx, axis) {
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color.xyAxisLine;
+            ctx.moveTo(axis.x, axis.maxY);
+            ctx.lineTo(axis.x, axis.y);
+            ctx.lineTo(axis.x - 5, axis.y + 5);
+            ctx.moveTo(axis.x, axis.y);
+            ctx.lineTo(axis.x + 5, axis.y + 5);
+            ctx.stroke();
+
+            //  再画X轴
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color.xyAxisLine;
+            ctx.moveTo(axis.x, axis.maxY);
+            ctx.lineTo(axis.maxX, axis.maxY);
+            ctx.lineTo(axis.maxX - 5, axis.maxY + 5);
+            ctx.moveTo(axis.maxX, axis.maxY);
+            ctx.lineTo(axis.maxX - 5, axis.maxY - 5);
+            ctx.stroke();
+
+            // 写y轴原点的数字（注意，虽然是坐标原点，但这个是y轴的）
+            ctx.font = font.yScale;
+            ctx.textAlign = "right";
+            ctx.fillStyle = color.referenceLine;
+            // 设置字体内容，以及在画布上的位置
+            ctx.fillText("0", axis.x - 5, axis.maxY);
+        }
+
         // 获得Y轴的最大尺度
         var getMAXrectY = function (caseInfo) {
             var theMaxCaseInfo = 0;
@@ -131,37 +172,6 @@
                 }
                 return number;
             })(String(theMaxCaseInfo));
-        }
-
-        //  绘制x、y坐标轴（不包含刻度）
-        var drawAxis = function (ctx, axis) {
-            ctx.beginPath();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = color.xyAxisLine;
-            ctx.moveTo(axis.x, axis.maxY);
-            ctx.lineTo(axis.x, axis.y);
-            ctx.lineTo(axis.x - 5, axis.y + 5);
-            ctx.moveTo(axis.x, axis.y);
-            ctx.lineTo(axis.x + 5, axis.y + 5);
-            ctx.stroke();
-
-            //  再画X轴
-            ctx.beginPath();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = color.xyAxisLine;
-            ctx.moveTo(axis.x, axis.maxY);
-            ctx.lineTo(axis.maxX, axis.maxY);
-            ctx.lineTo(axis.maxX - 5, axis.maxY + 5);
-            ctx.moveTo(axis.maxX, axis.maxY);
-            ctx.lineTo(axis.maxX - 5, axis.maxY - 5);
-            ctx.stroke();
-
-            // 写y轴原点的数字（注意，虽然是坐标原点，但这个是y轴的）
-            ctx.font = font.yScale;
-            ctx.textAlign = "right";
-            ctx.fillStyle = color.referenceLine;
-            // 设置字体内容，以及在画布上的位置
-            ctx.fillText("0", axis.x - 5, axis.maxY);
         }
 
         //划线和确定单元格的逻辑在这里，逻辑确定好后是将单元格放在rectYArray这个数组中
@@ -308,7 +318,7 @@
             return false;
         }
 
-        //绘图函数
+        //绘图函数，绘制时调用本函数
         this.toDraw = function () {
             //  设置canvas的Dom的宽高
             var axis = setWidthWithHeight(Dom, canvas);
@@ -335,6 +345,21 @@
             DrawData(ctx, axis, caseInfo, YLineLaw[YLineLaw.length - 1], dateText);
         };
 
+        //开放接口，用于更新数据
+        this.setCaseInfo = function (newValue) {
+            caseInfo = newValue;
+        }
+
+        //读取当前画布信息（返回值是一个数组）
+        this.getImageData = function () {
+            return ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        //将保存的画布信息重新恢复到canvas中
+        this.putImageData = function (data) {
+            ctx.putImageData(data, 0, 0);
+        }
+
         //启动本实例时绘图一次
         this.toDraw();
         var self = this;
@@ -344,6 +369,33 @@
             self.toDraw();
         };
     }
+
+    //随机按钮更新数据
+    var random = document.getElementById("random");
+    random.addEventListener('click', function () {
+        var newValue = randomCaseInfo();
+        console.log(newValue);
+        draw.setCaseInfo(newValue);
+        draw.toDraw();
+    })
+
+    //保存和恢复
+    var save = document.getElementById("save");
+    var load = document.getElementById("load");
+    var statusText = document.getElementById("saveStatus");
+    var saveValue = null;
+    save.addEventListener("click", function () {
+        saveValue = draw.getImageData();
+        console.log(saveValue);
+        statusText.innerText = "已保存";
+    });
+    load.addEventListener("click", function () {
+        if (saveValue) {
+            draw.putImageData(saveValue);
+            saveValue = null;
+            statusText.innerText = "无";
+        }
+    })
 
 </script>
 </body>
