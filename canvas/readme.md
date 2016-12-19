@@ -364,8 +364,8 @@ API：
 
 解释：
 
-    1. 简单来说，就是通过一个API保存当前画布的图案；
-    2. 然后可以通过另外一个API来恢复保存时的图案；
+    1. 简单来说，就是通过一个API保存当前画布某部分区域的图案；
+    2. 然后可以通过另外一个API来恢复保存时的图案，可以恢复到某个指定位置；
     3. 保存时，返回一个变量，这个变量是一个对象：
        他有width和height属性表示画布宽高；
        还有data属性，用于保存画布各个像素的状态；
@@ -401,3 +401,26 @@ API：
     3. 同样，对图像绘制时，不会进行缩放；
 
 DEMO见链接：[DEMO](url:http://htmlpreview.github.io/?https://github.com/qq20004604/some_demo/blob/master/canvas/Canvas%E7%BB%98%E5%88%B6%E4%B8%80%E5%BC%A0%E6%8A%98%E7%BA%BF%E5%9B%BE.html)
+
+###**8. 将canvas转为图片可用的base64字符串**
+
+解释：
+
+    1. 简单来说，就是将canvas标签的画布内容，转为base64字符串；
+    2. base64字符串作为img标签的src，是可以直接显示为图片的；
+
+**canvas.toDataURL(type, encoderOptions)**
+
+    1. 返回一个base64字符串；
+    2. type可选，表示图片的转换目标类型，类型是字符串，默认是"image/png"，如果传的类型不支持/错误，也会自动转为默认的png格式的base64字符串； 
+    3. encoderOptions可选，表示图片质量，范围0-1，1质量最好，如果超出取值范围，将会使用默认值0.92；
+    4. 该字符串可以作为img标签的src的值，可以正常显示为图片。
+
+注：
+
+    1. 不知为何，在未设置strokeStyle时，我画一个矩形，我转为“image/jpeg”类型图片，输出的图片是纯黑色（见DEMO）：
+    2. 不知为何，图片质量我设置后并没有生效（值为1和值为0.1转换出来的字符串，其值是相同的，见DEMO）；
+
+DEMO见链接：[DEMO](url:http://htmlpreview.github.io/?https://github.com/qq20004604/some_demo/blob/master/canvas/%E5%B0%86Canvas%E8%BD%AC%E4%B8%BA%E5%9B%BE%E7%89%87.html)
+
+
