@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>save和restore方法</title>
+</head>
+<body>
+<style>
+    #canvas {
+        border: 1px solid #555;
+    }
+</style>
+<canvas id="canvas" width="500" height="500"></canvas>
+<script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 10;
+    //top和left之所以比较窄，是因为这个线是绘制的线的中心线，因此只显示了一半，另外一半在画布显示区域之外
+    ctx.strokeRect(0, 0, 100, 100);
+
+    //保存功能是没有返回值的
+    console.log(ctx.save());
+
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(150, 0, 100, 100);
+
+    //恢复保存状态
+    ctx.restore();
+    //再绘制一个矩形，此时ctx的状态跟之前save时的状态一样
+    ctx.strokeRect(150, 150, 100, 100);
+
+    //只能恢复一次
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 1;
+    //这次restore没有生效
+    ctx.restore();
+    //再绘制一个矩形，此时ctx的状态跟之前save时的状态一样
+    ctx.strokeRect(300, 150, 100, 100);
+</script>
+</body>
+</html>
