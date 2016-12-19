@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>将Canvas转为图片</title>
+</head>
+<body>
+<canvas id="canvas1" height="200" width="200"></canvas>
+<div id="test1">
+    <button onclick="toAppendImage1()">点击将上方canvas标签生成图片</button>
+</div>
+<canvas id="canvas2" height="200" width="200"></canvas>
+<div id="test2">
+    <button onclick="toAppendImage2()">点击将上方canvas标签生成图片</button>
+</div>
+<script>
+    //画个空心矩形
+    var canvas1 = document.getElementById("canvas1");
+    var ctx1 = canvas1.getContext("2d");
+    ctx1.strokeRect(0, 0, canvas1.width, canvas1.height);
+
+    function toAppendImage1() {
+        var test = document.getElementById("test1");
+        test.removeChild(test.children[0]);
+        //创建一个image类型HTML元素
+        var img1 = new Image();
+        //将canvas1转为base64字符串
+        img1.src = canvas1.toDataURL("image/jpeg");
+        var a = img1.src;
+        console.log(img1.src);
+        //将图片添加到div里
+        test.appendChild(img1);
+        //创建一个image类型HTML元素
+        var img2 = new Image();
+        //将canvas1转为base64字符串
+        img2.src = canvas1.toDataURL("image/png", 0);
+        var b = img2.src;
+        console.log(a === b);
+        //将图片添加到div里
+        test.appendChild(img2);
+    }
+
+
+    //画个图片
+    var canvas2 = document.getElementById("canvas2");
+    var ctx2 = canvas2.getContext("2d");
+    var girl = new Image();
+    girl.src = './02.png';
+    girl.onload = function () {
+        ctx2.drawImage(girl, 0, 0);
+    }
+
+    function toAppendImage2() {
+        var test = document.getElementById("test2");
+        test.removeChild(test.children[0]);
+        //创建一个image类型HTML元素
+        var img1 = new Image();
+        //将canvas2转为base64字符串
+        img1.src = canvas2.toDataURL("image/jpeg", 1);
+        var a = img1.src;
+        console.log(img1.src);
+        //将图片添加到div里
+        test.appendChild(img1);
+        //创建一个image类型HTML元素
+        var img2 = new Image();
+        //将canvas2转为base64字符串
+        img2.src = canvas2.toDataURL("image/jpeg", 0);
+        var b = img2.src;
+        console.log(a === b);
+        //将图片添加到div里
+        test.appendChild(img2);
+    }
+
+</script>
+</body>
+</html>
