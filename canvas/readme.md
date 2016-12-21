@@ -424,3 +424,247 @@ DEMO见链接：[DEMO](url:http://htmlpreview.github.io/?https://github.com/qq20
 DEMO见链接：[DEMO](url:http://htmlpreview.github.io/?https://github.com/qq20004604/some_demo/blob/master/canvas/%E5%B0%86Canvas%E8%BD%AC%E4%B8%BA%E5%9B%BE%E7%89%87.html)
 
 
+###**9. 保存画笔状态和恢复画笔状态**
+
+解释：
+
+    1. 简单来说，就是保存当前ctx设置的各种属性，在需要时，可以恢复到保存时的属性；
+    2. 保存api是无返回值的，这说明不能保存多种不同的状态；
+    3. 只能恢复一次，如果恢复后还需要保存，则需要再次调用保存的api；
+
+**ctx.save()**
+
+    1. 保存的api，无返回值；
+    2. 保存状态只能恢复一次；
+    3. 也可以说是保存ctx的上下文环境；
+    4. 根据MDN的说明，保存的状态有以下：
+ 
+```
+    当前的变换矩阵。
+    当前的剪切区域。
+    当前的虚线列表.
+    以下属性当前的值： strokeStyle, fillStyle, globalAlpha, lineWidth, lineCap, lineJoin, miterLimit, lineDashOffset, shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor, globalCompositeOperation, font, textAlign, textBaseline, direction, imageSmoothingEnabled.
+```
+
+**ctx.restore()**
+
+    1. 恢复保存时的状态，无返回值；
+    2. 恢复只能恢复一次，第二次恢复无效；
+    3. 恢复的内容显然是保存时的内容（见上面）；
+
+[DEMO](url:http://htmlpreview.github.io/?https://github.com/qq20004604/some_demo/blob/master/canvas/sava%E5%92%8Crestore.html)
+
+###**10. API简单说明**
+
+解释：
+
+    1. 写这个的目的只是熟悉API的功能，因此不会去像上面那样写DEMO和一一验证；
+    2. 只写API和API的功能，具体请参照MDN；
+    3. 或许存在兼容性问题，用的时候请注意；
+    4. 不保证完全正确，有些只是根据经验推测；
+
+[MDN关于canvas的API](url:https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D)
+
+**ctx.canvas**
+
+    1. 通过ctx来获取canvas的html元素；
+    2. 如果不存在则返回null；
+    3. 是变量而不是函数
+
+**ctx.direction = "ltr" || "rtl" || "inherit";**
+
+    1. 兼容性极差；
+    2. ltr文本从左往右；
+    3. trl文本从右往左；
+    4. 默认无效，需通过某个方法来开启；
+
+
+**ctx.filter = "<filter-function1> [<filter-function2] [<filter-functionN]";**
+
+    1. 兼容性极差；
+    2. 提供类似css3的filter功能；
+    3. 类似模糊、灰度等。
+
+**ctx.globalAlpha**
+
+    1. 绘制图形／图片的透明度；
+    2. 对图形有用（比如fillRect绘制的），对图片应该也有用；
+    3. 兼容性很好
+
+**ctx.globalCompositeOperation = type**
+
+    1. 设置图像重叠后的效果；
+    2. type是字符串，值有很多种；
+    3. ‘source-over’：默认值，旧的覆盖新的；
+    4. ‘source-in’：只有新的和旧的重叠时才绘制，并且都是透明的（旧的图透明的部分且新的图不存在，可能会被移除）；
+    5. ‘source-out’：新的只绘制在旧的不存在的地方，旧图形将被相对移除（注意，旧的透明的地方会对应让新的也透明，透明度的总和是不透明）；
+    6. ‘source-atop’：新图形只在和旧图形重合的地方绘制（旧的图形会被保留，透明度应该是采用旧的图形的透明度）；
+    7. ‘destination-over’：将新图形绘制在旧图形之下（默认是之上）；
+    8. ’destination-in‘：现有画布内容保持在新形状和现有画布内容重叠的位置。 一切都是透明的。
+    9. ’destination-out‘：相当于从画布中扣出新的图形所占的区域的旧图形；
+    10. 其他略，查看MDN吧
+
+type说明更多请参照：https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
+
+**ctx.imageSmoothingEnabled**
+
+    1. 设置图片是否平滑；
+    2. 默认为true（平滑）；
+    3. 根据说明，对像素游戏缩放画布时有用，在缩放时需要改为false避免模糊；
+    4. 兼容性一般；
+
+**ctx.lineCap**
+
+    1. 线条末端以什么形状结束；
+    2. ’butt‘：方形；
+    3. ’round‘：圆形（半圆）；
+    4. ’square‘：方形，但是增加了一个宽度和线段相同，高度是线段厚度一半的矩形区域（相当于多了一截）；
+
+**ctx.setLineDash(segments)**
+
+    1. 绘制虚线；
+    2. 参数是一个数组，数组元素的类型是number类型；
+    3. 如果是偶数，则依次表示实线、虚线的长度；
+    4. 如果是奇数，则将数组元素复制一份放在原数组后面，然后依次表示实线，虚线的长度；
+
+**ctx.lineDashOffset**
+
+    1. 和上面搭配使用，用于设置虚线和初始位置的偏移量；
+    2. 值为number类型，正值则原线条往左移动（往后退，逆时针），负值则往右移动（往前进，顺时针）；
+
+**ctx.lineJoin**
+
+    1. 两条线如何相连，类型是字符串；
+    2. ’round‘：圆角；
+    3. ’bevel‘：矩形拐角，不是直接的折线，而是类似六边形那样的角；
+    4. ’miter‘：直角；
+
+**ctx.shadowColor**
+
+    1. 阴影颜色；
+    2. 不设置则默认为透明（无阴影）；
+
+**ctx.shadowBlur**
+
+    1. 描述模糊度；
+    2. 推测是模糊的左右偏移的总宽度；
+    3. 值的类型是number，默认是1（几乎无模糊，但似乎还是有）；
+    4. 值为0时则会导致线条不存在；
+
+**ctx.shadowOffsetX**  
+**ctx.shadowOffsetY**
+
+    1. 阴影在x, y轴的偏移距离；
+    2. 值类型是number
+
+**ctx.textBaseline = "top" || "hanging" || "middle" || "alphabetic" || "ideographic" || "bottom";**
+
+    1. 文字垂直方向的对齐方式；
+    2. 这个描述的是字相对基线的位置；
+    3. top：文本基线在文本块的顶部。
+    4. hanging：文本基线是悬挂基线。
+    5. middle：文本基线在文本块的中间。
+    6. alphabetic：文本基线是标准的字母基线。
+    7. ideographic：文字基线是表意字基线；如果字符本身超出了alphabetic 基线，那么ideograhpic基线位置在字符本身的底部。
+    8. bottom：文本基线在文本块的底部。 与 ideographic 基线的区别在于 ideographic 基线不需要考虑下行字母。
+    9. 默认值是 alphabetic。
+
+**ctx.addHitRegion(options);**
+
+    1. 兼容性差，需要额外设置浏览器偏好；
+    2. 用于设置画布点击的情况。
+
+**ctx.quadraticCurveTo(cpx, cpy, x, y)**
+
+    1. 绘制二次贝塞尔曲线的方法；
+    2. 起始点是当前路径最后一个点，(cpx, cpy)是控制点，(x, y)是终点；
+
+**ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)**
+
+    1. 绘制三次贝赛尔曲线路径的方法；
+    2. 第一（cp1）、第二（cp2）个点是控制点，第三个点（x，y）是结束点。起始点是当前路径的最后一个点；
+
+**ctx.clearHitRegions()**
+
+    1. 兼容性差；
+    2. 在画布中删除所有点击区域的方法；
+
+**ctx.clip()**  
+**ctx.clip(fillRule)**  
+**ctx.clip(path, fillRule)**
+
+    1. 简单来说，这个是用于画出一个区域（规则或不规则），然后后面新画的所有东西都只能在这个区域内生效；
+    2. 可以理解为新建一个图层，这个图层是之前画的路径所创建的，然后新画的东西就被画在这个图层上生效，然后这个新图层和原有图层合并。
+    3. 有了这个之后，就可以从原图里画图而不必担心新画的图超出预期范围了。
+    4. 更多请参照链接：http://jo2.org/html5-canvas-clip/
+
+**ctx.createImageData(width, height)**  
+**ctx.createImageData(imagedata)**
+
+    1. 创建一个新的、空白的、指定大小的ImageData对象；
+    2. 带宽高的是指定宽高；
+    3. 不带宽高的，是和指定imagedata对象宽高相同（但是不会复制图像，纯宽高）；
+    4. 上面还有putImageData()方法和getImageData()方法；
+    5. 不过
+
+**ctx.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise)**
+
+    1. 兼容性差
+    2. 绘制椭圆路径
+
+**ctx.getLineDash()**
+
+    1. 获取ctx.setLineDash(segments)设置的参数；
+    2. 如果没设置过，则是空数组；
+    3. 如果设置的是数组元素是奇数个，返回的是补全后的偶数个元素的数组。
+
+**ctx.isPointInPath(x, y)**  
+**ctx.isPointInPath(x, y, fillRule)**  
+**ctx.isPointInPath(path, x, y)**  
+**ctx.isPointInPath(path, x, y, fillRule)**
+
+    1. 按照说明，是检测一个点是否在路径之内；
+    2. 但是如何描述这个路径我表示不太明白；
+
+**ctx.rect(x, y, width, height)**
+
+    1. 绘制路径；
+    2. 然后可以通过fill()来填充或者stroke()来描边；
+    3. fillRect()和strokeRect()是一步完成的，而这个需要两步（路径->填充）；
+
+**ctx.rotate(angle)**
+
+    1. 让画图时的参考坐标系旋转；
+    2. 也就是说，原来画个矩形，是正常x、y轴；通过这个方法旋转后，那么矩形就变倾斜了（因为参考系xy轴被旋转了）；
+    3. 旋转的原点是坐标轴的原点（x:0, y:0)；
+    4. 参数是弧度，正数是顺时针旋转，负数是逆时针旋转；
+    
+**ctx.scale(x, y)**
+
+    1. 缩放功能，也可以达到上下/左右反转；
+    2. (1, 1)是默认情况；
+    2. x指水平方向（以x=0的y轴为参考对象）缩放，如果(-1,1)则表示水平反转（以y轴为镜像的对称轴）
+    3. y指垂直方向的缩放比例，如果(1,-1)那么将垂直反转（以x轴为镜像的对称轴）
+
+**ctx.setTransform(a, b, c, d, e, f)**
+
+    1. 个人理解就是对坐标轴的变化操作；
+    2. a：水平缩放，x轴，默认1（参照之前的缩放）；
+    3. b：水平倾斜，x轴，默认0（有点类似rotate，但那个影响的是全部，这个只影响一个轴，下同），1的话，相当于坐标的y的值*2（往下偏移原坐标100%的距离）；
+    4. c：垂直倾斜，y轴，默认0（注意，不是缩放），1的话，相当于x值*2（往右偏移100%）；
+    5. d：垂直倾斜，y轴，默认1；
+    6. e：水平偏移（不是百分比移动，是和canvas的width，height一样，移动一个单位）；
+    7. f：垂直移动（同上）；
+    8. 参数都是数字；
+    9. 这个方法【会覆盖】当前的变换矩阵，多次调用只引用最新的那个；
+
+**ctx.transform(a, b, c, d, e, f)**
+
+    1. 类似上面那个方法；
+    2. 但这个区别是，这个方法【不会覆盖】当前的变换矩阵，都调用则会覆盖；
+    3. 叠加的计算方式，是对应参数相加（而非相乘）；
+
+**ctx.translate(x, y)**
+
+    1. 移动坐标轴；
+    2. 相当于setTransform第5，6个参数的操作；
