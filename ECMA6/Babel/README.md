@@ -1,6 +1,6 @@
 ﻿##Babel
 
-参考[阮一峰的文章](url:http://es6.ruanyifeng.com/#docs/intro)所写
+参考[阮一峰的文章](http://es6.ruanyifeng.com/#docs/intro)所写
 
 ####解释：
 
@@ -32,7 +32,7 @@
 
     1. 首先应该安装对应的转码规则集（他的规则像安装npm插件一样安装）；
     2. 然后在"presets"这个数组中填写对应的值；
-    3. 官方提供的规则集如下（转自[阮一峰的博客](url:http://es6.ruanyifeng.com/#docs/intro)）：
+    3. 官方提供的规则集如下（转自[阮一峰的博客](http://es6.ruanyifeng.com/#docs/intro)）：
     
             注：
             $表示命令行，实际输入的时候从npm开始输入（应该不会有人不知道吧）；
@@ -156,11 +156,11 @@
 
 如：
 
-1. 提供一个可以直接运行ES6的REPL环境，无需转码直接运行ES6脚本，[点击直达](url:http://es6.ruanyifeng.com/#docs/intro#babel-node)
-2. 加钩子，每当使用require加载.js、.jsx、.es和.es6后缀名的文件，自动转码[点击直达](url:http://es6.ruanyifeng.com/#docs/intro#babel-register)
-3. 对某些代码进行转码（按需转码）[点击直达](url:http://es6.ruanyifeng.com/#docs/intro#babel-core)
-4. 对API进行转码 [点击直达](url:http://es6.ruanyifeng.com/#docs/intro#babel-polyfill)
-5. 在浏览器环境中实时转码（会影响性能，而以上是直接转完后发给浏览器） [点击直达](url:http://es6.ruanyifeng.com/#docs/intro#http://es6.ruanyifeng.com/#docs/intro#浏览器环境)
-6. 还有在线转换（输入ES6代码，输出ES5代码，然后复制拿走使用） [点击直达](url:https://babeljs.io/repl/#?babili=false&evaluate=true&lineWrap=false&presets=es2015%2Creact%2Cstage-2&code=let%20input%20%3D%20%5B%5D%3B%0D%0Ainput.map(item%20%3D%3E%20item%20%2B%201)%3B)
-7. 还有关于Google公司的Traceur转码器，或者是babel和其他框架的配合等，请点击右方链接直达[阮一峰的博客](url:http://es6.ruanyifeng.com/#docs/intro#与其他工具的配合)来查阅
+1. 提供一个可以直接运行ES6的REPL环境，无需转码直接运行ES6脚本，[点击直达](http://es6.ruanyifeng.com/#docs/intro#babel-node)
+2. 加钩子，每当使用require加载.js、.jsx、.es和.es6后缀名的文件，自动转码[点击直达](http://es6.ruanyifeng.com/#docs/intro#babel-register)
+3. 对某些代码进行转码（按需转码）[点击直达](http://es6.ruanyifeng.com/#docs/intro#babel-core)
+4. 对API进行转码 [点击直达](http://es6.ruanyifeng.com/#docs/intro#babel-polyfill)
+5. 在浏览器环境中实时转码（会影响性能，而以上是直接转完后发给浏览器） [点击直达](http://es6.ruanyifeng.com/#docs/intro#http://es6.ruanyifeng.com/#docs/intro#浏览器环境)
+6. 还有在线转换（输入ES6代码，输出ES5代码，然后复制拿走使用） [点击直达](https://babeljs.io/repl/#?babili=false&evaluate=true&lineWrap=false&presets=es2015%2Creact%2Cstage-2&code=let%20input%20%3D%20%5B%5D%3B%0D%0Ainput.map(item%20%3D%3E%20item%20%2B%201)%3B)
+7. 还有关于Google公司的Traceur转码器，或者是babel和其他框架的配合等，请点击右方链接直达[阮一峰的博客](http://es6.ruanyifeng.com/#docs/intro#与其他工具的配合)来查阅
 
