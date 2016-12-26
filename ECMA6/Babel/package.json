@@ -1,0 +1,8 @@
+﻿{
+  "devDependencies": {
+    "babel-cli": "^6.0.0"
+  },
+  "scripts": {
+    "test": "babel input -d output"
+  }
+}
