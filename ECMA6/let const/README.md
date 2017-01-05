@@ -143,3 +143,177 @@ let x = do {    //Uncaught SyntaxError: Unexpected token do
 
 我实测无效（chrome版本 55.0.2883.87），会报错，报错信息见注释，不知为何。也许是该提案未实现？
 
+#const
+
+解释：
+
+    1. 简单来说，学过c++的可以理解为c++的const，没学过可以继续往下看；
+    2. 如果指向非按引用传递类型（比如字符串，布尔值等），那么该值声明后无法被修改；
+    3. 如果指向按引用传递，则无法更改其指向的对象，但该对象的值可以被修改；
+    4. 准确的说，是让按引用传递时，保证该const变量指向的地址不变（而非该地址里的数据不变）（理解本条需要有指针相关概念）；
+
+**1、指向非按引用传递类型的变量，其变量值不可以被修改**
+
+即声明后不能被修改，修改会报错；
+
+```javascript
+const a = 1;
+a = 2;    //Uncaught TypeError: Assignment to constant variable.
+```
+
+**2、指向引用类型的变量，其值可以被修改，但是不能让其指向另外一个对象**
+
+对象的值可以被修改：
+```javascript
+const a = {test: 1};
+a.test = 2;
+console.log(a.test);    //2
+```
+
+不能修改指向的对象：（报错这步是因为更改了指向的对象）
+```javascript
+var a = {test: 1};
+var b = {another: 2};
+const c = a;
+console.log(c);    //{test:1}
+c = b;    //Uncaught TypeError: Assignment to constant variable.
+```
+
+**3、不能声明const变量时不赋值**
+
+会报错
+```javascript
+const a;    //Uncaught SyntaxError: Missing initializer in const declaration
+```
+
+**4、块级作用域，相关特性类似let**
+
+显然是块级的
+```javascript
+var a = 1;
+{
+    const a = 2;
+    console.log(a);    //2
+}
+console.log(a);    //1
+```
+不存在变量提升，出现暂时性死区，不能先使用后声明
+```javascript
+{
+    console.log(a);    //Uncaught ReferenceError: a is not defined
+    const a = 1;
+}
+```
+也不可重复声明（在同一个块级作用域内）(使用let和var同样不可）
+```javascript
+{
+    const a = 1;
+    const a = 2;    //Uncaught SyntaxError: Identifier 'a' has already been declared
+}
+```
+**5、指向一个被冻结的对象**
+
+const和Object.freeze不同，后者是冻结对象，而前者只涉及地址。
+
+所以可以二者结合起来，让const变量指向一个被冻结的对象。那么该变量则不可更改指向的目标（因为const）也不可更改其值（因为冻结）。
+
+先从阮一峰的博客拿来一个深度冻结函数（递归冻结该对象所有属性）：
+
+```javascript
+var constantize = (obj) => {
+    Object.freeze(obj);
+    Object.keys(obj).forEach((key, value) => {
+        if (typeof obj[key] === 'object') {
+            constantize(obj[key]);
+        }
+    });
+};
+```
+然后略微修改，让const变量指向一个被冻结的对象，  
+会发现既无法更改变量里对象的值，也无法让变量指向另外一个对象。  
+有点像让const变量成为一个常量。  
+（下面代码没有体现深度冻结的效果）
+```javascript
+var constantize = (obj) => {
+    Object.freeze(obj);
+    Object.keys(obj).forEach((key, value) => {
+        if (typeof obj[key] === 'object') {
+            constantize(obj[key]);
+        }
+    });
+    return obj;     //I add this code
+};
+const a = constantize({a: 1});
+console.log(a);    //{a:1}
+a.a = 2;
+console.log(a.a);    //1
+a = 10;    //Uncaught TypeError: Assignment to constant variable.
+```
+
+#顶层对象的属性
+
+1. 所谓顶层对象，在js里面指window
+2. 当一个变量在顶层作用域里（比如说打开浏览器通过F12的console来直接输入命令），那么该变量在之前情况下，是属于window这个顶层对象的属性的；
+3. 我们之前一般称之为全局变量，全局变量在以前会被认为就是window的属性的值；
+4. 而ES6中则不是，全局变量和顶层对象的属性的值将脱钩；
+
+
+###具体来说：
+
+1、通过var或者function甚至直接写变量名然后进行赋值创建的对象，其变量名作为key添加到window对象中，而window里该key的值为被赋值的值。
+
+如代码：
+
+```javascript
+console.log(window.a);  //undefined
+console.log(window.b);  //undefined
+console.log(window.c);  //undefined
+var a = 1;
+console.log(window.a);  //1
+b = 2;
+console.log(window.b);  //2
+function c(){}
+console.log(window.c);  //function c(){}
+```
+
+2、而通过let、const，以及之后的class创建的对象，则不会被添加到window里面。
+
+如代码：
+```javascript
+console.log(window.a);  //undefined
+console.log(window.b);  //undefined
+let a = 1;
+console.log(window.a);  //undefined
+const b = 2;
+console.log(window.b);  //undefined
+```
+
+#顶层对象的获得
+
+1. 简单来说，顶层对象在浏览器里就是window；但是在Node.js里面没有window（Web Worker也没有，他是运行在后台的js脚本）；
+2. 浏览器和Web Worker里，self指向顶层对象，但是Node.js里没有self；
+3. Node里，顶层对象是global，但其他环境不支持（比如chrome里打global会告诉你未定义）；
+4. 有时候我们需要用同一套代码，但在各个环境拿到顶层对象（啥时候？），所以得找个通用的办法；
+5. 但是没有非常完美的。
+6. 阮一峰给了两个办法，我直接摘抄了，如下代码：
+
+```javascript
+// 方法一
+(typeof window !== 'undefined'
+    ? window
+    : (typeof process === 'object' &&
+typeof require === 'function' &&
+typeof global === 'object')
+    ? global
+    : this);
+
+// 方法二
+var getGlobal = function () {
+    if (typeof self !== 'undefined') { return self; }
+    if (typeof window !== 'undefined') { return window; }
+    if (typeof global !== 'undefined') { return global; }
+    throw new Error('unable to locate global object');
+};
+```
+
+想要了解更多的话，参考[阮一峰的博客相关内容](http://es6.ruanyifeng.com/#docs/let#global-对象)。
