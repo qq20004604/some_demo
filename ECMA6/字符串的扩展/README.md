@@ -1,5 +1,8 @@
 ﻿#字符串的扩展
 
+前注：不关心细节的人，可以看【一句话总结】部分；
+
+
 ###字符串的Unicode表示法
 
 首先，任意一个字符（比如数字、英文字符、汉字、符号等）都可以用Unicode的表示方法来表示。
@@ -40,8 +43,18 @@ if ("A" === "\A" && "A" === "\101" && "A" === "\x41" && "A" === "\u0041" && "A" 
 
 他们之间是全等（===）的。
 
+**一句话总结：**
+
+加上大括号，可以显示编码超过65535的字符；
+
+---
 
 ###codePointAt(pos)
+
+原型：
+```
+str.codePointAt(pos)
+```
 
 解释：
 
@@ -65,7 +78,7 @@ if ("A" === "\A" && "A" === "\101" && "A" === "\x41" && "A" === "\u0041" && "A" 
 [MDN的 ```charCodeAt()``` 的说明](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt)
 
 
-####字符串的长度
+####**字符串的长度**
 
 当字符的Unicode的编码大于65535时，该字符的长度会被认为是2。如代码：
 ```javascript
@@ -74,7 +87,7 @@ if ("A" === "\A" && "A" === "\101" && "A" === "\x41" && "A" === "\u0041" && "A" 
 
 另外，也可以通过这个方法检查某个字符的编码是否大于65535来判断这个字符是2个字节还是4个字节。
 
-####返回十六进制的编码
+####**返回十六进制的编码**
 
 使用toString(16)，数字将会被转为十六进制后并返回，返回值类型是string
 
@@ -85,7 +98,7 @@ if ("A" === "\A" && "A" === "\101" && "A" === "\x41" && "A" === "\u0041" && "A" 
 注意，这里是41是字符串，而且是十六进制的。
 
 
-####大于65535编码的字符的潜在问题
+####**大于65535编码的字符的潜在问题**
 
 这个方法可以正常显示大于65535编码的文字，但仍存在一个问题，具体来说，看以下代码：
 
@@ -104,9 +117,9 @@ if ("A" === "\A" && "A" === "\101" && "A" === "\x41" && "A" === "\u0041" && "A" 
 
 **解决办法：**
 
-使用for of方法，[点击查看MDN说明](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/for...of)
+使用ES6新增加的for...of方法，[点击查看MDN说明](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/for...of)，或者查阅我以后写的Iterator部分的内容。
 
-简单来说，这个会自动迭代目标，类似for in，但是for in对四个字街的字符是不支持的（他是2个字符2个字符的遍历）。
+简单来说，这个会自动迭代目标，类似for in，但是for in对四个字节的字符是不支持的（他是2个字节2个字节的遍历，对于4个字节的字符会遍历2次）。
 
 如代码：
 ```javascript
@@ -117,4 +130,145 @@ for (let i of str) {
 //134071
 //134071
 ```
+---
+
+###String.fromCodePoint()
+
+原型：
+
+```
+String.fromCodePoint(num1[, ...[, numN]])
+```
+
+解释：
+
+    1. 简单来说，这个拿到编码，返回字符，类型是string；
+    2. 这个和fromCharCode()方法相比，可以返回编码大于65535的字符；
+
+可看代码：
+```javascript
+String.fromCodePoint(134071);     //𠮷，参数可以是number  
+String.fromCodePoint("0x41");   //A，参数可以是字符串      
+String.fromCodePoint(65);       //A，作为十进制来识别     
+String.fromCodePoint(0x41);     //A，也可以直接是16进制的数字   
+String.fromCodePoint(0101);     //A，也可以是八进制的数字（0开头表示八进制），但注意八进制不能写为字符串       
+String.fromCodePoint(65, 65, 65); //AAA，多个参数直接被依次解释并放在同一个字符串里
+```
+
+总结：
+
+1. 参数可以是字符串或者是number；
+2. 如果是string，要能被隐式转化为number，然后转换后再处理；
+3. 如果是number类型，那么要是大于等于0的整数，不能是负数，也不能是浮点数（除非小数点后都是0），否则会抛出异常；
+4. 凡是不能被正常转化的，都会被抛出异常 ```Uncaught SyntaxError: Invalid or unexpected token```
+5. 如果该方法有多个参数，那么会依次解析每个参数，并且将其按参数的顺序放到字符串中并返回；
+
+<br>
+**一句话总结：**
+```
+str.codePointAt(pos)
+```
+拿到字符，返回编码；
+
+```
+String.fromCodePoint(num1[, ...[, numN]])
+```
+拿到编码，返回字符
+
+
+
+---
+
+###at(pos) ——注：尚未被支持
+
+解释：
+
+    1. 首先，明确在默认情况下，这个方法是不被支持的；
+    2. 其次，这个方法的作用是识别四个字节的字符，正确的返回字符串中的第(pos + 1)个字符。
+    3. 如果需要使用，则查看github上相关内容
+
+[at()的兼容处理](https://github.com/es-shims/String.prototype.at)
+
+**一句话总结：**
+
+默认不支持，用于返回字符串指定位置的字符；
+
+---
+
+###normalize()
+
+原型：
+```
+str.normalize([form])
+```
+
+解释：
+
+    1. 这个方法主要用于处理合成字符的；
+    2. 对中文无效，对超过2个字符的合成无效；
+
+合成字符：
+
+用阮一峰举得例子就是，```'\u004F\u030C'``` 和 ```'\u01D1'``` 都表示字符 ```Ǒ```；  
+但是他们的长度不同，也不相等（无论是三个等号还是两个等号），只有视觉和语音上的相同，但对js来说不同；
+
+```javascript
+'\u01D1' == '\u004F\u030C';  //false
+'\u01D1'.length;    //1
+'\u004F\u030C'.length;  //2
+```
+
+因此，通过这个方法，可以返回一个字符，你可以指定他返回的是哪一种形式；  
+如何指定，就是靠参数了。
+
+参数：（类型是字符串，要求大写）
+
+```
+同样以Ǒ为例
+'NFC';    返回合成后的字符（例如'\u01D1'这样的）;
+'NFD';    返回分解后的字符（例如'\u004F\u030C'）；
+'NFKC';    返回语义上等价的，合成后的字符；
+'NFKD';    返回语义上等价的，分解后的字符；
+
+合成或者分解的验证可以通过str.length来得知。
+```
+
+语义上的等价我谷歌了一个答案：  
+表格：
+<table>
+    <tr>
+        <td>Character</td>
+        <td>NFC</td>
+        <td>NFD</td>
+        <td>NFKC</td>
+        <td>NFKD</td>
+    </tr>
+    <tr>
+        <td>03D3(ϓ)GREEK UPSILON WITH ACUTE AND HOOK SYMBOL</td>
+        <td>03D3</td>
+        <td>03D2 0301</td>
+        <td>038E</td>
+        <td>03A5 0301</td>
+    </tr>
+    <tr>
+        <td>03D4 (ϔ) GREEK UPSILON WITH DIAERESIS AND HOOK SYMBOL</td>
+        <td>03D4</td>
+        <td>03D2 0308	</td>
+        <td>03AB</td>
+        <td>03A5 0308</td>
+    </tr>
+    <tr>
+        <td>1E9B (ẛ) LATIN SMALL LETTER LONG S WITH DOT ABOVE</td>
+        <td>1E9B</td>
+        <td>017F 0307</td>
+        <td>1E61</td>
+        <td>0073 0307</td>
+    </tr>
+<table>
+
+[链接](http://unicode.org/faq/normalization.html)
+
+
+更详细的解释看阮一峰关于这方面的解释，我就不重复阐述了（反正中文又不支持，偷个懒跳过）。[链接](http://es6.ruanyifeng.com/#docs/string#normalize)
+
 
