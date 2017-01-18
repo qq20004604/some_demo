@@ -5,27 +5,22 @@
 
 ###字符串的Unicode表示法
 
-首先，任意一个字符（比如数字、英文字符、汉字、符号等）都可以用Unicode的表示方法来表示。
- 
-关于Unicode的更多介绍可以自行百度或者谷歌，其大致可以理解，在js里为用“\u”加上四个十六进制字符来表示任意一个字符。
+解释：
 
-在之前版本的js里，若要用Unicode表示一个字符，可以像以下这么做：
+    1. 首先，任意一个字符（比如数字、英文字符、汉字、符号等）都可以用Unicode的表示方法来表示。
+    2. 关于Unicode的更多介绍可以自行百度或者谷歌，其大致可以理解，在js里为用“\u”加上四个十六进制字符来表示任意一个字符。
+    3. 在之前版本的js里，若要用Unicode表示一个字符，可以像以下这么做：
 
-```javascript
-console.log("\u0041");    //A
-```
+    console.log("\u0041");    //A
 
-注意，需要补足4位（前面补0）才能正常输出结果，否则会报错；
+    4. 注意，需要补足4位（前面补0）才能正常输出结果，否则会报错；
+    5. 如果有一个字符超出\u0000~\uFFFF所能表示的范围呢，那么旧版的写法是无法表示出这个字符的（原因是不能识别）。
+    6. 在ES6中，为了避免这个问题的出现，解决办法是用大括号{}将\u后的编码放在一起。
+    7. 这样如果不足4位则不用补零，超过4位也无须担心无法解析。如代码：
 
-如果有一个字符超出\u0000~\uFFFF所能表示的范围呢，那么旧版的写法是无法表示出这个字符的（原因是不能识别）。
+    "\u{41}";    //A
+    "\u{20BB7}";    //𠮷，如果看到的是乱码，则自行在浏览器的console里输入本行代码查看，下同
 
-在ES6中，为了避免这个问题的出现，解决办法是用大括号{}将\u后的编码放在一起。
-
-这样如果不足4位则不用补零，超过4位也无须担心无法解析。如代码：
-
-```javascript
-console.log("\u{41}");    //A
-```
 
 字符表示法汇总（指在字符串里会被自动转换，而不是网页里）
 
@@ -105,7 +100,7 @@ str.codePointAt(pos)
 ```javascript
 "𠮷𠮷".codePointAt(0);     //134071
 "𠮷𠮷".codePointAt(1);     //57271
- ```
+```
  
 理论上，由于字符串的第一个和第二个字符都是同一个字，那么我们期望当参数为1和参数为2时，返回的是同样的结果134071。
 
@@ -271,4 +266,100 @@ str.normalize([form])
 
 更详细的解释看阮一峰关于这方面的解释，我就不重复阐述了（反正中文又不支持，偷个懒跳过）。[链接](http://es6.ruanyifeng.com/#docs/string#normalize)
 
+
+···
+
+###includes(), startsWith(), endsWith()
+
+原型：
+
+    str.includes(searchString[, position])
+    str.startsWith(searchString[, position])
+    str.endsWith(searchString[, position])
+    
+解释：
+
+    1. 简单来说，在默认情况下（只有第一个参数）：
+        str.includes(searchString)    用于检测某个字符串（str）中是否包含参数字符串（searchString）；
+        str.startsWith(searchString)    用于检测某个字符串（str）是否以参数字符串（searchString）为开头；
+        str.endsWith(searchString)    用于检测某个字符串（str）是否以参数字符串（searchString）为结尾；
+        请参照【示例代码一】
+        
+    2. 关于第二个参数，用于限定寻找范围（只搜索字符串中一部分）
+        str.includes(searchString, pos)    表示寻找范围是(pos, str.length-1)，注意，str的第一个字符pos值为0
+        str.startsWith(searchString, pos)    表示寻找范围是(pos, str.length-1)，即编号为pos的字符视为开始字符
+        str.endsWith(searchString, pos)    表示寻找范围是前pos个字符，即编号为(pos - 1)的字符视为最后一个字符
+        请参照【示例代码二】
+
+【示例代码一】只有第一个参数
+```javascript
+"abc".includes("bc");   //true
+"abc".includes("cb");   //false
+"abc".startsWith("ab"); //true
+"abc".startsWith("bc"); //false
+"abc".endsWith("bc");   //true
+"abc".endsWith("cb");   //false
+```
+
+【示例代码二】包含位置参数
+```javascript
+"abc".includes("b", 1);   //true, bc中显然包含b
+"abc".includes("b", 2);   //false, c中不包含b
+"abc".startsWith("ab", 1); //false, bc不是以ab为开头的
+"abc".startsWith("bc", 1); //true, bc是以bc开头的
+"abc".endsWith("bc", 2);   //false, ab的结尾不是bc
+"abc".endsWith("ab", 2);   //true, ab的结尾是ab3
+```
+
+---
+
+###repeat()
+
+原型：
+
+    str.repeat(count)
+    
+解释：
+
+    1. 简单来说，就是将str这个字符串重复count次并返回；
+    2. 参数类型要求是number类型（或被隐式转换为number类型）；
+    3. 参数的值要求是非负整数次（包括0），浮点数会被取整（舍去小数部分）；
+    4. 非法参数会抛出异常；
+    5. 参数
+
+示例代码：
+
+```javascript
+var str = "abc";
+str.repeat(0);     //""
+str.repeat(1);     //"abc"
+str.repeat(2);     //"abcabc"
+str.repeat(1.9);     //"abc"
+str.repeat(-1);     //Uncaught RangeError: Invalid count value
+```
+
+一句话总结：
+
+    把字符串复制n份并返回
+
+---
+
+###padStart(), padEnd()——ES7特性，ES6不支持
+
+原型：
+
+    str.padStart(length [, padString])
+    str.padEnd(length [, padString])
+    
+解释：
+
+    1. 首先，你的浏览器很可能不支持这个方法，比如我的chrome的版本号为55.0.2883.87就不支持；
+    2. 另外，我不太确定是ES7的哪一个版本，但我尝试用Babel转换，即使安装了第四个阶段的ES7转换规则，依然是无法转换的；
+    3. 该API在MDN上有文档说明；
+    4. 其作用是，当str的长度小于length时，补全str这个字符串到length的长度；
+    5. 如何补全呢，内容来源于第二个参数（如果没有则为空白符——应该是一个空格）；
+
+更多内容参照阮一峰的吧，我的代码跑不出来结果就不写了。
+
+[链接](http://es6.ruanyifeng.com/#docs/string#padStart，padEnd)
 

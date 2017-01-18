@@ -2,16 +2,17 @@
 
 参考[阮一峰的文章](http://es6.ruanyifeng.com/#docs/intro)所写
 
-####解释：
+解释：
 
     1. 简单来说，就是可以把ES6的代码转换成ES5的代码，这样你就可以在ES5的环境中运行ES6而不必担心兼容性了；
     2. ES7的转换也可以靠这个来完成；
     3. 其是放置在node_modules文件夹下的插件，就像使用其他通过npm install安装的插件一样使用；
     4. 默认只转换语法，不转换API。比如Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise等全局对象，以及一些定义在全局对象上的方法（比如Object.assign）都不会转码。
 
-####使用方法：
+---
+####【使用方法】
 
-    1. 在项目的根目录下创建一个文件，文件名是.babelrc
+    1. 在项目的根目录下创建一个文件，文件名是.babelrc，记得放在项目根目录（一般是和package.json还有readme.md同一个目录下）；
     2. 注意1：上面那个文件，在windows下不能直接创建（会提示说必须输入文件名），  
        解决方法1：用linux、mac或者用IDE（比如webstorm）来创建；
        解决方法2：从我的github中直接下载文件
@@ -27,9 +28,10 @@
     6. presets是转码规则，值的数组里面，填写规则。
     7. plugins是插件，有需要就写，不需要的话这个可以省略。
     8. 按需安装转码规则（见下面）；
-    9. 运行转码命令/内嵌到package.json里在项目运行时转码；
-    
+    9. 将对应的字符串添加到.babelrc中（千万别忘了，我试了半天总转失败，结果发现我没加）
+    10. 运行转码命令/内嵌到package.json里在项目运行时转码；
 
+---
 ####转码规则和转码安装：
 
     1. 首先应该安装对应的转码规则集（他的规则像安装npm插件一样安装）；
@@ -57,19 +59,9 @@
             
     4. 安装完转码规则之后（根据实际需要安装，不用全部装），在.babelrc文件的"presets"的值中添加对应的字符串作为数组元素，参考上面；
 
+---
 
-####使用方法
-
-    1. 首先，创建.babelrc文件，记得放在项目根目录（一般是和package.json还有readme.md同一个目录下）；
-    2. 然后安装对应的转码规则，将对应的字符串添加到.babelrc中（千万别忘了，我试了半天总转失败，结果发现我没加）
-    3. 然后有多种转换方法，比如全局的，比如
-    4. 在转换前，先准备好被转换的js脚本：
-       创建input.js，内容为以下代码
-           let input = [];
-           input.map(item => item + 1);
-    5. 然后开始转换
-
-###全局使用babel-cli转码
+###方法一：全局使用babel-cli转码（命令行、单文件、所有文件夹输出结果）
 
 优点：
 
@@ -85,7 +77,7 @@
     2. 命令行输入以下代码，来全局安装babel-cli工具
            npm install --global babel-cli
            
-**转换方法：**
+**步骤：**
 
 1.控制台输出转换结果（控制台输出）：
 
@@ -116,7 +108,9 @@
     4. 输出：output目录被创建，里面有input文件夹下的同名input.js，但内容是转换后的
     5. input文件下所有文件都会被转换，转换过程是递归的（即子文件夹下的子文件，甚至更深层也会被转换）；
 
-###非全局使用babel-cli转码
+---
+
+###非全局使用babel-cli转码（作为项目的依赖转码）
 
 优点：
 
@@ -143,17 +137,23 @@
            
 **转换方法：**
 
-    1. 先建立一个input文件夹，把之前的input.js复制一份进去；
-    2. 然后在根目录（即package.json以及.babelrc所在目录的控制台输入：
-           npm run build
-    3. 效果和全局使用的【转换方法3】是一样的；
+```
+1. 先建立一个input文件夹，把之前的input.js复制一份进去；
+2. 然后在根目录（即package.json以及.babelrc所在目录的控制台输入：
+       npm run build
+3. 效果和全局使用的【转换方法3】是一样的；
+```
 
-    注1：
-        npm run build里的build，指的是package.json里面，scripts里的build属性的属性名，如果把属性名改为test，那么就是npm run test
+注1：
 
-    注2：
-        npm run build相当于执行了babel input -d output这个指令。只不过这里的babel来源于node_modules文件夹下的babel-cli，而不是之前通过控制台运行的全局的babel-cli
-        
+    npm run build里的build，指的是package.json里面，scripts里的build属性的属性名，如果把属性名改为test，那么就是npm run test
+
+注2：
+
+    npm run build相当于执行了babel input -d output这个指令。只不过这里的babel来源于node_modules文件夹下的babel-cli，而不是之前通过控制台运行的全局的babel-cli
+
+---
+
 ###其他转码
 
 如：

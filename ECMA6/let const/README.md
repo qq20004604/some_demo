@@ -89,6 +89,8 @@ var a = 1;
 }
 ```
 
+---
+
 #块级作用域
 
 **1、let相当于新增了块级作用域。**
@@ -142,6 +144,8 @@ let x = do {    //Uncaught SyntaxError: Unexpected token do
 ```
 
 我实测无效（chrome版本 55.0.2883.87），会报错，报错信息见注释，不知为何。也许是该提案未实现？
+
+---
 
 #const
 
@@ -249,7 +253,7 @@ a.a = 2;
 console.log(a.a);    //1
 a = 10;    //Uncaught TypeError: Assignment to constant variable.
 ```
-
+---
 #顶层对象的属性
 
 1. 所谓顶层对象，在js里面指window
@@ -287,7 +291,7 @@ console.log(window.a);  //undefined
 const b = 2;
 console.log(window.b);  //undefined
 ```
-
+---
 #顶层对象的获得
 
 1. 简单来说，顶层对象在浏览器里就是window；但是在Node.js里面没有window（Web Worker也没有，他是运行在后台的js脚本）；
