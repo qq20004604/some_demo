@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>将canvas获取的图片下载到本地</title>
+</head>
+<body>
+<style>
+    video, canvas {
+        outline: 1px solid red;
+    }
+</style>
+<p>这里通过拍照来获取你的图像，然后将其下载到本地。如果开启摄像头时有提示，请点击允许</p>
+<button onclick="startVideo()">点击启用摄像头</button>
+<button onclick="Shoot()">点击拍照</button>
+<button onclick="download()">点击下载</button>
+<br>
+<p>左侧是摄像头当前拍摄中区域，右侧图片是已拍摄的图像，下载的内容是右边已拍摄的图像</p>
+<video width="640" height="480" autoplay></video>
+<canvas width="640" height="480"></canvas>
+
+<script>
+    var video = document.querySelector('video');
+    var canvas = document.querySelector('canvas');
+
+    //启用摄像头，开始拍摄
+    function startVideo() {
+        // video捕获摄像头画面
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+        }).then(success).catch(error)
+
+        function success(stream) {
+            video.src = window.webkitURL.createObjectURL(stream);
+            video.play();
+        }
+
+        function error(err) {
+            alert('video error: ' + err)
+        }
+    }
+
+
+    function Shoot() {
+        var context = canvas.getContext('2d');
+        //把当前视频帧内容渲染到画布上
+        context.drawImage(self.video, 0, 0, 640, 480);
+    }
+
+    //将图片下载到本地
+    function download() {
+        var dom = document.createElement("a");
+        dom.href = this.canvas.toDataURL("image/png");
+        dom.download = new Date().getTime() + ".png";
+        dom.click();
+    }
+</script>
+
+</body>
+</html>
