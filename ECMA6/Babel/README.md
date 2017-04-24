@@ -166,3 +166,12 @@
 6. 还有在线转换（输入ES6代码，输出ES5代码，然后复制拿走使用） [点击直达](https://babeljs.io/repl/#?babili=false&evaluate=true&lineWrap=false&presets=es2015%2Creact%2Cstage-2&code=let%20input%20%3D%20%5B%5D%3B%0D%0Ainput.map(item%20%3D%3E%20item%20%2B%201)%3B)
 7. 还有关于Google公司的Traceur转码器，或者是babel和其他框架的配合等，请点击右方链接直达[阮一峰的博客](http://es6.ruanyifeng.com/#docs/intro#与其他工具的配合)来查阅
 
+---
+
+###关于插件
+
+1、例如Object.assign这样的方法，在IE下不行。那么就需要用插件
+
+如这个插件：https://babeljs.io/docs/plugins/transform-runtime/
+
+就可以让IE支持这个功能

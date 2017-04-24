@@ -641,3 +641,49 @@ ${arr.map(function (item) {
     3. 因此，可以利用标签模板的特性，实现JSX语法的功能（因为自动拆分为了变量和html标签）；
     4. 更多关于JSX语法的知识，建议自行谷歌或者百度；
 
+应用场景：
+
+    1、显示内容的值是可变的（比如input输入框->html标签）；
+    2、国际化（同一个变量在不同语言下是不同值）；
+
+    
+####**模板的raw属性**
+
+1、简单来说，就是返回转义前的内容；
+
+比如说，模板是`\n`的，放在html是换行符，但是raw返回的就是字符串"\n"
+
+换行符是转义后的内容，而\n就是一个字符串而已
+
+2、必须要求是通过标签模板来处理（即类似fun`模板字符串`）这样的方式，然后在函数内才能通过参数.raw来获取这个数组
+
+可以参照以下代码查看效果：
+
+```
+var string = "abc";
+var number = 123;
+tag`First line\n another：string-> ${string} number-> ${number} .`
+
+function tag(strings) {
+    console.log(strings);
+    console.log(strings.raw);
+}
+```
+
+####**String.raw()**
+
+1、返回一个字符串，这个字符串里面的模板变量已经被替代，但其他内容是转义前的内容；
+
+如示例：
+
+```
+//模板
+var string = "abc";
+var number = 123;
+var template = String.raw`First line\n \ another：string-> ${string} number-> ${number} .`
+console.log(template);
+
+//输出结果（记住，这是一个字符串，即\n放在html里不是换行符）
+//可以通过将以下字符串内嵌到dom里确认
+"First line\n \ another：string-> abc number-> 123 ."
+```
