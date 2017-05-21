@@ -1,0 +1,55 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<style>
+    .box {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        border-radius: 150px;
+        animation: box 5s linear both infinite;
+    }
+
+    .block {
+        position: absolute;
+        width: 290px;
+        height: 290px;
+        border-radius: 145px;
+        top: 5px;
+        left: 5px;
+        background-color: white;
+    }
+
+    .linear {
+        width: 40px;
+        height: 10px;
+        border-radius: 5px;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background-image: linear-gradient(90deg, #00adee 0%, red 50%, yellow 100%);
+    }
+
+    @keyframes box {
+        0% {
+            transform: rotateZ(0deg);
+        }
+        100% {
+            transform: rotateZ(360deg);
+        }
+    }
+</style>
+<div class="box">
+    <div class="linear"></div>
+    <div class="block"></div>
+</div>
+</body>
+</html>
