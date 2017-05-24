@@ -128,6 +128,28 @@
     https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
     
 
+示例：
+
+```
+var cart = {
+    _wheels: 4
+}
+Object.defineProperty(cart, "wheels", {
+    get: function () {
+        return this._wheels;
+    },
+    set: function (value) {
+        if (value < this._wheels) {
+            throw new Error('数值太小了！');
+        }
+        this._wheels = value;
+    }
+});
+
+cart.wheels;    //4
+cart.wheels = 2;    //Uncaught Error: 数值太小了！
+```
+
 ###Object.keys(obj)
 
 说明：
