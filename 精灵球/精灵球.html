@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>飞翔的精灵球</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/1.3.1/jquery.min.js"></script>
+    <script src="./ball.js"></script>
+</head>
+<body>
+<style>
+    html {
+        font-size: 20px;
+    }
+
+    body {
+        width: 100%;
+        height: 100%;
+    }
+
+    * {
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    #box {
+        position: fixed;
+        width: 10rem;
+        height: 10rem;
+        top: 0;
+        left: 50%;
+        -webkit-transform: translateX(-50%);
+        -moz-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        -o-transform: translateX(-50%);
+        transform: translateX(-50%);
+    }
+
+    #ball {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 10rem;
+        height: 10rem;
+        -webkit-transform: rotateZ(360deg);
+        -moz-transform: rotateZ(360deg);
+        -ms-transform: rotateZ(360deg);
+        -o-transform: rotateZ(360deg);
+        transform: rotateZ(360deg);
+    }
+
+    #back {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    #pet {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 0;
+        width: 0;
+    }
+
+    #auto {
+        position: absolute;
+        left: 30%;
+        top: 10rem;
+    }
+</style>
+<div id="box">
+    <img id="ball" src="./精灵球.png">
+    <img id="pet" src="./皮卡丘.png">
+</div>
+<div id="back">
+    <button id="auto">自动动画</button>
+</div>
+</body>
+</html>

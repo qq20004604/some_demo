@@ -1,0 +1,195 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/1.3.1/jquery.min.js"></script>
+    <title>图片 to base64字符串</title>
+</head>
+<body>
+<style>
+    .hidden {
+        position: absolute;
+        top: 0;
+        right: 9999px;
+    }
+
+    label {
+        cursor: pointer;
+    }
+</style>
+<p style="width:100%;border-top:1px solid #000;">提示区域</p>
+<ol>
+    <li>不能跨域转化img标签（因为这会导致污染的画布，参照<a
+            href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/CORS_enabled_image">MDN的解释</a>)
+    </li>
+    <li>可以选择输入图片url，或者直接通过文件来选择图片；</li>
+    <li>流程：选择图片——》自动或手动转出base64字符串到结果区域——》复制拿走结果</li>
+    <li>base64字符串图转换成片请点击→<a href="http://www.jianwangsan.cn/base64to%E5%9B%BE%E7%89%87.html">链接</a></li>
+</ol>
+<div>
+    <p style="width:100%;border-top:1px solid #000;">图片来源</p>
+    <label>
+        <input type="radio" name="select" value="typeFile">
+        通过选择文件来转换
+    </label>
+    <label>
+        <input type="radio" name="select" value="typeUrl">
+        通过填写图片的url来转换
+    </label>
+</div>
+<br>
+<div id="typeUrl">
+    <p>请在这里填写图片链接：<input type="text" id="fileSrc" placeholder="这里填写url，可以填写相对或者绝对路径" style="width:500px;"></p>
+    <p>
+        <button onclick="doIt()">点击将图片转为base64字符串</button>
+    </p>
+</div>
+<div id="typeFile" style="display:none;">
+    <p>在这里选择文件：<input type="file" id="file" accept="image/png,image/jpg,image/jpeg,image/gif"></p>
+    <p>选中后自动转为base64字符串</p>
+</div>
+<p style="width:100%;border-top:1px solid #000;">状态信息</p>
+<p id="mes">无</p>
+<p id="length">base64字符串共计：0个字符</p>
+<p style="width:100%;border-top:1px solid #000;">转换结果</p>
+<textarea id="base64" style="height: 300px;width: 800px;"></textarea>
+<canvas id="canvas" style="display:none;"></canvas>
+
+<p style="width:100%;border-top:1px solid #000;"></p>
+<button onclick="toTestBase64()">测试一下base64字符串</button>
+<button onclick="clearImage()">不测了，给我隐藏</button>
+<br>
+<img src="" id="testImage" style="display:none;">
+<br>
+<script>
+    var $fileSrc = $("#fileSrc");
+    var $file = $("#file");
+    var canvas = $("#canvas")[0];
+    var $base64 = $("#base64");
+    var $mes = $("#mes");
+    var ctx = canvas.getContext("2d");
+    var $testImage = $("#testImage");
+    var $length = $("#length");
+
+    //切换转换来源（文件或者url）
+    $("input[name=select]").change(function () {
+        //先获取当前选中的值
+        var value = '';
+        var typeUrl = $("input[name=select][value=typeUrl]")[0].checked;
+        var typeFile = $("input[name=select][value=typeFile]")[0].checked;
+        if (typeUrl) {
+            value = 'typeUrl'
+            $("#typeUrl").show();
+            $("#typeFile").hide();
+        } else if (typeFile) {
+            value = 'typeFile';
+            $("#typeUrl").hide();
+            $("#typeFile").show();
+        }
+    })
+    //选中第一个
+    $("input[name=select]")[0].click();
+
+    //图片上传
+    $file.change(function () {
+        clearImage();
+        $length.html("base64字符串共计：0个字符");
+        $mes.html('<span style="color:#000;" >转换中...</span>');
+
+        var fr = new FileReader();
+        fr.readAsDataURL(this.files[0]);
+        //成功处理
+        fr.onload = function (e) {
+            //这里是图片的base64字符串
+            var src = e.target.result;
+            $base64.val(src);
+            $mes.html('<span style="color:green;" >转换成功</span>');
+            getLength();
+        };
+        //失败处理
+        fr.onerror = function () {
+            $mes.html('<span style="color:red;" >转换失败，可能是url不存在或者类型错误</span>');
+        }
+    })
+
+    //转换函数
+    function doIt() {
+        clearImage();
+        $length.html("base64字符串共计：0个字符");
+        $mes.html('<span style="color:#000;" >转换中...</span>');
+        var $hiddenNode = $(".hidden");
+        if ($hiddenNode.length > 0) {
+            $hiddenNode.remove();
+        }
+        $mes.html("");
+        $base64.val("");
+        var img = new Image();
+        if ($fileSrc.val().length === 0) {
+            $mes.html('<span style="color:red;" >你没有输入图片url</span>');
+            return;
+        }
+        img.onload = function () {
+            canvas.height = img.clientHeight;
+            canvas.width = img.clientWidth;
+            ctx.drawImage(img, 0, 0);
+            getBase64();
+        }
+        img.onerror = function () {
+            $mes.html('<span style="color:red;" >转换失败，可能是url不存在或者类型错误</span>');
+        }
+        img.src = $fileSrc.val();
+        img.classList.add("hidden")
+        $mes.append(img);
+    }
+
+    //输出base64字符串
+    function getBase64() {
+        var base64string = canvas.toDataURL();
+        $base64.val(base64string);
+        $mes.html('<span style="color:green;" >转换成功</span>');
+        getLength();
+    }
+
+    //提示字符串长度
+    function getLength() {
+        $length.html("base64字符串共计：" + addComma($base64.val().length) + "个字符");
+    }
+
+    //测试一下base64字符串
+    function toTestBase64() {
+        if ($base64.val().length === 0) {
+            return;
+        }
+        $testImage.attr("src", $base64.val());
+        $testImage.show();
+    }
+
+    //隐藏图片
+    function clearImage() {
+        $testImage.attr("src", "");
+        $testImage.hide();
+    }
+
+    //每三位增加逗号
+    function addComma(val) {
+        val = val.toString();
+        var arr = [];
+        if (val.length <= 3) {
+            return val;
+        }
+        while (val.length > 3) {
+            val = val.replace(/.{3}$/, function (str) {
+                arr.unshift(str);
+                return "";
+            })
+        }
+        arr.unshift(val);
+        return arr.join(", ");
+    }
+
+</script>
+</body>
+</html>

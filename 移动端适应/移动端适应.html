@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<style>
+    html {
+        font-size: 20px;
+    }
+</style>
+<div>当前font-size为：<span id="size"></span></div>
+<label><input type="checkbox" id="check">选中则表示处理横屏</label>
+<ol>
+    <li>横屏选项表示，移动端自适应，适配宽度更小的那一边。主要是当横屏时，clientWidth将大于clientHeight，而自适应取更小的那一边。</li>
+    <li>选中后会立刻生效</li>
+</ol>
+<script>
+    var check = document.getElementById("check");
+    var tips = document.getElementById("size");
+
+    //移动端大小变化监听
+    // 屏幕宽度小于等于640px宽度下，宽度为32rem。大于640px宽度，宽度为 (浏览器宽度 / 20)rem
+    function listenWindowResize(baseFontSize) {
+        var fun = function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    /* 这段代码是处理横屏的，取小的那一边，不使用时则注释掉 */
+                    if (check.checked) {
+                        var clientHeight = docEl.clientHeight;
+                        clientWidth = clientWidth < clientHeight ? clientWidth : clientHeight;
+                    }
+
+                    //这里是假设在640px宽度设计稿的情况下，1rem = 20px；
+                    //可以根据实际需要修改
+                    //如果传参了，那么根据参数来设置（参数是1rem=baseFontSize px）（设计稿为640px宽）
+                    var fontSize = (baseFontSize ? baseFontSize : 20) * (clientWidth / 640);
+                    docEl.style.fontSize = fontSize + 'px';
+                    tips.innerHTML = docEl.style.fontSize;
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+            check.onchange = recalc;
+        }
+        fun(document, window);
+    }
+    listenWindowResize();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>base64字符串 to 图片</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/1.3.1/jquery.min.js"></script>
+</head>
+<body>
+<p style="width:100%;border-top:1px solid #000;">提示区域</p>
+<ol>
+    <li>base64字符→文本输入框→点击转换按钮→生成预览图片→点击下载按钮→下载到本地</li>
+    <li>图片转换成base64字符串请点击→<a href="http://www.jianwangsan.cn/%E5%9B%BE%E7%89%87tobase64.html">链接</a></li>
+</ol>
+<p style="width:100%;border-top:1px solid #000;">base64字符串输入区域</p>
+<textarea id="base64" style="height: 300px;width: 800px;"></textarea><br>
+<button id="changeToImage">将base64字符串转为图片</button>
+<p id="mes"></p>
+<p style="width:100%;border-top:1px solid #000;">图片预览区域</p>
+<button id="download">点击下载图片</button>
+<br>
+<img src="" id="preview">
+<script>
+    var firstLoad = true;
+    var canDownload = false;
+    var $base64 = $("#base64");
+    var $preview = $("#preview");
+    var $mes = $("#mes");
+    var $download = $("#download");
+
+    //转换按钮
+    $("#changeToImage").click(function () {
+        resetImagePreview();
+        if ($base64.val().length === 0) {
+            $mes.html("<span style='color:red;'>base64字符串为空的话是不能转换的喔</span>");
+            return;
+        }
+        $preview.attr("src", $base64.val());
+    })
+
+    //转换失败
+    $preview.error(function () {
+        canDownload = false;
+        if (firstLoad) {
+            firstLoad = false;
+            return;
+        }
+        $mes.html("<span style='color:red;'>你可能转了一个假图片</span>");
+    })
+
+    //加载成功
+    $preview.load(function () {
+        canDownload = true;
+        $mes.html("<span style='color:green;'>预览成功</span>");
+    })
+
+    //下载
+    $download.click(function () {
+        if (!canDownload) {
+            $mes.html("<span style='color:red;'>你并没有可以用于下载的图片</span>");
+            return;
+        }
+        var downloadTag = document.createElement("a");
+        downloadTag.href = $preview.attr("src");
+        downloadTag.download = new Date().getTime() + ".png";
+        downloadTag.click();
+        $mes.html("<span style='color:green;'>下载成功</span>");
+    })
+
+    //图片预览前清空重置状态
+    function resetImagePreview() {
+        $mes.html("");
+        $preview.attr("src", "");
+    }
+</script>
+</body>
+</html>
