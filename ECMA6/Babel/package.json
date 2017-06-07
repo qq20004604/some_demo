@@ -1,8 +1,11 @@
-﻿{
+{
   "devDependencies": {
     "babel-cli": "^6.0.0"
   },
   "scripts": {
     "test": "babel input -d output"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.23.0"
   }
 }
