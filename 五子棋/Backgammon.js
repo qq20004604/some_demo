@@ -165,7 +165,7 @@ let whoIsWinner = function () {
     let Top_Bottom = [];
     let TopLeft_BottomRight = [];
     let TopRight_BottomLeft = [];
-    //从左到右，序数每次增加 1
+    //通过当前坐标的x、y坐标，计算和他相连的每个方向8个棋子的坐标值
     for (let i = -4; i < 5; i++) {
         Left_Right.push({
             x: rect.x + i,
