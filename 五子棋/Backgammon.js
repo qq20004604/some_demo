@@ -62,6 +62,7 @@ function start(isCreate) {
 
     //初始化下棋步骤
     info.steps = [];
+    changeColor();
 }
 
 //选择器
@@ -125,6 +126,7 @@ $("#checkerboard").onclick = function (evt) {
         info.gameover = true;
         let winner = info.steps.length % 2 ? "黑方" : "白方";
         $("#winner").innerHTML = winner + "胜利！<br>" + isWin;
+        $("#thisOrder").innerHTML = "游戏结束！";
     }
 }
 
