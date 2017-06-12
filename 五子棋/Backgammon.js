@@ -15,7 +15,7 @@ let config = {
     imgSize: 39
 }
 
-var info = {
+let info = {
     size: 19,
     first: "black",
     // 下棋的每一步都存在这里，索引为0的地方，是棋盘(1, 1)的位置；
@@ -24,7 +24,7 @@ var info = {
     gameover: false
 }
 
-var start = function (isCreate) {
+let start = function (isCreate) {
     let size = 0;
     if (isCreate) {
         //创建棋盘
@@ -97,7 +97,7 @@ let checkerboardClick = function (evt) {
 }
 
 //悔棋
-var backPiece = function () {
+let backPiece = function () {
     let index = info.steps.pop();
     let child = $(".box")[index].children[0];
     $(".box")[index].removeChild(child);
@@ -304,10 +304,10 @@ start(true);
 
 $("#checkerboard").addEventListener("click", checkerboardClick);
 
-$("#start").addEventListener("click", function () {
+$("#start-btn").addEventListener("click", function () {
     start(true)
 });
-$("#reset").addEventListener("click", function () {
+$("#reset-btn").addEventListener("click", function () {
     start(false)
 });
-$("#backPiece").addEventListener("click", backPiece);
+$("#backPiece-btn").addEventListener("click", backPiece);
