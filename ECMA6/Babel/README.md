@@ -1,6 +1,8 @@
 ﻿##Babel
 
-参考[阮一峰的文章](http://es6.ruanyifeng.com/#docs/intro)所写
+参考[阮一峰的文章](http://es6.ruanyifeng.com/#docs/intro)所写。
+
+已细化重点知识，确保可以按步骤复现。并省略某些不常用的内容
 
 解释：
 
@@ -175,3 +177,17 @@
 如这个插件：https://babeljs.io/docs/plugins/transform-runtime/
 
 就可以让IE支持这个功能
+
+**或者**
+
+另外提一句，Babel默认情况下，是不能转换Set和Map等数据类型的，引自：
+
+>Babel 默认只转换新的 JavaScript 句法（syntax），而不转换新的 API，比如Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise等全局对象，以及一些定义在全局对象上的方法（比如Object.assign）都不会转码。<br>举例来说，ES6在Array对象上新增了Array.from方法。Babel 就不会转码这个方法。如果想让这个方法运行，必须使用babel-polyfill，为当前环境提供一个垫片。
+
+[阮一峰](http://es6.ruanyifeng.com/#docs/intro#babel-polyfill)
+
+我自己实践测试来看：
+
+1. 必须引用babel-polyfill才能正常运行Set和Map类型（不然会报错）；
+2. 引入的方法就是安装这个插件，然后import或者require他就行；
+3. 但单独js引入是不行的，需要利用webpack之类的打包（因为一般情况，浏览器是不支持直接跑js文件的require语法）；
