@@ -1,7 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>五子棋</title>
 </head>
 <body>
@@ -114,9 +117,9 @@
     <label>
         棋盘尺寸：<input id="size" type="number" value="19"/> 格
     </label>
-    <span><button style="margin-left:30px;" onclick="start(true)">生成棋盘</button></span>
-    <button style="margin-left:30px;" onclick="start(false)">【重置棋盘】</button>
-    <button style="margin-left:30px;" onclick="backPiece()">悔棋</button>
+    <span><button style="margin-left:30px;" onclick="game.start(true)">生成棋盘</button></span>
+    <button style="margin-left:30px;" onclick="game.start(false)">【重置棋盘】</button>
+    <button style="margin-left:30px;" onclick="game.backPiece()">悔棋</button>
 </div>
 <div id="info">
     <p>当前下棋方：</p>
@@ -125,11 +128,7 @@
 </div>
 <div id="checkerboard">
 </div>
-<script>
-
-
-</script>
-
+<script src="./listenError.js"></script>
 <script src="./Backgammon.js"></script>
 </body>
 </html>
