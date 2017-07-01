@@ -14,26 +14,19 @@
 </ol>
 
 <script>
-    var foo = {};
-    var bar = new Proxy(foo, {
-        get: function (target, key, receiver) {
-            console.log("This is get! The key: " + key);
-            console.log(receiver === bar, foo === target);
-            console.log(target[key])
-            return target[key];
+    let foo = {
+        a:1
+    };
+    let bar = new Proxy(foo, {
+        set(target, key, value, proxy){
+            console.log(foo === target);
+            console.log(key, value);
+            target.lastModify = {
+                key, value
+            }
+            target[key] = value;
         }
-    });
-    bar.a = 1;
-    console.log(bar.a);
-    //This is get! The key: a
-    //true true
-    //1
-
-    bar.b = {c: "d"};
-    console.log(bar.b.c);
-    //This is get! The key: b
-    //true true
-    //"d"
+    })
 </script>
 </body>
 </html>
