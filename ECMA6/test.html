@@ -1,4 +1,4 @@
-﻿<!doctype html>
+﻿﻿<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,19 +14,20 @@
 </ol>
 
 <script>
-    let foo = {
-        a:1
-    };
+    'use strict'
+    let foo = {};
+    Object.defineProperty(foo, "a", {
+        value: "1",
+        writable: true,
+        configurable: true
+    });
     let bar = new Proxy(foo, {
         set(target, key, value, proxy){
-            console.log(foo === target);
-            console.log(key, value);
-            target.lastModify = {
-                key, value
-            }
             target[key] = value;
         }
-    })
+    });
+    bar.a = 1;
+    console.log(bar.a)
 </script>
 </body>
 </html>
