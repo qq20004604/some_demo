@@ -14,20 +14,18 @@
 </ol>
 
 <script>
-    'use strict'
-    let foo = {};
-    Object.defineProperty(foo, "a", {
-        value: "1",
-        writable: true,
-        configurable: true
-    });
-    let bar = new Proxy(foo, {
-        set(target, key, value, proxy){
-            target[key] = value;
+    let target = {
+        isTarget(){
+            if (this === target) {
+                console.log("true");
+            } else {
+                console.log("false");
+            }
         }
-    });
-    bar.a = 1;
-    console.log(bar.a)
+    }
+    const proxy = new Proxy(target, {});
+    target.isTarget();  //true
+    proxy.isTarget();   //false
 </script>
 </body>
 </html>

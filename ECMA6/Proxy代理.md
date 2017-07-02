@@ -1,8 +1,6 @@
 ﻿#Proxy代理
 
-##0、一句话总结
-
-##1、是什么？
+<h3>1、是什么？</h3>
 
 1. 用于修改对某个对象的属性的操作的默认行为；
 2. 绑定与指定对象；
@@ -14,7 +12,7 @@
 8. 对之后新增的属性也生效；
 
 
-##2、创建Proxy
+<h3>2、创建Proxy</h3>
 
 ###2.1、原型
 
@@ -153,3 +151,110 @@ console.log(bar.lastModify);
 
 [链接](http://es6.ruanyifeng.com/#docs/proxy#Proxy-实例的方法)
 
+<h3>3、可撤销的Proxy代理</h3>
+
+可撤销的Proxy代理和普通代理在使用上没有什么区别，唯一区别就是可以移除这个代理。
+
+>Proxy.revocable(target, handler);
+
+参数一与参数二，和new Proxy的两个参数是一样的。
+
+返回值是一个对象，他有两个属性，一个是``proxy``，就是Proxy的实例，另外一个是``revoke``，类型是函数，用于移除这个代理。
+
+如示例：
+
+```
+let target = {};
+let handler = {
+    get(target, key){
+        console.log(key);
+        return target[key];
+    }
+};
+
+let obj = Proxy.revocable(target, handler);
+console.log(obj);   //{proxy: Proxy, revoke: function}
+
+obj.proxy.foo = 123;
+console.log(obj.proxy.foo); // 123
+
+obj.revoke();
+console.log(obj.proxy.foo); // TypeError: Revoked
+```
+
+>Proxy.revocable的一个使用场景是，目标对象不允许直接访问，必须通过代理访问，一旦访问结束，就收回代理权，不允许再次访问。
+
+<h3>4、this</h3>
+
+当被代理后，Proxy对象的this指向的目标，和一般常见情况下this指向的目标略有不同。
+
+主要体现在两个方面：
+
+1. handler对象里，代理方法中的this指向的目标依然指向的是handler本身，而不是proxy实例或者原对象；
+2. 原对象中的this，在通过proxy实例调用时，指向的是proxy实例，而非原对象；
+
+特别是第二点，在原对象里有通过this对对象本身进行操作时，其结果就可能和预期的情况不同。
+
+示例代码：
+
+```
+let target = {
+    m(){
+        console.log(this === pro);
+    }
+};
+let handler = {
+    get(target, key){
+        console.log(this === handler);
+        return target[key];
+    }
+};
+
+let pro = new Proxy(target, handler);
+pro.m();
+//true
+//true
+```
+
+不过要因为第二点而发生问题，其实条件也比较特殊。
+
+因为虽然this指向proxy实例，但是你终究操作的是属性，如果你只是单纯的通过this来调用属性，那么在经过proxy代理后，依然会操作原属性。
+
+但假如你的某个操作，必须严格基于原对象生效，那么就会出现这样的问题。如果交互逻辑比较复杂，也可能遇见这样的问题。
+
+如以下代码：
+
+```
+//区分当前是通过代理还是非代理来访问的属性
+let target = {
+    isTarget(){
+        if (this === target) {
+            console.log("true");
+        } else {
+            console.log("false");
+        }
+    }
+}
+const proxy = new Proxy(target, {});
+target.isTarget();  //true
+proxy.isTarget();   //false
+```
+
+<h3>5、兼容性</h3>
+
+Proxy虽好，但是兼容性是一个很大的问题，IE
+
+附兼容性链接：
+
+http://caniuse.mojijs.com/Home/Html/item/key/proxy/index.html
+
+另外，似乎babel对其的转码支持也很弱，见链接：
+
+https://kangax.github.io/compat-table/es6/#test-Proxy,_internal_'get'_calls
+
+
+<h3>6、如何更好的使用Proxy</h3>
+
+这里有一篇写的很好的博客，我这里附上链接：
+
+[6种ES6 Proxy的使用案例](http://www.zcfy.cc/article/6-compelling-use-cases-for-es6-proxies-888.html)
