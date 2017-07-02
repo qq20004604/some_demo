@@ -10,22 +10,62 @@
 <body>
 
 <ol>
-
+    <li>window的原生对象，但不能通过new来生成实例；</li>
+    <li>对对象的属性的操作，都可以通过这个来完成（读、写、定义属性等）；</li>
+    <li>返回值更加合理（失败返回false而不是抛错）；</li>
+    <li>函数式调用（而非属性式）</li>
 </ol>
 
 <script>
-    let target = {
-        isTarget(){
-            if (this === target) {
-                console.log("true");
-            } else {
-                console.log("false");
-            }
-        }
+    //存储观察者函数，用数组也可以
+    const queuedObservers = new Set();
+    // const queuedObservers = [];
+
+    //定义observe函数，执行本函数会将观察者函数添加到queuedObservers中，返回的是观察者函数的列表
+    const observe = fn => queuedObservers.add(fn);
+    // const observe = fn => queuedObservers.push(fn);
+
+    //定义observable函数，将该对象添加代理后返回proxy实例
+    const observable = obj => new Proxy(obj, {set});
+
+    //handler，执行时会调用观察者里函数里的每个观察者
+    function set(target, key, value, receiver) {
+        const result = Reflect.set(target, key, value, receiver);
+        queuedObservers.forEach(observer => observer(key, value));
+        return result;
     }
-    const proxy = new Proxy(target, {});
-    target.isTarget();  //true
-    proxy.isTarget();   //false
+
+    //对对象进行代理绑定
+    const person = observable({
+        name: '张三',
+        age: 20
+    });
+
+    //定义2个函数
+    function printKey(key, value) {
+        console.log("key: " + key)
+    }
+    function printValue(key, value) {
+        console.log("value: " + value)
+    }
+
+    //将函数设置为观察者函数
+    observe(printKey);
+    observe(printValue);
+
+    //调用person（proxy实例）的属性name
+    person.name = '李四';
+    //输出
+    //key: name
+    //value: 李四
+
+    //创建另外一个被观察的对象（空）
+    const foo = observable({});
+    //给他添加一个属性（触发set），因此会触发所有添加到观察者里的函数
+    foo.fruit = "梨";
+    //输出
+    //key: fruit
+    //value: 梨
 </script>
 </body>
 </html>

@@ -14,7 +14,7 @@
 
 <h3>2、创建Proxy</h3>
 
-###2.1、原型
+<h3>2.1、原型</h3>
 
 >var p = new Proxy(target, handler);
 
@@ -33,9 +33,9 @@
 返回绑定后的对象。需要注意，p和target并不相等。对返回值p进行的操作，会触发handler中自定义的方法。
 
 
-###2.2、示例
+<h3>2.2、示例</h3>
 
-####2.2.1、读取
+<h4>2.2.1、读取</h4>
 >get(target, propKey, receiver)
 
 原型示例：
@@ -54,8 +54,9 @@ var p = new Proxy(target, {
 
 1. 参数一是对象，即你绑定的那个对象；
 2. 参数二是当前修改的key，例如对 ``foo``进行绑定后，你读取 ``foo.a``，这个key就是``a``。但假如 ``foo.a`` 是一个对象，你修改 ``foo.a.b`` 的值，这个key也是a；
-3. 参数三就是Proxy对象（即target加上Proxy的壳后返回的那个对象，也可以说是get的调用者）
+3. 参数三就是Proxy对象（即target加上Proxy的壳后返回的那个对象，也可以说是get的调用者）。
 4. 如果对象的属性是不可写的话（writable为false），那么get的返回值需要和原值保持一致，否则会报错。
+5. 当返回值是Reflect.get时，且目标属性是getter，这个参数是否传给Reflect.get，结果会不一样。具体来说，将参数三作为Reflect.get的参数三使用，遇见getter在取子属性时，会触发代理，而若没有，则不触发代理。（原因请见下一篇Reflect的博客，跟this有关）。
 
 示例代码：
 ```
@@ -89,7 +90,7 @@ console.log(bar.b.c);
 5. 可以借鉴getter的写法；
 6. 和getter的区别在于，getter属性本身是不存值的，需要通过其他属性来存值。而通过Proxy代理，值是存在原属性上，代理只是控制读，不影响原值。
 
-####2.2.2、写入
+<h4>2.2.2、写入</h4>
 
 >set(target, property, value, receiver)
 
@@ -145,7 +146,7 @@ console.log(bar.lastModify);
 
 因此需要注意，如果不需要特殊设置的话，那么固定返回true即可（无返回值会导致严格模式下抛错），这个不影响因为writable为false导致的抛错。
 
-####2.2.3、其他示例
+<h4>2.2.3、其他示例</h4>
 
 略略略，看阮一峰的吧。
 
