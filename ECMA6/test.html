@@ -10,63 +10,31 @@
 <body>
 
 <ol>
-    <li>window的原生对象，但不能通过new来生成实例；</li>
-    <li>对对象的属性的操作，都可以通过这个来完成（读、写、定义属性等）；</li>
-    <li>返回值更加合理（失败返回false而不是抛错）；</li>
-    <li>函数式调用（而非属性式）</li>
-    <li>在使用Proxy时，使用本方法效果比直接通过对象属性调用效果更好</li>
+    <li>是一个构造函数，用于生成Promise实例（所以可以new Promise）；</li>
+    <li>通常用于异步执行完成后的回调函数；</li>
+    <li>有三个状态：pending（执行中），resolve（回调函数一，一般用于成功时），reject（回调函数二，一般用于失败时）；</li>
+    <li>在new出Promise对象时，便已经执行（无论是否调用该实例的then方法）——进入pending状态；</li>
+    <li>then方法被调用时，会判断该实例的状态，是pending还是另外两个；</li>
 </ol>
 
 <script>
-    //存储观察者函数，用数组也可以
-    const queuedObservers = new Set();
-    // const queuedObservers = [];
+    let foo = new Promise(function (resolve, reject) {
+        resolve();
+        console.log("in Promise");
+    })
 
-    //定义observe函数，执行本函数会将观察者函数添加到queuedObservers中，返回的是观察者函数的列表
-    const observe = fn => queuedObservers.add(fn);
-    // const observe = fn => queuedObservers.push(fn);
+    console.log("after Promise");
 
-    //定义observable函数，将该对象添加代理后返回proxy实例
-    const observable = obj => new Proxy(obj, {set});
-
-    //handler，执行时会调用观察者里函数里的每个观察者
-    function set(target, key, value, receiver) {
-        const result = Reflect.set(target, key, value, receiver);
-        queuedObservers.forEach(observer => observer(key, value));
-        return result;
-    }
-
-    //对对象进行代理绑定
-    const person = observable({
-        name: '张三',
-        age: 20
+    foo.then(function (arr) {
+        console.log("in resolve");
     });
 
-    //定义2个函数
-    function printKey(key, value) {
-        console.log("key: " + key)
-    }
-    function printValue(key, value) {
-        console.log("value: " + value)
-    }
+    console.log("at last");
 
-    //将函数设置为观察者函数
-    observe(printKey);
-    observe(printValue);
-
-    //调用person（proxy实例）的属性name
-    person.name = '李四';
-    //输出
-    //key: name
-    //value: 李四
-
-    //创建另外一个被观察的对象（空）
-    const foo = observable({});
-    //给他添加一个属性（触发set），因此会触发所有添加到观察者里的函数
-    foo.fruit = "梨";
-    //输出
-    //key: fruit
-    //value: 梨
+    //in Promise
+    //after Promise
+    //at last
+    //in resolve
 </script>
 </body>
 </html>

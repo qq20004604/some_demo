@@ -169,3 +169,57 @@ foo.fruit = "梨";
 3. 因为是proxy，所以你还需要一个handler，并且假定你handler里的set会执行所有观察者函数；
 4. 然后所有被绑定过的函数，在使用它的返回值时（即proxy实例），你设置对象属性就会触发handler的set，而set就会执行所有观察者函数；
 5. 于是有了上面示例代码发生的情况；
+
+再附用set和get有限改写后，实现的对已有属性的观察（对新增属性无影响）：
+
+```javascript
+//存储观察者函数，用数组也可以
+const queuedObservers = [];
+
+//定义observe函数，执行本函数会将观察者函数添加到queuedObservers中，返回的是观察者函数的列表
+const observe = fn => queuedObservers.push(fn);
+
+//定义observable函数，将该对象添加代理后返回proxy实例
+const observable = function (obj) {
+    //todo write your code here
+    Object.keys(obj).forEach(function (item) {
+        obj["_" + item] = obj[item];
+        Object.defineProperty(obj, item, {
+            get(){
+                return obj["_" + item];
+            },
+            set(val){
+                queuedObservers.forEach(observer => observer(item, val));
+                obj["_" + item] = val;
+            },
+            configurable: true,
+            enumerable: true
+        })
+    })
+    return obj;
+}
+
+//对对象进行代理绑定
+const person = observable({
+    name: '张三',
+    age: 20
+});
+
+//定义2个函数
+function printKey(key, value) {
+    console.log("key: " + key)
+}
+function printValue(key, value) {
+    console.log("value: " + value)
+}
+
+//将函数设置为观察者函数
+observe(printKey);
+observe(printValue);
+
+//调用person（proxy实例）的属性name
+person.name = '李四';
+//输出
+//key: name
+//value: 李四
+```
