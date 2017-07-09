@@ -76,3 +76,87 @@ console.log("at last");
 
 证明除了resolve和reject中的代码是异步的之外，其他都是顺序执行（位于foo.then后的代码先执行，之后才执行了foo.then的回调函数）。
 
+<h3>3、当两个Promise对象发生交互时</h3>
+
+具体来说，Promise实例在执行回调函数时可以传一个参数，而这个参数可以是另外一个Promise实例的回调函数。如代码：
+
+```
+let foo = new Promise(function (res, rej) {
+    setTimeout(function () {
+        res("1")
+    }, 1000)
+})
+let bar = new Promise(function (res, rej) {
+    res(foo);    //参数是foo实例
+})
+```
+
+在这种情况下，bar的回调函数并不会立即执行，而是会等待foo的状态改变后，再去执行bar的回调函数。
+
+即当Promise实例bar的回调函数的参数是另外一个Promise实例foo时，bar在状态改变后不会立即执行，而是等待前一个Promise实例的状态发生改变后，他才会执行。
+
+<table>
+    <tr>
+        <td>情况</td>
+        <td>foo</td>
+        <td>bar</td>
+    </tr>
+    <tr>
+        <td>基本情况</td>
+        <td>一个Promise实例</td>
+        <td>bar的then的回调函数的参数是foo</td>
+    </tr>
+    <tr>
+        <td>延迟等待时间：foo小于bar</td>
+        <td>先执行</td>
+        <td>后执行</td>
+    </tr>
+    <tr>
+        <td>延迟等待时间：foo大于bar</td>
+        <td>先执行</td>
+        <td>等待foo执行完后即执行</td>
+    </tr>
+</table>
+
+如代码：
+
+```
+let foo = new Promise(function (res, rej) {
+    setTimeout(function () {
+        res("1")
+    }, 1500)
+})
+let bar = new Promise(function (res, rej) {
+    setTimeout(function () {
+        console.log(bar);
+    }, 1000)
+    setTimeout(function () {
+        res(foo);
+    }, 500)
+})
+let baz = new Promise(function (res, rej) {
+    res("3");
+})
+
+foo.then(function (val) {
+    console.log("foo: " + val);
+})
+bar.then(function (val) {
+    console.log("bar: " + val);
+})
+baz.then(function (val) {
+    console.log("baz: " + val);
+})
+
+//bar: 3
+//状态为"pending"
+//foo: 1
+//bar: 1
+```
+
+如上代码：
+
+1. bar因为没有延迟，也没有依赖，所以先执行了；
+2. bar虽然500ms后就可以执行，但因为依赖于bar，所以在等待foo执行，注意，此时其状态依然为pending，而不是resolved；
+3. foo在1500ms后执行完毕；
+4. bar发现foo执行完毕了，自己也可以执行，所以跟着执行了；

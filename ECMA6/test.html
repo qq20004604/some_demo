@@ -9,32 +9,40 @@
 </head>
 <body>
 
-<ol>
-    <li>是一个构造函数，用于生成Promise实例（所以可以new Promise）；</li>
-    <li>通常用于异步执行完成后的回调函数；</li>
-    <li>有三个状态：pending（执行中），resolve（回调函数一，一般用于成功时），reject（回调函数二，一般用于失败时）；</li>
-    <li>在new出Promise对象时，便已经执行（无论是否调用该实例的then方法）——进入pending状态；</li>
-    <li>then方法被调用时，会判断该实例的状态，是pending还是另外两个；</li>
-</ol>
-
 <script>
-    let foo = new Promise(function (resolve, reject) {
-        resolve();
-        console.log("in Promise");
-    })
+let foo = new Promise(function (res, rej) {
+    setTimeout(function () {
+        res("1")
+    }, 1500)
+})
+let bar = new Promise(function (res, rej) {
+    setTimeout(function () {
+        console.log(bar);
+    }, 1000)
+    setTimeout(function () {
+        res(foo);
+    }, 500)
+})
+let baz = new Promise(function (res, rej) {
+    res("3");
+})
 
-    console.log("after Promise");
+foo.then(function (val) {
+    console.log("foo: " + val);
+})
+bar.then(function (val) {
+    console.log("bar: " + val);
+})
+baz.then(function (val) {
+    console.log("baz: " + val);
+})
 
-    foo.then(function (arr) {
-        console.log("in resolve");
-    });
+//bar: 3
+//状态为"pending"
+//foo: 1
+//bar: 1
 
-    console.log("at last");
 
-    //in Promise
-    //after Promise
-    //at last
-    //in resolve
 </script>
 </body>
 </html>
