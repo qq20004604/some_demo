@@ -1,4 +1,4 @@
-﻿<h2>Promise</h2>
+<h2>Promise</h2>
 
 <h3>1、是什么</h3>
 
@@ -160,3 +160,157 @@ baz.then(function (val) {
 2. bar虽然500ms后就可以执行，但因为依赖于bar，所以在等待foo执行，注意，此时其状态依然为pending，而不是resolved；
 3. foo在1500ms后执行完毕；
 4. bar发现foo执行完毕了，自己也可以执行，所以跟着执行了；
+
+除此之外，还有几个特点：
+
+1. 作为参数的Promise实例，他会将自己的参数的值传递给另一个Promise实例，即bar的resolve的参数是foo，而foo的resolve的参数的值是"1"，因此bar的resolve的参数的值是"1"；
+2. 两个Promise实例要执行的必须都是resolve或者都是reject，不然不会互相影响；
+
+<h3>4、回调函数返回值与then的返回值</h3>
+
+<h4>4.1、 回调函数返回值</h4>
+
+回调函数的返回值，指的是Promise实例的then的回调函数resolve和reject的返回值。
+
+如代码：
+
+```javascript
+let foo = new Promise((resolve, reject) => {
+    resolve("foo");
+}).then(msg => {
+    console.log(msg);
+    msg += " return value";
+    return msg;     //这一行代码即是返回值
+})
+```
+
+<h4>4.2、 then的返回值</h4>
+
+初期接触Promise的人可能不会注意到，Promise实例是一个Promise对象，而他的then方法在执行后的返回值也是一个Promise对象，但这两个对象是并不是同一个Promise对象。
+
+如代码：
+
+```javascript
+let foo = new Promise((resolve, reject) => {});
+let bar = foo.then();
+console.log(foo === bar);    //false
+```
+
+并且更有意思的是，由于then方法在执行后的返回值是一个Promise对象，因此他也可以有一个then方法（即then的连写），但这个Promise对象也和之前的Promise对象不是同一个Promise对象。
+
+如代码：
+
+```
+let foo = new Promise((resolve, reject) => {
+});
+let bar = foo.then();
+console.log(foo === bar);    //false
+let baz = bar.then();
+console.log(foo === baz);    //false
+console.log(bar === baz);    //false
+```
+
+<h4>4.3、 then连写的应用</h4>
+
+**1、基本应用：**
+
+then的连写的最基本的应用就是连写then，如以下代码：
+
+```
+new Promise((resolve, reject) => {
+    setTimeout(_ => {
+        reject("res");
+    }, 1000)
+}).then(resVal => {
+    resVal += " barRes";
+    console.log(resVal);
+    return resVal;
+}, rejVal => {
+    console.log(rejVal);
+    rejVal += " barRej";
+    return rejVal;
+}).then(resVal => {
+    resVal += " bazRes";
+    console.log(resVal);
+    return resVal;
+}, rejVal => {
+    console.log(rejVal);
+    rejVal += " bazRej";
+    return rejVal;
+});
+
+//输出结果
+res
+res barRej bazRes
+```
+
+连写then的特点如下（对照上面代码查看）：
+
+1. 第一个Promise实例将决定第一个then的回调函数执行哪一个；
+2. 当返回值是不是Promise对象时，无论第一个then执行的是resolve或是reject，第二个，以及之后then只会执行resolve（从输出结果可以得知）；
+3. 第二个及之后的then的resolve在执行回调函数时，其参数是前一个then的回调函数的返回值（例如resVal）；
+4. 当返回的不是Promise对象时，后面的then显然会立即执行，而不是等待（即使你想使用setTimeout作为返回值也不行，因为setTimeout的值是他的计时器编号）（在setTimeout里面试图返回那就更不可行了）；
+
+简单几个词总结一下：
+
+1. 第一个then二选一；
+2. 第二个then和以后执行第一个；
+3. 回调函数返回值是下一个then的回调函数的参数。
+
+**2、当返回值是Promise实例时：**
+
+在上面，我们看到两个Promise实例交互时的情况，即一个Promise实例是另外一个Promise实例的参数。
+
+这当遇见这种情况的时候有一个特点，只有作为参数的Promise实例的状态从pending转变为resolve或者reject时，另一个Promise实例的回调函数才会执行。
+
+而当then的回调函数的返回值是Promise实例时，那么由于这个Promise实例会作为下个then的参数，因此下个then会等待这个返回值的Promise实例的状态从pending发生改变后，才会继续执行。
+
+如代码：
+
+```
+let foo = new Promise(function (res, rej) {
+    setTimeout(function () {
+        res("foo");
+    }, 1000)
+})
+foo.then(function (v) {
+    console.log(v);
+    return new Promise(function (res, rej) {
+        setTimeout(function () {
+            //这里执行的是reject
+            rej("1")
+        }, 1000)
+    });
+}).then(undefined, function (val) {
+    //因此then这里执行的也是reject，而不是resolve
+    console.log(val);
+})
+//foo   第一个then的输出，延迟1秒
+//1     第二个then的输出，再延迟1秒
+```
+
+<h3>5、Promise的[[PromiseValue]]</h3>
+
+Promise实例是有值的，但这个值不能直接获取，只能通过实例的回调函数的参数，或者通过控制台查看Promise实例时，通过``[[PromiseValue]]``得知。
+
+得到Promise的值的方法有以下一种方法：
+
+1. 通过Promise实例的then的回调函数resolve或者reject的参数获取；
+
+设置Promise实例的值的方法有以下两种：
+
+1. 在创建Promise实例时，在执行时向resolve或者reject传递参数，执行哪个回调函数，那么执行它时传递的值就是Promise实例的值；
+2. 在执行resolve或者reject时，他们的返回值，将被设置为Promise实例的值。
+
+值的变化：
+
+1. Promise实例的初始值是undefined；
+2. 在Promise实例的值被设置之后，他的值会保持不变；
+3. 在执行resolve或者reject时，Promise的值就是执行回调函数时的参数的值；
+
+
+在上面讨论两个Promise实例互动时，即将一个Promise实例作为值传递给了另外一个Promise的回调函数。
+
+在这个传递过程中，Promise回调函数的实例的参数，就是Promise的值。
+
+如
