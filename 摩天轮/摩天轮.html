@@ -1,0 +1,79 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<style>
+    .container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        border: 1px solid red;
+        border-radius: 150px;
+        animation: ani-con 10s linear both infinite;
+    }
+
+    .box {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+        border: 1px solid green;
+        animation: box 10s linear both infinite;
+    }
+
+    .top {
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .left {
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .right {
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .bottom {
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    @keyframes ani-con {
+        from {
+            transform: rotateZ(0);
+        }
+        to {
+            transform: rotateZ(360deg);
+        }
+    }
+
+    @keyframes box {
+        from {
+            transform: rotateZ(0);
+        }
+        to {
+            transform: rotateZ(-360deg);
+        }
+    }
+</style>
+<div class="container">
+    <div class="top box">top</div>
+    <div class="left box">left</div>
+    <div class="right box">right</div>
+    <div class="bottom box">bottom</div>
+</div>
+</body>
+</html>
