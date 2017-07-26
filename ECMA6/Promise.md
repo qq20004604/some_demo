@@ -7,9 +7,9 @@
 
 Promise有几个特点：
 
-1. new出来后立刻执行（除了声明中的resolve和reject）；
+1. new出来后立刻执行；
 2. 只执行一次，并且结果发生后，无论之后几次调用then，都只执行那唯一一个结果（resolve或者reject）；
-3. 如果处于pending中，那么执行then时，相当于添加到队列里，peding中不执行，但等结果出来后，会一起执行（而非只执行一个或者不执行）；
+3. 如果处于pending中，那么执行then时，相当于添加到队列里，pending中不执行，但等结果出来后，会一起执行（而非只执行一个或者不执行）；
 4. resolve或者reject只能接受一个参数，如果要传多个参数的话，请使用数组或者对象的形式；
 5. resolve和reject里函数不是在声明时执行，而是异步的，在判定promise的状态为非pending状态时执行；
 
@@ -261,7 +261,7 @@ res barRej bazRes
 
 在上面，我们看到两个Promise实例交互时的情况，即一个Promise实例是另外一个Promise实例的参数。
 
-这当遇见这种情况的时候有一个特点，只有作为参数的Promise实例的状态从pending转变为resolve或者reject时，另一个Promise实例的回调函数才会执行。
+这当遇见这种情况的时候有一个特点，只有作为参数的Promise实例的状态从pending转变为resolved或者rejected时，另一个Promise实例的回调函数才会执行。
 
 而当then的回调函数的返回值是Promise实例时，那么由于这个Promise实例会作为下个then的参数，因此下个then会等待这个返回值的Promise实例的状态从pending发生改变后，才会继续执行。
 
@@ -300,7 +300,25 @@ Promise实例是有值的，但这个值不能直接获取，只能通过实例�
 设置Promise实例的值的方法有以下两种：
 
 1. 在创建Promise实例时，在执行时向resolve或者reject传递参数，执行哪个回调函数，那么执行它时传递的值就是Promise实例的值；
-2. 在执行resolve或者reject时，他们的返回值，将被设置为Promise实例的值。
+2. 在执行resolve或者reject时，他们的返回值，将被设置为新的Promise实例的值。
+
+设置值的示例：
+
+```
+let foo = new Promise((res, rej) => {
+    setTimeout(function () {
+        res("foo");
+    }, 1000)
+})
+foo.then(val => {
+    console.log(val);   // 显示当前Promise的对象的值
+    return "new value";   // 返回值将作为新的Promise实例的值
+}).then(val => {
+    console.log(val);   // 显示当前的值
+})
+// foo
+// new value
+```
 
 值的变化：
 
@@ -313,4 +331,269 @@ Promise实例是有值的，但这个值不能直接获取，只能通过实例�
 
 在这个传递过程中，Promise回调函数的实例的参数，就是Promise的值。
 
-如
+Promise作为返回值的示例：
+
+```
+let foo = new Promise((res, rej) => {
+    setTimeout(function () {
+        res("foo");
+    }, 1000)
+})
+foo.then(function (v) {
+    console.log(v);
+    return new Promise((res, rej) => {    //这里相当于把Promise对象作为新的Promise对象（即第二个then的调用者）的值
+        setTimeout(() => {
+            //这里执行的是reject
+            rej("Promise return value")
+        }, 1000)
+    });
+}).then(undefined, (val) => {
+    //因此then这里执行的也是reject，而不是resolve
+    console.log(val);
+})
+//foo   第一个then的输出
+//Promise return value     第二个then的输出
+```
+
+<h3>6、错误捕获catch</h3>
+
+简单来说，当执行Promise内部的代码时，如果抛错，那么将执行then的第二个回调函数（reject）。
+
+或者使用catch替代then，然后执行第一个回调函数。
+
+如代码：
+
+```
+let foo = new Promise((res, rej) => {
+    throw "This is a error"
+})
+foo.then(val => {
+    console.log(val)    //不执行
+}, err => {
+    console.log(err)    //执行这行
+})
+foo.catch(err => {
+    console.log(err)    //也执行这行
+})
+//This is a error
+//This is a error
+```
+
+那么当抛出错误的时候，发生什么事情呢？
+
+通过查看foo对象可以得知，当抛出错误后，foo这个Promise实例，会将``[[PromiseStatus]]``状态设置为``reject``（因此会执行reject回调函数），又会将``[[PromiseValue]]``的值设置为抛出的错误信息。
+
+因此，会执行then的reject的方法，并且reject的值是抛出的错误信息
+
+而因为``foo.catch(callback)`` 相当于 ``foo.then(null, reject)``，因此使用catch的时候相当于执行了then的reject回调函数，可以用来捕获错误信息。
+
+**脑洞时刻**
+
+1、假如抛出多个错误会发生什么事情呢？
+
+哦，不会发生什么事情，后面的的抛错会被无视，如果抛错的后面有执行resolve或者reject，那么也会被无视（因为Promise的值只能被设置一次，设置之后就不可改变了）。
+
+同样也因为这个原因，假如在抛错前就执行了resolve或者reject，那么抛错也会被无视。
+
+2、catch里抛错呢？
+
+由于then的返回值是一个新的Promise对象，因此catch里的抛错就会被新的Promise的reject所捕获，所以可以在catch后继续catch，从此子子孙孙无穷尽也。
+
+<h3>7、全部完成才结束Promise.all</h3>
+
+**场景**
+
+我们在写ajax的时候，经常会面临这样一个场景：
+
+我有三个ajax请求，但是需要等着三个ajax的请求结果都出来后再进行处理。
+
+如果常见写法，我们需要在每个都执行完之后，依次判断一下其他的完成了没有，完成了才能继续，没完成就return。
+
+但是使用``Promise.all``的话，问题简单多了。
+
+>Promise.all(iterable);
+
+**参数：**
+
+一般是一个数组，也可以是一个有迭代器接口的对象，但要求每个成员都是Promise实例。
+
+**返回值：**
+
+是一个Promise对象，为了方便称之为foo。
+
+返回值的状态将维持pending不变，直到当参数的每个Promise实例的状态从pending变化为resolved，或者rejected时。
+
+**返回值Promise对象的变化规则：**
+
+1、参数的所有Promise都执行resolve，那么结果：
+
+1. foo的状态resolved；
+2. foo的then执行resolve；
+3. foo的值是一个数组；
+4. 参数里的Promise对象的值按顺序（迭代器里的顺序，而非状态变化顺序）被放入到这个数组中，作为foo的值使用；
+
+2、假如参数里的Promise对象有一个执行了reject，那么结果：
+
+1. foo的状态rejected；
+2. foo的then执行reject；
+3. foo的值被执行了reject的那个Promise对象所决定；
+4. foo的reject将在那个执行了reject的Promise对象执行后立刻执行（而不是等所有的都执行完毕）；
+
+3、假如参数中的Promise对象有多个执行了reject，那么结果：
+
+1. 同上一种情况的1、2和4
+2. foo的值被第一个执行了reject的那个Promise对象所决定（后面的对其无影响）；
+
+情况一示例代码：
+
+```
+function delay(msg, time, isRej) {
+    return new Promise((res, rej) => {
+        setTimeout(() => {
+            isRej ? rej(msg) : res(msg)
+        }, time)
+    })
+}
+
+let promiseArray = [delay("first", 500), delay("second", 3000), delay("third", 1000)];
+
+let foo = Promise.all(promiseArray);
+foo.then(msg => {
+    console.log(msg)
+}, err => {
+    console.log(err)
+})
+
+// ["first", "second", "third"] //3秒后
+```
+
+情况三示例代码（情况二可以参考情况三的，基本是一样的）：
+
+```
+function delay(msg, time, isRej) {
+    return new Promise((res, rej) => {
+        setTimeout(() => {
+            isRej ? rej(msg) : res(msg)
+        }, time)
+    })
+}
+
+let promiseArray = [delay("first", 500), delay("second", 5500, true), delay("third", 1000, true)];
+
+let foo = Promise.all(promiseArray);
+foo.then(msg => {
+    console.log(msg)
+}, err => {
+    console.log(err)
+})
+
+// third    //1秒后
+```
+
+另外由于Promise.all的返回值也是一个Promise实例，因此适用于Promise实例的方法，自然也适用于它。
+
+
+**关于参数，更复杂的情况**
+
+假如``Promise.all``的参数，不是一个单纯的``new Promise()``对象，而是``(new Promise()).then(() => {})``这样的，会发生什么事情呢？
+
+首先，Promise.all执行哪个，不取决于第一个new Promise()里的状态，而是取决于``.then()``执行之后的状态。
+
+原因在于，``(new Promise()).then(() => {})``这个表达式的值，是作为``Promise.all()``的参数的。
+
+而这个表达式的值，取决于``.then()``的值，而这个值，和``new Promise()``并不是同一个Promise对象（参照本博客前几章）。
+
+因此假如new Promise()执行了reject，而then里的reject执行了resolve，那么最终结果还是resolved，而不是rejected。
+
+<h3>8、谁快用谁的Promise.race</h3>
+
+> Promise.race(iterable);
+
+**参数：**
+
+同Promise.all，懒得解释了。
+
+**返回值：**
+
+也是一个Promise对象，为了方便称之为foo。
+
+**返回值变化规律：**
+
+简单来说，参数的所有Promise对象，哪个的状态最先变化，返回值foo就使用它的。
+
+例如：
+
+1. 参数里有三个Promise对象；
+2. 他们状态变化所需要时间分别是2秒，1秒，3秒；
+3. 他们的状态变化结果分别是resolved，resolved，rejected；
+4. 他们的值分别为'A', 'B','C'；
+5. Promise.race执行，等1秒后，第二个Promise对象的状态变为resolved；
+6. 此时foo的状态立刻变为resolved，执行resolve，值为'B'；
+7. 另外两个的状态变化将不能影响foo；
+
+如示例代码：
+
+```
+function delay(msg) {
+    let isFailed = Math.random() > 0.5;
+    let time = parseInt(Math.random() * 1000);
+    return new Promise((res, rej) => {
+        setTimeout(() => {
+            let data = {
+                msg,
+                time,
+                state: 'isFailed? ' + isFailed
+            }
+            isFailed ? rej(data) : res(data)
+        }, time)
+    })
+}
+
+let promiseArray = [delay("first"), delay("second"), delay("third")];
+
+let foo = Promise.race(promiseArray);
+foo.then(data => {
+    console.log(data.msg, data.time, data.state)
+}, data => {
+    console.log(data.msg, data.time, data.state)
+})
+
+// 因为是随机结果，所以下面是随机结果之一
+// second 207 isFailed? true
+```
+
+**应用场景：**
+
+比如说你请求一个东西，但不想等待时间太久，比如说超过3秒钟就停止请求报告请求失败。
+
+那么就可以使用这个，然后写一个Promise对象，3秒后执行reject的那种，作为最后一个参数。
+
+然后只要超时，就自动执行，然后就ok了。
+
+如示例：
+
+```
+function preventTimeout(promise) {
+    let timeout = new Promise((res, rej) => {
+        setTimeout(() => {
+            rej('超时了！')
+        }, 3000)
+    })
+    return Promise.race([promise, timeout])
+}
+
+let foo = new Promise((res, rej) => {
+    setTimeout(() => {
+        res("foo")
+    }, 4000);
+})
+let bar = preventTimeout(foo)
+bar.then(null, val => {
+    console.log(val)
+})
+
+// 超时了！ //3秒后
+```
+
+将需要进行超时检测的Promise对象，作为preventTimeout函数的参数，然后取用其返回值用于替代使用被检测的Promise对象。
+

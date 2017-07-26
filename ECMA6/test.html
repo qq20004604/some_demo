@@ -1,4 +1,4 @@
-﻿﻿<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,65 +10,26 @@
 <body>
 
 <script>
-    function delay(isRes, val, time) {
-        return new Promise(function (resolve, reject) {
-            setTimeout(function () {
-                isRes ? resolve(val) : reject(val)
-            }, time ? time : 1000);
-        })
-    }
+function preventTimeout(promise) {
+    let timeout = new Promise((res, rej) => {
+        setTimeout(() => {
+            rej('超时了！')
+        }, 3000)
+    })
+    return Promise.race([promise, timeout])
+}
 
-    //    let foo = delay().then(function () {
-    //        console.log("foo");
-    //        return delay(2000);
-    //    }).then(function () {
-    //        console.log("foo.then");
-    //    })
-    //
-    //    let bar = delay().then(function () {
-    //        console.log("bar");
-    //        return {text: "bar"}
-    //    }).then(function (obj) {
-    //        console.log(obj.text);
-    //    })
-
-
-    //    let foo = new Promise(function (res, rej) {
-    //        setTimeout(function () {
-    //            res("1")
-    //        }, 1500)
-    //    })
-    //    foo.then(v => {
-    //        console.log(v);
-    //        return new Promise(function (resolve, reject) {
-    //            console.log(new Date())
-    //            setTimeout(function(){
-    //                resolve("foo then")
-    //            }, 1000);
-    //        })
-    //    }).then(v => {
-    //        console.log(v);
-    //    })
-
-let foo = new Promise(function (res, rej) {
-    setTimeout(function () {
-        res("foo");
-    }, 1000)
+let foo = new Promise((res, rej) => {
+    setTimeout(() => {
+        res("foo")
+    }, 4000);
 })
-foo.then(function (v) {
-    console.log(v);
-    return new Promise(function (res, rej) {
-        setTimeout(function () {
-            //这里执行的是reject
-            rej("1")
-        }, 1000)
-    });
-}).then(undefined, function (val) {
-    //因此then这里执行的也是reject，而不是resolve
-    console.log(val);
+let bar = preventTimeout(foo)
+bar.then(null, val => {
+    console.log(val)
 })
-//foo   第一个then的输出
-//1     第二个then的输出
+
+// 超时了！ //3秒后
 
 </script>
 </body>
