@@ -1,7 +1,21 @@
 <h2>Promise</h2>
 
 <h3>1、是什么</h3>
-
+<ol>
+    <li>一个十分适合处理异步操作的对象</li>
+    <li>有进行中(pending)、成功(resolved)、失败(rejected)三种状态</li>
+    <li>可以轻松处理成功或失败的情况，代码结构更清爽，操作结果可预期</li>
+    <li>对象的状态不受外界影响，只会根据预先设定的情况执行代码，方便从pending状态切换到resolved或者rejected</li>
+    <li>Promise对象在创建后会立即执行，但他的then是异步的（即使状态立刻改变，也要等其他代码执行完毕后才会去执行）</li>
+    <li>Promise对象的状态改变是一次性的，改变后值即确定。不会因为任何情况导致状态反复变化</li>
+    <li>Promise的状态改变后，会立刻触发其回调函数（执行resolve或者reject）</li>
+    <li>Promise对象foo可以作为另外一个Promise对象bar的值，并且在foo和bar的状态都不是pending后，才会执行bar的回调</li>
+    <li>Promise对象的then的值是Promise对象，但和最初的Promise不是同一个</li>
+    <li>then可以连写，方便连续异步函数的调用</li>
+    <li>Promise.all可以轻松处理多个异步操作，在全部完成后才应执行的逻辑</li>
+    <li>Promise.race可以轻松处理多个异步操作，但只需要最快的那个异步操作结果的情况</li>
+    <li>Promise.resolve和Promise.reject可以轻松将一个变量转为Promise对象并使用</li>
+</ol>
 
 <h3>2、基本例子</h3>
 
@@ -597,3 +611,103 @@ bar.then(null, val => {
 
 将需要进行超时检测的Promise对象，作为preventTimeout函数的参数，然后取用其返回值用于替代使用被检测的Promise对象。
 
+<h3>9、Promise.resolve</h3>
+
+>Promise.resolve(value);
+>
+>Promise.resolve(promise);
+>
+>Promise.resolve(thenable);
+
+**参数与返回值：**
+
+1. 参数是promise对象：返回值是参数，不做任何改变；
+2. 参数是thenable：指是一个有then属性的对象，返回值是一个新建的Promise对象，相当于将then方法作为创建时的参数使用；
+3. 参数是value：指不是以上两种情况，比如是一个字符串或者普通对象，返回一个状态是resolved的Promise对象，值是value
+
+为了方便理解，``Promise.resolve``相当于以下代码：
+
+```
+function resolve(data) {
+    // 当参数是Promise对象时
+    if (Object.prototype.toString.call(data) === '[object Promise]') {
+        return data;
+    }
+    // 当参数不是thenable时
+    if (typeof data !== 'object' || typeof data.then !== 'function') {
+        return new Promise(res => {
+            res(data)
+        })
+    }
+    // 当参数是thenable时
+    return new Promise(data.then.bind(data))
+}
+```
+
+
+**情况一：参数是Promise对象**
+
+直接返回该Promise对象，不做任何操作
+
+```
+let foo = new Promise(res => res('foo'));
+let bar = Promise.resolve(foo);
+foo === bar;    //true
+let baz = resolve(foo);
+foo === baz;    //true
+```
+
+**情况三：参数是value**
+
+```
+let bar = new Promise(res => res("bar"))
+bar.then(msg => console.log(msg))
+let foo = Promise.resolve('foo')
+foo.then(msg => console.log(msg))
+let res = resolve('res')
+res.then(msg => console.log(msg))
+let baz = new Promise(res => res("baz"))
+baz.then(msg => console.log(msg))
+// bar
+// foo
+// res
+// baz
+```
+
+**情况二：参数是thenable**
+
+这个情况看起来，但细节比较多，理解起来会有点费劲。
+
+首先，对象的then方法被作为一个新的Promise对象的参数使用；
+
+其次，该方法的this被默认指向了对象本身。
+
+> 如果在resolve里不将this通过bind绑定给data的话，那么在执行的时候，this会指向window。原因是new Promise的时候，会改变新建对象的this指向目标，而Promise对象的this指向的是window
+
+第三，如果在then方法里，状态改变之前抛错，那么会触发reject回调函数，而不是resolve。原因跟new Promise的参数里抛错会执行reject是一个道理
+
+第四，假如在then方法中，最终执行了第二个参数reject，而不是resolve，那么最终状态也会变为rejected。
+
+示例代码：
+
+```
+let foo = {
+    then(res, rej){
+        res('123')
+    }
+}
+Promise.resolve(foo).then(msg => console.log(msg))
+resolve(foo).then(msg => console.log(msg))
+// 123
+// 123
+```
+
+**Promise.reject**
+
+跟Promise.resolve没啥区别，除了在非thenable情况下，状态会默认变为rejected之外。
+
+所以参考上面的Promise.reject即可。
+
+
+
+<h3>10、</h3>
