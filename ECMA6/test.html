@@ -8,34 +8,46 @@
     <title>Document</title>
 </head>
 <body>
-2017-07-27T15:13:07.335934Z 1 [Note] A temporary password is generated for root@localhost: yLN:uS0Zxw87
-
-If you lose this password, please consult the section How to Reset the Root Password in the MySQL reference manual.
-
-<ol>
-    <li>一个十分适合处理异步操作的对象</li>
-    <li>有进行中(pending)、成功(resolved)、失败(rejected)三种状态</li>
-    <li>可以轻松处理成功或失败的情况，代码结构更清爽，操作结果可预期</li>
-    <li>对象的状态不受外界影响，只会根据预先设定的情况执行代码，方便从pending状态切换到resolved或者rejected</li>
-    <li>Promise对象在创建后会立即执行，但他的then是异步的（即使状态立刻改变，也要等其他代码执行完毕后才会去执行）</li>
-    <li>Promise对象的状态改变是一次性的，改变后值即确定。不会因为任何情况导致状态反复变化</li>
-    <li>Promise的状态改变后，会立刻触发其回调函数（执行resolve或者reject）</li>
-    <li>Promise对象foo可以作为另外一个Promise对象bar的值，并且在foo和bar的状态都不是pending后，才会执行bar的回调</li>
-    <li>Promise对象的then的值是Promise对象，但和最初的Promise不是同一个</li>
-    <li>then可以连写，方便连续异步函数的调用</li>
-    <li>Promise.all可以轻松处理多个异步操作，在全部完成后才应执行的逻辑</li>
-    <li>Promise.race可以轻松处理多个异步操作，但只需要最快的那个异步操作结果的情况</li>
-    <li>Promise.resolve和Promise.reject可以轻松将一个变量转为Promise对象并使用</li>
-</ol>
 
 <script>
-    let foo = new Promise(function (res) {
-        console.log(this)
-        res("foo")
-    })
-    foo.then(function (msg) {
-        console.log(this)
-    })
+    function Test(array) {
+        function Iterator() {
+            let index = 0
+            this.next = function () {
+                let obj = {}
+                // 如果接下来没有指向目标了，则返回done
+                if (array[index] === undefined) {
+                    obj.value = undefined
+                    obj.done = true
+                } else {
+                    obj.value = 'this index is ' + index + '， ' + array[index].value
+                    obj.done = false
+                    index = array[index].nextIndex
+                }
+
+                return obj
+            }
+            return this
+        }
+
+        this[Symbol.iterator] = function () {
+            let temp = new Iterator()
+            return temp
+        }
+    }
+    let testArray = [
+        {nextIndex: 2, value: 'next is 2'},
+        {nextIndex: 4, value: 'next is nothing'},
+        {nextIndex: 3, value: 'next is 3'},
+        {nextIndex: 1, value: 'next is 1'}
+    ]
+    let foo = new Test(testArray)
+    let bar = foo[Symbol.iterator]()
+    bar.next()  // {value: "this index is 0， next is 2", done: false}
+    bar.next()  // {value: "this index is 2， next is 3", done: false}
+    bar.next()  // {value: "this index is 3， next is 1", done: false}
+    bar.next()  // {value: "this index is 1， next is nothing", done: false}
+    bar.next()  // {value: undefined, done: true}
 
 </script>
 </body>
