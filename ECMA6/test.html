@@ -8,7 +8,6 @@
     <title>Document</title>
 </head>
 <body>
-
 <script>
     function Test(array) {
         function Iterator() {
@@ -20,7 +19,7 @@
                     obj.value = undefined
                     obj.done = true
                 } else {
-                    obj.value = 'this index is ' + index + '， ' + array[index].value
+                    obj[array[index].key] = 'this index is ' + index + '， ' + array[index].value
                     obj.done = false
                     index = array[index].nextIndex
                 }
@@ -35,11 +34,12 @@
             return temp
         }
     }
+
     let testArray = [
-        {nextIndex: 2, value: 'next is 2'},
-        {nextIndex: 4, value: 'next is nothing'},
-        {nextIndex: 3, value: 'next is 3'},
-        {nextIndex: 1, value: 'next is 1'}
+        {nextIndex: 2, value: 'next is 2', key: 'a'},
+        {nextIndex: 4, value: 'next is nothing', key: 'b'},
+        {nextIndex: 3, value: 'next is 3', key: 'c'},
+        {nextIndex: 1, value: 'next is 1', key: 'd'}
     ]
     let foo = new Test(testArray)
     let bar = foo[Symbol.iterator]()

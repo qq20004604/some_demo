@@ -708,6 +708,3 @@ resolve(foo).then(msg => console.log(msg))
 
 所以参考上面的Promise.reject即可。
 
-
-
-<h3>10、</h3>
