@@ -19,12 +19,14 @@
                     obj.value = undefined
                     obj.done = true
                 } else {
-                    obj[array[index].key] = 'this index is ' + index + '， ' + array[index].value
+                    obj.value = array[index].value
                     obj.done = false
                     index = array[index].nextIndex
                 }
-
                 return obj
+            }
+            this.throw = function (msg) {
+                console.log(msg)
             }
             return this
         }
@@ -36,18 +38,39 @@
     }
 
     let testArray = [
-        {nextIndex: 2, value: 'next is 2', key: 'a'},
-        {nextIndex: 4, value: 'next is nothing', key: 'b'},
-        {nextIndex: 3, value: 'next is 3', key: 'c'},
-        {nextIndex: 1, value: 'next is 1', key: 'd'}
+        {nextIndex: 1, value: '0'},
+        {nextIndex: 2, value: '1'},
+        {nextIndex: 3, value: '2'},
+        {nextIndex: 4, value: '3'}
     ]
     let foo = new Test(testArray)
-    let bar = foo[Symbol.iterator]()
-    bar.next()  // {value: "this index is 0， next is 2", done: false}
-    bar.next()  // {value: "this index is 2， next is 3", done: false}
-    bar.next()  // {value: "this index is 3， next is 1", done: false}
-    bar.next()  // {value: "this index is 1， next is nothing", done: false}
-    bar.next()  // {value: undefined, done: true}
+    // break
+    for (let i of foo) {
+        console.log(i)
+        break
+    }
+    // 0
+    // is return
+
+    // continue
+    for (let i of foo) {
+        console.log(i)
+        continue
+    }
+    // 0
+    // 1
+    // 2
+    // 3
+    // is return
+
+    // thorw
+    for (let i of foo) {
+        console.log(i)
+        throw new Error('error')
+    }
+    // 0
+    // is return
+    // Uncaught Error: error
 
 </script>
 </body>

@@ -155,9 +155,7 @@ bar.next()  // {value: undefined, done: true}
 
 <h3>2、Iterator的使用场合</h3>
 
-<h4>2.1、常见使用场合</h4>
-
-**1、扩展运算符**
+<h4>2.1、扩展运算符</h4>
 
 之前提了一个数组的扩展运算符，可以将其转为数组，这个比较好理解（就是按遍历次序依次放在数组里即可）
 
@@ -173,7 +171,143 @@ Promise.all()
 Promise.race()
 ```
 
-**2、对象的**
+<h4>2.2、解构赋值</h4>
 
-对象也有一个解构赋值，这个比较麻烦。
+这里的解构赋值，指的并非是对象的解构赋值（因为对象默认是没有Iterator接口的），而是指例如Array、Set结构的解构赋值。
+
+```
+// 引自阮一峰的例子
+let set = new Set().add('a').add('b').add('c');
+
+let [x,y] = set;
+// x='a'; y='b'
+
+let [first, ...rest] = set;
+// first='a'; rest=['b','c'];
+```
+
+同样是通过Set类型的Iterator接口，来完成解构赋值。
+
+<h4>2.3、字符串</h4>
+
+字符串自带Iterator接口，所以也可以。
+
+如示例代码：
+
+```
+let foo = 'a b\n\uD83D\uDC2A'
+let bar = foo[Symbol.iterator]()
+bar.next()  // {value: "a", done: false}
+bar.next()  // {value: " ", done: false}
+bar.next()  // {value: "b", done: false}
+bar.next()  // {value: "↵", done: false}
+bar.next()  // {value: "🐪", done: false}
+bar.next()  // {value: undefined, done: true}
+```
+
+简单总结一下字符串的迭代特点：
+
+1. 一个一个字符的过；
+2. Unicode的编码大于65535的（length里会被认为是2），依然会被当做一个字符来迭代；
+3. 可以识别例如 ``\n`` 这样的换行符，被视为一个字符，而不是2个；
+4. 可以识别空白符；
+5. 方法可以被重写（想返回什么就返回什么）
+
+
+<h4>2.4、Generator函数</h4>
+
+简单来说，是一个状态机，有了这个可以很方便的自定义每步next返回的值，和Iterator接口的匹配比较容易。
+
+但具体内容等下一章再说。
+
+<h3>3、Iterator的其他接口</h3>
+
+<h4>3.1、return</h4>
+
+定义方式和next一样，都是定义在返回的迭代器的属性上。
+
+他是一个函数，最后需要返回一个对象（即使是空对象也可以，但是必须有）；
+
+一般比较常见是用在 ``for...of`` 上，效果如下：
+
+1. 在遍历提前终止（比如break）的时候调用，这个最容易理解；
+2. 在遍历结束后（大约是迭代器的done应该为true时），这个时候在 ``for...of`` 的代码块里执行continue，也会调用；
+3. 在遍历的时候抛错，会调用
+
+```
+function Test(array) {
+    function Iterator() {
+        let index = 0
+        this.next = function () {
+            let obj = {}
+            // 如果接下来没有指向目标了，则返回done
+            if (array[index] === undefined) {
+                obj.value = undefined
+                obj.done = true
+            } else {
+                obj.value = array[index].value
+                obj.done = false
+                index = array[index].nextIndex
+            }
+            return obj
+        }
+        this.return = function () {
+            console.log('is return')
+            return {done: true}
+        }
+        return this
+    }
+
+    this[Symbol.iterator] = function () {
+        let temp = new Iterator()
+        return temp
+    }
+}
+
+let testArray = [
+    {nextIndex: 1, value: '0'},
+    {nextIndex: 2, value: '1'},
+    {nextIndex: 3, value: '2'},
+    {nextIndex: 4, value: '3'}
+]
+let foo = new Test(testArray)
+// break
+for (let i of foo) {
+    console.log(i)
+    break
+}
+// 0
+// is return
+
+// continue
+for (let i of foo) {
+    console.log(i)
+    continue
+}
+// 0
+// 1
+// 2
+// 3
+// is return
+
+// thorw
+for (let i of foo) {
+    console.log(i)
+    throw new Error('error')
+}
+// 0
+// is return
+// Uncaught Error: error
+```
+
+<h4>3.2、throw</h4>
+
+throw方法主要是配合 Generator 函数使用，一般的遍历器对象用不到这个方法。
+
+总之 ``throw new Error()`` 是不会触发该方法的
+
+所以略略略
+
+
+
 
