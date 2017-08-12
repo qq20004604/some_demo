@@ -1,3 +1,13 @@
+<h3>0、一句话总结</h3>
+
+<ol>
+    <li>Array、Set、arguments等自带Iterator接口</li>
+    <li>自定义Iterator接口，适合应用在自定义数据类型（比如链表）</li>
+    <li>任何接受数组作为参数的场合，其实都调用了遍历器接口</li>
+    <li>for...of可以遍历Iterator接口，无论他是默认的还是我们自定义的</li>
+    <li>for...of遍历得到的是value，for...in遍历得到的是key</li>
+</ol>
+
 <h3>1、Iterator</h3>
 
 **<h4>1.1、是什么？</h4>**
@@ -161,15 +171,14 @@ bar.next()  // {value: undefined, done: true}
 
 由于数组的遍历会调用遍历器接口，所以任何接受数组作为参数的场合，其实都调用了遍历器接口。
 
-例如
+示例代码：
 
 ```
-for...of
-Array.from()
-Map(), Set(), WeakMap(), WeakSet()（比如new Map([['a',1],['b',2]])）
-Promise.all()
-Promise.race()
+let foo = [1, 2, 3];
+let bar = [4, ...foo];
+bar;    // [4, 1, 2, 3]
 ```
+
 
 <h4>2.2、解构赋值</h4>
 
@@ -214,7 +223,19 @@ bar.next()  // {value: undefined, done: true}
 5. 方法可以被重写（想返回什么就返回什么）
 
 
-<h4>2.4、Generator函数</h4>
+<h4>2.4、常见会调用Iterator接口的场景</h4>
+
+由于数组的遍历会调用遍历器接口，所以任何接受数组作为参数的场合，其实都调用了遍历器接口。下面是一些例子。
+
+```
+for...of
+Array.from()
+Map(), Set(), WeakMap(), WeakSet()（比如new Map([['a',1],['b',2]])）
+Promise.all()
+Promise.race()
+```
+
+<h4>2.5、Generator函数</h4>
 
 简单来说，是一个状态机，有了这个可以很方便的自定义每步next返回的值，和Iterator接口的匹配比较容易。
 
@@ -233,6 +254,8 @@ bar.next()  // {value: undefined, done: true}
 1. 在遍历提前终止（比如break）的时候调用，这个最容易理解；
 2. 在遍历结束后（大约是迭代器的done应该为true时），这个时候在 ``for...of`` 的代码块里执行continue，也会调用；
 3. 在遍历的时候抛错，会调用
+
+需要注意的是第二点，continue只有在for...of遍历到**最后一个元素**的时候，才会触发return（特指return），对于前几个元素是不会触发的
 
 ```
 function Test(array) {
@@ -309,5 +332,93 @@ throw方法主要是配合 Generator 函数使用，一般的遍历器对象用�
 所以略略略
 
 
+
+<h3>4、for...of</h3>
+
+<h4>4.1、啥用？</h4>
+
+用于遍历有Iterator接口的数据结构，比如Array呀，Set呀，Map呀之类的，只要有Iterator接口的，都可以。
+
+但是记住，普通的Object对象是没有Iterator接口的，所以不能遍历
+
+``for...of``遍历对象，获得的是value，不是key，这点需要特别注意
+
+<h4>4.2、for...of和for...in的区别</h4>
+
+<table>
+    <tr>
+        <td colspan="3">for...of和for...in的区别</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>for...of</td>
+        <td>for...in</td>
+    </tr>
+    <tr>
+        <td>前注</td>
+        <td>遍历到的是值</td>
+        <td>遍历到的是key</td>
+    </tr>
+    <tr>
+        <td>Object</td>
+        <td>No</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Array</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Set或Map</td>
+        <td>Yes</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>arguments</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>NodeList</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+</table>
+
+<h4>4.3、keys、entries、values</h4>
+
+除了[Symbol.iterator]可以返回一个遍历器对象之外，ES6的数组、Set、Map还可以通过keys、entries、values三个属性返回遍历器对象
+
+如示例代码：
+
+```
+let foo = [1, 2, 3];
+foo.entries();    // Array Iterator {}
+foo.keys();    // Array Iterator {}
+foo.values();    // Uncaught TypeError
+```
+
+注意：数组没有values()属性（Set有）
+
+<h4>4.4、for...of与foo...in的缺点</h4>
+
+**for...of的缺点：**
+
+1、对某些类数组，没有Iterator接口的数据类型无法使用；<br>
+——》解决办法：通过Array.from()转为数组后再使用；
+
+2、对对象无法使用；<br>
+——》解决办法：通过``for...in``遍历键名；
+
+**for...in的缺点：**
+
+1、对Set和Map无效；
+
+2、遍历到的是key，不是值——但可以变相求值；
+
+3、对常规类型有效，对自定义数据结构无效；
+
+4、只能遍历到可遍历的属性，于是会出现两种问题：某些属性遍历不到，以及遍历到的某些属性其实你不想要（因此得写判断语句跳过）
 
 

@@ -8,70 +8,21 @@
     <title>Document</title>
 </head>
 <body>
+<ol>
+    <li>Array、Set、arguments等自带Iterator接口</li>
+    <li>自定义Iterator接口，适合应用在自定义数据类型（比如链表）</li>
+    <li>任何接受数组作为参数的场合，其实都调用了遍历器接口</li>
+    <li>for...of可以遍历Iterator接口，无论他是默认的还是我们自定义的</li>
+    <li>for...of遍历得到的是value，for...in遍历得到的是key</li>
+</ol>
 <script>
-    function Test(array) {
-        function Iterator() {
-            let index = 0
-            this.next = function () {
-                let obj = {}
-                // 如果接下来没有指向目标了，则返回done
-                if (array[index] === undefined) {
-                    obj.value = undefined
-                    obj.done = true
-                } else {
-                    obj.value = array[index].value
-                    obj.done = false
-                    index = array[index].nextIndex
-                }
-                return obj
-            }
-            this.throw = function (msg) {
-                console.log(msg)
-            }
-            return this
-        }
-
-        this[Symbol.iterator] = function () {
-            let temp = new Iterator()
-            return temp
-        }
+    let pro = function () {
+        return new Promise(function (resolve, reject) {
+            resolve()
+        })
     }
 
-    let testArray = [
-        {nextIndex: 1, value: '0'},
-        {nextIndex: 2, value: '1'},
-        {nextIndex: 3, value: '2'},
-        {nextIndex: 4, value: '3'}
-    ]
-    let foo = new Test(testArray)
-    // break
-    for (let i of foo) {
-        console.log(i)
-        break
-    }
-    // 0
-    // is return
-
-    // continue
-    for (let i of foo) {
-        console.log(i)
-        continue
-    }
-    // 0
-    // 1
-    // 2
-    // 3
-    // is return
-
-    // thorw
-    for (let i of foo) {
-        console.log(i)
-        throw new Error('error')
-    }
-    // 0
-    // is return
-    // Uncaught Error: error
-
+    let foo = Promise.all([pro(), pro()])
 </script>
 </body>
 </html>
