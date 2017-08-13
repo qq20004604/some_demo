@@ -10,33 +10,16 @@
 <body>
 <script>
 function* foo() {
-    let a = 1;
-    console.log('第一次执行')
-    yield a;
-    a++;
-    console.log(yield "test");
-    a *= 2;
-    return a
+    yield 1;
+    yield 2;
+    return 3
 }
 
-// 调用foo()
-let bar = foo();
-// 此时没有输出任何东西，bar的值
-
-// 第一次调用next()，下面的两行注释，其中第一行是console.log，第二行是返回值****
-bar.next();
-// 第一次执行
-// {value: 1, done: false}
-
-// 第二次调用next()，注意，这个时候没执行yield "test"外面的console.log
-bar.next();
-// {value: "test", done: false}
-
-// 第三次调用next()，这个时候执行了console.log()，但显然由于yield之前已经执行了，所以参数是空
-// 遇见return了，所以done变为true，value的值是return的返回值
-bar.next();
-// undefined
-// {value: 4, done: true}
+for (let i of foo()) {
+    console.log(i)
+}
+// 1
+// 2
 </script>
 </body>
 </html>
