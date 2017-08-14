@@ -1,4 +1,4 @@
-﻿<h3>0、一句话总结</h3>
+<h3>0、一句话总结</h3>
 
 
 <h3>1、Generator基本概念</h3>
@@ -250,3 +250,60 @@ for (let i of foo()) {
 另外，解构赋值等，也会忽视return返回的值。
 
 <h3>3、throw和return</h3>
+
+<h4>3.1、throw</h4>
+
+throw和next相对来说，比较特殊，他具备以下特点：
+
+1. 和next一样，是通过迭代器来执行的；
+2. 和next一样，从上一次yield表达式所在的地方开始执行代码；
+3. 但区别在于，next会继续执行下一句代码，而throw相当于在开始执行下一句代码之前，立刻先执行了一个``throw err``，err就是throw的参数（建议err使用``new Error(err)``的形式）；
+4. 当抛错时，根据其上一次yield表达式是否在``try...catch``捕获的作用于内，分为两种情况：
+<br>4.1 假如不在其中，无法捕获到报错，那么throw语句没有返回值，代码停止继续运行。下次执行next()时，返回值变为``{value: undefined， done: true}``
+<br>4.2 假如在其中，可以捕获到报错，那么立刻进入``catch``代码块，然后继续正常执行到下一个yield表达式的位置，并且该yield表达式的值将成为throw语句的返回值（就像执行了``next()``语句一样）
+5. 由于4.2的情况很正常，所以不做讨论。假如遇见4.1的情况，那么错误还将被抛到Generator函数外，遍历器执行throw()的地方，就像在遍历器执行throw的地方执行了一次``throw err``一样。假如此时该错误没有被``try...catch``所捕获，那么将解释器按照抛错处理（比如说继续停止之后的代码）
+
+简单来说，相当于在执行了一次next()，并且在Generator函数内开始执行应执行的代码之前，抛错。如果错误没有被捕获，内部执行抛错处理，并且该错误会冒泡到执行throw()的地方，并且按照正常出错的情况来处理。
+
+请结合代码理解：
+
+```
+
+    try {
+        yield;
+        // 由于抛错，下面这个console.log不会被执行
+        console.log('上一个yield表达式之后，同在try里的代码块。因为throw所以不会执行这里')
+    } catch (e) {
+        // 因为throw，所以错误被捕获到了
+        console.log('内部捕获', e);
+    }
+    console.log('内部在catch捕获后的代码块，这里会在catch后继续执行')
+    yield '第二个yield，成为foo的值'
+    console.log("第二个yield之后，也会继续执行")
+    yield '第三个yield，成为bar的值'
+};
+
+var i = g();
+// 过渡到第一个yield表达式的位置（此时在try...catch语句内）
+i.next();
+
+let foo;
+let foo2;
+try {
+    foo = i.throw('a');
+    // foo2 = i.throw('a');
+    // 如果解除注释，这个抛错将被"外部捕获"捕捉到
+    // foo2的值是undefined
+} catch (e) {
+    console.log('外部捕获', e);
+    // 如果没有这个try...catch捕捉错误，那么代码将报错（停止继续执行）
+}
+// 内部捕获 a
+// 外部捕获 b
+let bar = i.next()
+console.log(foo)    // {value: "第二个yield，成为foo的值", done: false}
+console.log(bar)    // {value: "第三个yield，成为bar的值", done: false}
+```
+
+另外，i.throw()和throw的区别在于，后者只会影响到外部，而前者先影响到Generator内部，未处理的话才会冒泡到外部。
+

@@ -9,17 +9,41 @@
 </head>
 <body>
 <script>
-function* foo() {
-    yield 1;
-    yield 2;
-    return 3
-}
+    let g = function*() {
+        try {
+            yield;
+            // 由于抛错，下面这个console.log不会被执行
+            console.log('上一个yield表达式之后，同在try里的代码块。因为throw所以不会执行这里')
+        } catch (e) {
+            // 因为throw，所以错误被捕获到了
+            console.log('内部捕获', e);
+        }
+        console.log('内部在catch捕获后的代码块，这里会在catch后继续执行')
+        yield '第二个yield，成为foo的值'
+        console.log("第二个yield之后，也会继续执行")
+        yield '第三个yield，成为bar的值'
+    };
 
-for (let i of foo()) {
-    console.log(i)
-}
-// 1
-// 2
+    var i = g();
+    // 过渡到第一个yield表达式的位置（此时在try...catch语句内）
+    i.next();
+
+    let foo;
+    let foo2;
+    try {
+        foo = i.throw('a');
+        // foo2 = i.throw('a');
+        // 如果解除注释，这个抛错将被"外部捕获"捕捉到
+        // foo2的值是undefined
+    } catch (e) {
+        console.log('外部捕获', e);
+        // 如果没有这个try...catch捕捉错误，那么代码将报错（停止继续执行）
+    }
+    // 内部捕获 a
+    // 外部捕获 b
+    let bar = i.next()
+    console.log(foo)    // {value: "第二个yield，成为foo的值", done: false}
+    console.log(bar)    // {value: "第三个yield，成为bar的值", done: false}
 </script>
 </body>
 </html>
