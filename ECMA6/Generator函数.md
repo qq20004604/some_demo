@@ -253,6 +253,11 @@ for (let i of foo()) {
 
 <h4>3.1、throw</h4>
 
+
+> gen.throw(exception)
+
+throw方法在Generator的原型链上。
+
 throw和next相对来说，比较特殊，他具备以下特点：
 
 1. 和next一样，是通过迭代器来执行的；
@@ -306,4 +311,475 @@ console.log(bar)    // {value: "第三个yield，成为bar的值", done: false}
 ```
 
 另外，i.throw()和throw的区别在于，后者只会影响到外部，而前者先影响到Generator内部，未处理的话才会冒泡到外部。
+
+简单总结一下：
+
+1. 遍历器的throw方法可以将错误传入Generator函数内部；
+2. Generator函数内部可以通过try...catch来捕获错误，如果没有被捕获，将冒泡到Generator函数外面来；
+3. 如果在Generator函数内部正常捕获了错误，那么代码将继续执行下去；
+4. 如果没有捕获到错误，遍历器的done将变为true；
+5. 可以用于调试Generator函数内部错误捕获；
+
+<h4>3.2、return</h4>
+
+>gen.return(value)
+
+返回值是``{value: value, done: true}``，value是传入的值。
+
+同样是在Generator的原型链上。
+
+简单来说，相当于立即结束了Generator函数（除了当时yield在``try...finally``代码块以内的情况）。
+
+如代码：
+
+```
+let g = function*() {
+    console.log("Before 1")
+    yield 1;
+    console.log("Before 2")
+    yield 2;
+    console.log("Before 3")
+    yield 3;
+};
+let foo = g();
+
+foo.next();
+// Before 1、
+// {value: 1, done: false}
+
+foo.return('input');
+// {value: "input", done: true}
+
+foo.next();
+// {value: undefined, done: true}
+```
+
+1. 在第一次执行完next后，停留在``yield 1``；
+2. 然而当执行return后，并没有继续执行到``yield 2``，而是立刻跳到函数结束，并且返回的对象的done为true；
+3. 可说明Generator函数已经遍历完毕了（虽然是被终止的）；
+4. 从之后调用foo.next()的返回值也可以得到证明；
+5. 需要特别注意的是：return并非是跳转到Generator函数的结尾来实现done变为true的，而是直接停止了Generator函数。这点可以通过下面的``try...finally``来证明。
+
+**finally和return**
+
+当return遇见``try...finally``时，如果当前的yield在try的代码块内，那么将直接跳到finally代码块内，执行finally代码。
+
+等finally里的代码执行完毕后，才会立刻结束Generator函数，并将return的参数作为return的返回值对象的value属性的值。
+
+有一点比较特殊：
+
+1. 假如finally里有yield表达式，那么return并不会造成Generator函数的结束，而是在遇见yield表达式后停止（就像正常那样）；
+2. 可以通过继续调用next往下执行，直到离开finally代码块为止；
+3. 离开finally代码块后不会继续执行，而是立即结束Generator函数
+
+```
+let g = function*() {
+    console.log("Before 1")
+    try {
+        yield 1;
+        console.log("Before 2")
+        yield 2;
+    } finally {
+        console.log('finally')
+        yield 4;
+    }
+    console.log("last")
+    yield 5;
+};
+let foo = g();
+
+foo.next();
+// Before 1
+// {value: 1, done: false}
+
+foo.return('input');
+// finally
+// {value: 4, done: false}
+
+foo.next();
+// {value: "input", done: true}
+```
+
+简单来说，return用于终结Generator函数。
+
+
+<h3>4、yield*表达式</h3>
+
+<h4>4.1、基础</h4>
+
+简单来说，yield*表达式就是在一个Generator函数内嵌套另外一个Generator函数。
+
+于是在遍历的过程中，当在第一个Generator函数内遇见第二个Generator函数后，就会先停止遍历第一个Generator函数，先遍历完第二个Generator函数，然后再恢复。
+
+如代码：
+
+```
+let g1 = function*() {
+    yield 1;
+    yield* g2();
+    yield 2;
+}
+let g2 = function*() {
+    yield "a";
+    yield "b";
+}
+let foo = g1();
+for (let i of foo) {
+    console.log(i)
+}
+// 1
+// a
+// b
+// 2
+```
+
+如上，简单暴力通俗易懂。
+
+假如不是``yield* g2()``，而是``yield g2()``会发生什么事情呢？
+
+1. 首先，g2()会返回一个遍历器对象，毫无疑问；
+2. 其次，yield表达式会使得该遍历器对象作为next的返回值来返回；
+3. 因此最终结果是1——》g2()的遍历器——》2，代码就略了不写
+
+<h4>4.2、递归</h4>
+
+因为yield*表达式的存在，因此遍历器可以递归自己，代码十分简单：
+
+```
+let g1 = function*(count) {
+    console.log("count:" + count)
+    if (count > 3) {
+        return
+    }
+    yield 1;
+    yield 2;
+    yield* g1(count + 1);
+}
+let foo = g1(1);
+for (let i of foo) {
+    console.log(i)
+}
+// count:1
+// 1
+// 2
+// count:2
+// 1
+// 2
+// count:3
+// 1
+// 2
+// count:4
+```
+
+<h4>4.3、有Iterator接口的数据结构</h4>
+
+yield*表达式可以遍历Generator函数，原因是Generator函数有Iterator接口，相当于对Generator函数的遍历器执行了``for...of``；
+
+那么yield*表达式能不能遍历非Generator函数，但是也有Iterator接口的数据结构呢？显然也是可以的。
+
+如代码：
+
+```
+let g1 = function*() {
+    yield* [1, 2]
+    yield* "ab"
+}
+let foo = g1();
+for (let i of foo) {
+    console.log(i)
+}
+// 1
+// 2
+// "a"
+// "b"
+```
+
+也可以对自定义数据结构生效，只要他有Iterator接口即可：
+
+```
+function Test() {
+    let arr = [3, 2, 1]
+
+    function Iterator() {
+        let index = 0
+        // 该对象有next方法，调用后返回一个当前索引下的值
+        this.next = function () {
+            let obj = {}
+            if (index < 3) {
+                obj.value = arr[index]
+                obj.done = false
+                index++
+            } else {
+                obj.value = undefined
+                obj.done = true
+            }
+            return obj
+        }
+        // 返回他自己
+        return this
+    }
+
+    // 遍历器接口
+    this[Symbol.iterator] = function () {
+        // 创建一个遍历器对象（Iterator不是关键词）
+        let temp = new Iterator()
+        // 返回他
+        return temp
+    }
+}
+let m = new Test()
+
+let g1 = function*() {
+    yield* m
+}
+let foo = g1();
+for (let i of foo) {
+    console.log(i)
+}
+// 3
+// 2
+// 1
+```
+
+<h4>4.4、返回值</h4>
+
+1. Generator函数是返回值是他的遍历器；
+2. 遍历器的返回值是对象，有value和done属性；
+3. yield表达式的返回值是根据遍历器的next的参数决定；
+4. 那么yield*表达式的返回值是什么呢？
+
+答案是根据被遍历函数的return所决定；
+
+最简单的示例如代码：
+
+```
+let g1 = function*() {
+    console.log(yield* g2())
+}
+
+let g2 = function*() {
+    yield 'a';
+    return 'b';
+}
+let foo = g1();
+for (let i of foo) {
+    console.log(i)
+}
+// 'a'
+// 'b'
+```
+
+那么，是否还记得Generator函数的返回值在什么时候起作用？
+
+可以回去看看1.1，return是在done第一次变为true时，value属性的值。
+
+因此，yield*的值，取决于遍历器在遍历结束，done变为true时，value属性的值，如以下代码自定义了一个数据结构，这个数据结构在done变为true时是有值的。
+
+```
+function G() {
+    let arr = [3, 2, 1]
+
+    function Iterator() {
+        let index = 0
+        this.next = function () {
+            let obj = {}
+            if (index < 3) {
+                obj.value = arr[index]
+                obj.done = false
+                index++
+            } else {
+                // 这里与之前的例子不同
+                obj.value = '自定义数据结构的done变为true了'
+                obj.done = true
+            }
+            return obj
+        }
+    }
+    this[Symbol.iterator] = function () {
+        let temp = new Iterator()
+        // 返回他
+        return temp
+    }
+
+}
+let g = new G()
+
+let g1 = function*() {
+    console.log(yield* g)
+}
+let foo = g1();
+for (let i of foo) {
+    console.log(i)
+}
+// 3
+// 2
+// 1
+// "自定义数据结构的done变为true了"
+```
+
+<h3>5、简写与this</h3>
+
+<h4>5.1、简写</h4>
+
+Generator函数的写法有三种（除了第一种名字都自己捏的）：
+
+1. 声明式；
+2. 赋值式；
+3. 属性式；
+
+其中，属性式除了常规写法外，还有简写版（就像当函数作为对象属性时的简写一样）。
+
+如代码，一目了然：
+
+```
+// 声明式
+function *g1() {
+    yield 'g1'
+}
+
+// 赋值式
+let g2 = function*() {
+    yield 'g2'
+}
+
+// 属性式
+let foo = {
+    g3: function*() {
+        yield 'g3'
+    },
+    // 简写的属性式
+    *g4(){
+        yield 'g4'
+    }
+}
+
+for (let i of g1()) {
+    console.log(i)
+}
+// g1
+for (let i of g2()) {
+    console.log(i)
+}
+// g2
+for (let i of foo.g3()) {
+    console.log(i)
+}
+// g3
+for (let i of foo.g4()) {
+    console.log(i)
+}
+// g4
+```
+
+<h4>5.2、this</h4>
+
+Generator函数的this指向谁呢？
+
+答案是window，如代码：
+
+```
+function *g1() {
+    console.log(this)
+    yield 'g1'
+}
+
+let foo = g1()
+foo.next()
+// Window
+// {value: "g1", done: false}
+```
+
+由于Generator函数不能通过new来生成遍历器（会报错），因此显然通过这条路来改变this的指向显然是走不通的。
+
+那么如何改变Generator的this指向的目标呢？
+
+答案很简单：
+
+1. apply或者call；
+2. bind
+
+使用bind的示例如下：
+
+```
+function *g1() {
+    console.log(this)
+    yield 'g1'
+}
+
+g1 = g1.bind("g1")
+let foo = g1()
+foo.next()
+// 'g1'
+// {value: "g1", done: false}
+```
+
+call的示例：
+
+```
+function *g1() {
+    console.log(this)
+    yield 'g1'
+}
+
+let foo = g1.call("g1")
+foo.next()
+// 'g1'
+// {value: "g1", done: false}
+```
+
+**遍历器调用更多的方法**
+
+遍历器通常只能调用next、throw、return。
+
+假如想调用更多的呢？
+
+简单解决办法是通过原型链来完成，示例如下：
+
+```
+function *g() {
+    yield 'g1'
+}
+g.prototype.getDate = function () {
+    return new Date()
+}
+let foo = g()
+foo.getDate()
+// Tue Aug 22 2017 00:06:26 GMT+0800 (CST)
+```
+
+**在遍历器里调用更多方法并且能操作this**
+
+简单来说，就是假如我遍历器想要添加count和add两个方法，分别是获取当前计数和对计数增加。
+
+如果分别是独立的，那么很简单，通过上面来完成即可。
+
+但假如需要操作Generator函数内部的变量呢？由于Generator函数不能通过new来生成实例，因此要复杂一些。
+
+具体思路是让Generator函数的this，指向他本身的prototype原型链，于是当调用this的时候，自然相当于this指向了原型链，可以调用原型链上的属性。
+
+如代码：
+
+```
+function Foo() {
+    function *g() {
+        yield 'g1'
+    }
+
+    g.prototype.number = 0;
+    g.prototype.count = function () {
+        return this.number
+    }
+    g.prototype.add = function (val) {
+        this.number += val;
+        return this.number;
+    }
+    let foo = g.call(g.prototype)
+    return foo;
+}
+let bar = new Foo();
+```
+另外：
+
+1. new Foo与直接Foo()没什么区别，都是返回一个新的Generator遍历器；
+2. 虽然不能通过new g()来生成，但实质上，通过g()生成的遍历器对象，他们原型链上的number的状态，并不共享（独立的，互不干扰）；
 
