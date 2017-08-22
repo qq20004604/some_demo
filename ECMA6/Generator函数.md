@@ -783,3 +783,239 @@ let bar = new Foo();
 1. new Foo与直接Foo()没什么区别，都是返回一个新的Generator遍历器；
 2. 虽然不能通过new g()来生成，但实质上，通过g()生成的遍历器对象，他们原型链上的number的状态，并不共享（独立的，互不干扰）；
 
+<h3>6、状态机</h3>
+
+这里的状态机通常指**有限状态机**。
+
+所谓的有限状态机，是一个模型，通俗的来说：
+
+> 这个模型有x个状态（x可确定），在任一时刻只能处于一个状态下，并且可以从一个状态切换到另外一个状态。
+
+举个例子：
+
+1. 假如有一个ajax请求的提交按钮（比如【登陆】）；
+2. 他有两个状态：①待命中；②提交中；
+3. 显然，他要么处于【待命】状态，要么处于【提交】状态，不可能又待命又提交；
+4. 其中待命状态是可点击的，而提交状态是不可点击的（点击无效）；
+
+如代码：
+
+```
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    al-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>状态机与Generator函数</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+<button id="login-btn">登陆</button>
+<script>
+    // 封装函数
+    function btn(node, canClickText, doingText) {
+        function *g() {
+            while (true) {
+                if (this.node.hasClass('submiting')) {
+                    this.node.removeClass('submiting')
+                    this.node.text(canClickText ? canClickText : '提交')
+                    debugger
+                    iter.onBeDone()
+                    yield true  // 表示true当前可点击
+                } else {
+                    this.node.addClass('submiting')
+                    this.node.text(doingText ? doingText : '提交中')
+                    iter.onBeDoing()
+                    yield false  // 返回false表示当前不可点击
+                }
+            }
+        }
+
+        // 是否可点击
+        g.prototype.canClick = function () {
+            if (this.node.hasClass('submiting')) {
+                iter.onDoing()
+                return false
+            } else {
+                return true
+            }
+        }
+        /* 以下是默认事件 */
+        // 可点击时点击，触发事件
+        g.prototype.onBeDoing = function () {
+
+        }
+        // 从不可点击变为点击时，触发的事件
+        g.prototype.onBeDone = function () {
+
+        }
+        // 当不可点击时点击，触发的事件
+        g.prototype.onDoing = function () {
+
+        }
+        // 设置node
+        g.prototype.node = node
+        let iter = g.call(g.prototype, canClickText, doingText)
+        return iter
+    }
+    // 绑定之
+    let loginBtn = btn($("#login-btn"), '登陆', '登录中')
+    loginBtn.onDoing = function () {
+        console.log('提交中，不可继续点击')
+    }
+    loginBtn.onBeDoing = function () {
+        console.log('开始提交')
+    }
+    loginBtn.onBeDone = function () {
+        console.log('提交完毕')
+    }
+
+    // 点击事件
+    $("#login-btn").click(function () {
+        if (!loginBtn.canClick()) {
+            return
+        }
+        loginBtn.next()
+        setTimeout(function () {
+            loginBtn.next()
+        }, 1500)
+    })
+</script>
+</body>
+</html>
+```
+
+代码解释：
+ 
+1. btn函数是一个绑定函数，参数有三个：①被绑定的DOM；②可点击时的文字；③不可点击时的文字；
+2. 其中参数①是必填，而参数②③是可选的；
+3. 在绑定之后，模拟了一个异步操作，点击时，分为【可点击】状态和【不可点击】状态，通过canClick这个扩展方法来判断；
+4. 假如可点击，在异步开始之前执行一次``next()``方法，异步完成之后再执行一次``next()``方法，具体内部如何实现，在点击事件里无需关心；
+5. 这种方法实现了一个封装函数，可复用于不同按钮，并且简化了代码，降低犯错可能（比如说忘记改属性了之类）；
+6. 考虑到扩展，因此额外增加了三个方法``onBeDoing``、``onBeDone``、``onDoing``，分别表示当切换为【不可点击】、【可点击】状态，以及当前是【不可点击时】进行触发时，所执行的响应函数。
+7. 三个扩展函数可以在绑定后进行设置，也可以在btn函数中设置通用的默认方法；
+
+这个是比较复杂状态的，因为要考虑到不可转换的情况；
+
+但是可以通过给next()添加参数，然后通过参数来判断当前状态是什么，从而抛弃canClick方法，但缺点在于，这种处理方法的前提是从【点击】行为到发起异步行为这个过程中，处理步骤比较少而且简单，如果过程比较复杂的话，那么就比较麻烦了。
+
+推荐一篇阮一峰的[【JavaScript与有限状态机】](http://www.ruanyifeng.com/blog/2013/09/finite-state_machine_for_javascript.html)，讲的比较通俗易懂。
+
+<h3>7、应用</h3>
+
+<h4>7.1、异步应用</h4>
+
+Generator函数的主要目的就是用于解决异步编程，可以极大的减轻异步编程的撰写难度。
+
+具体来说，我们之前写ajax时，通常是采用回调函数的方法来完成。在只有一个ajax请求的时候，这是可以接受的。
+
+但假如我们有5个AJAX请求，并且后一个需要根据前一个ajax请求的结果来完成请求，那么代码的复杂度将急剧上升。
+
+如示例：
+
+```
+function delay(msg, callback) {
+    setTimeout(function () {
+        console.log(msg)
+        callback()
+    }, 1000)
+}
+delay('1', function () {
+    delay('2', function () {
+        delay('3', function () {
+            delay('4', function () {
+                delay('5', function () {
+                    console.log('done')
+                })
+            })
+        })
+    })
+})
+```
+
+哇，简直可怕。
+
+es6新增的promise，在解决异步编程时，降低了一定难度，但主要是降低了对于单个ajax请求的难度，看起来简单轻松。也增强了对错误处理的能力，但对于以上情况的解决，并没有质的提升。
+
+如代码：
+
+```
+function delay(msg) {
+    return new Promise((resolve, reject) => {
+        setTimeout(function () {
+            console.log(msg)
+            resolve()
+        }, 1000)
+    })
+}
+delay('1')
+    .then(() => delay('2'))
+    .then(() => delay('3'))
+    .then(() => delay('4'))
+    .then(() => delay('5'))
+    .then(() => {
+        console.log('done')
+    })
+```
+
+看起来似乎好看了一些，但有以下几个问题：
+
+1. 耦合度高，麻烦；
+2. 写多了后你会晕，不知道哪个then是哪个ajax请求的处理函数，这里因为代码比较少所以看起来还可以，但假如代码比较复杂，那么这里的代码量就会激增；
+3. 要求每个异步都是Promise，不然不可行；
+
+于是，Generator函数出现了，是解决此类场景的极佳办法；
+
+```
+function delay(msg) {
+    setTimeout(function () {
+        iter.next(msg)
+    }, 1000)
+}
+
+function*g() {
+    let result1 = yield delay('1')
+    console.log(result1)
+    let result2 = yield delay('2')
+    console.log(result2)
+    let result3 = yield delay('3')
+    console.log(result3)
+    let result4 = yield delay('4')
+    console.log(result4)
+    let result5 = yield delay('5')
+    console.log(result5)
+    console.log('done')
+}
+let iter = g()
+iter.next()
+```
+
+这个方法具备以下特点：
+
+1. 像同步代码一样写多个异步请求，同步编程写法显然比Promise或者回调函数套用要简单；
+2. 解耦，每个异步函数在最后加上一个``iter.next()``方法，用于**将状态机推到下一个状态**，但却不必关心下一个状态是哪个异步请求；
+3. 通过``iter.next()``的参数，可以将上一次请求的数据传给下一次请求的数据，简单暴力；
+4. 通过函数的参数（比如dalay()）来将上一次异步请求的结果传给当前这次异步请求使用。
+
+<h4>7.2、部署遍历器接口</h4>
+
+之前提过，Generator函数返回遍历器，而遍历器接口``[Symbol.iterator]``函数返回的是也是遍历器，所以简直完美搭配，啊~
+
+show the code：
+
+```
+let obj = {
+    a: 1,
+    b: 2,
+    c: 3,
+    *[Symbol.iterator]() {
+        yield this.c
+        yield this.b
+        yield this.a
+    }
+}
+let arr = [...obj];
+arr;    // [3, 2, 1]
+```
+

@@ -2,26 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>状态机与Generator函数</title>
 </head>
 <body>
 <script>
-
-    function *m() {
-        yield 'g1'
+let obj = {
+    a: 1,
+    b: 2,
+    c: 3,
+    *[Symbol.iterator]() {
+        yield this.c
+        yield this.b
+        yield this.a
     }
-
-    m.prototype.number = 0;
-    m.prototype.count = function () {
-        return this.number
-    }
-    m.prototype.add = function (val) {
-        this.number += val;
-        return this.number;
-    }
+}
+let arr = [...obj];
+arr;    // [3, 2, 1]
 </script>
 </body>
 </html>
