@@ -7,18 +7,74 @@
 </head>
 <body>
 <script>
-let obj = {
-    a: 1,
-    b: 2,
-    c: 3,
-    *[Symbol.iterator]() {
-        yield this.c
-        yield this.b
-        yield this.a
+    // 一个普通的异步函数，接受3个参数，分别是打印内容，延迟和回调函数
+    function delay(time, dealCallback, callback) {
+        setTimeout(function () {
+            dealCallback()
+            callback()
+        }, time ? time : 1000)
     }
-}
-let arr = [...obj];
-arr;    // [3, 2, 1]
+    // 一个标准的thunk函数，声明时暴露打印内容和时间的配置，但不会立即执行
+    // 返回值是一个参数为回调函数的函数（执行本函数时，异步不会执行）
+    function thunkForAsync(time, dealCallback) {
+        return function (callback) {
+            delay(time, dealCallback, callback)
+        }
+    }
+
+    // 一个Generator函数，目的是连续发起2次异步请求，但打印内容不同
+    function *g() {
+        yield thunkForAsync(null, function () {
+            console.log('first')
+        })
+        yield thunkForAsync(500, function () {
+            console.log('second')
+        })
+    }
+    // 一个用于自动执行（管理）Generator函数的Thunk函数
+    // 自动控制 Generator 函数的流程，接收和交还程序的执行权
+    // 但要求Generator函数的每个yield表达式，都是Thunk函数（不然next没有办法作为参数传过去）
+    function thunkForGenerator(callback) {
+        let g = callback()
+
+        function next() {
+            let result = g.next()
+            if (result.done) {
+                return
+            }
+            result.value(next)
+        }
+
+        // 这里启动函数
+        next()
+    }
+    // 执行管理函数，将Generator函数作为参数传给他即可
+    thunkForGenerator(g)
+
+
+    // 延迟1秒后
+    // 'test'
+    // Wed Aug 23 2017 23:58:01 GMT+0800 (CST)
+
+
+    //    function test(a) {
+    //        return a + 10
+    //    }
+    //    test(1 + 2)
+    //
+    //    function testThunk() {
+    //        return 10 + 10
+    //    }
+    //    function foo(testThunk) {
+    //        return testThunk() + 10
+    //    }
+    //
+    //
+    //    let thunk = function () {
+    //        return function (callback) {
+    //
+    //        }
+    //    }
 </script>
 </body>
 </html>
