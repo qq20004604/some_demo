@@ -249,3 +249,441 @@ thunkForGenerator(g)
 7. 此时``thunkForGenerator函数``再次执行遍历器的next，但``g函数``发现此时没代码可执行了，于是返回结果，done为true；
 8. 因为done为true，所以``thunkForGenerator函数``不再继续下去，也返回了。
 
+<h3>4、Thunk函数的通用处理</h3>
+
+<h4>4.1、es6版的Thunk函数转换器</h4>
+
+Thunk函数还是有用的，但每次都要封装一个Thunk函数，还是有点麻烦。
+
+由于Thunk函数的特点鲜明，即：
+
+1. 只有一个回调函数作为参数；
+
+因此可以进行固定的封装处理，写一个转换器就好啦，具体方法如下：
+
+1、最后需要执行目标函数。可以用call或者apply来执行，执行的时候需要指定this，其他参数，以及回调函数：
+
+```
+fn.call(this, ...args, callback);
+// 分别是this，其他参数（扩展运算符展开），执行的回调函数
+```
+
+2、执行上面这段代码的时候，应该是将回调函数传入函数，那么应在上面代码外面加一层壳。<br>
+由于同时要获取该函数执行完毕后的返回值，因此应返回``fn.call()``的返回值
+
+```
+let foo = function (callback) {
+    return fn.call(this, ...args, callback)
+}
+```
+
+3、回调函数的参数处理了，但我们也得配置一下其他参数吧，用一个函数搞定他。
+
+```
+let foo = function (...args) {
+    return function (callback) {
+        return fn.call(this, ...args, callback)
+    }
+}
+```
+这个的核心就是利用扩展运算符，即[es6新增的函数的rest参数](http://blog.csdn.net/qq20004604/article/details/72513009)，具体可以参考链接里的博客。<br>
+简单来说，就是将传的所有参数取出来，然后放到一个数组里并赋值给args。在fn.call里面，再将这个数组展开作为fn调用时的前n个参数。
+
+4、等等，我们配好了fn的参数，也配好了他的回调函数，但fn函数呢？
+
+```
+const Thunk = function (fn) {
+    return function (...args) {
+        return function (callback) {
+            return fn.call(this, ...args, callback)
+        }
+    }
+}
+```
+
+5、Thunk通用转换函数写好了——es6版本的！老版本的懒得写了，反正就是把不支持的新特性用老的方法实现一遍而已啦。
+
+<h4>4.2、实战利用转换器转换函数变为Thunk函数</h4>
+
+为了方便，原函数的回调函数应作为函数的最后一个参数使用。
+
+不然还得改写Thunk函数转换器，没必要，所以原函数如果不符合的话，调整一下原函数的参数就行。
+
+1、被处理的函数，为了方便理解，具有以下特点：<br>
+①console.log(this)，显示this指向目标；<br>
+②有两个参数，对两个参数进行计算，并将值传给身为第三个参数的回调函数；<br>
+③执行第三个参数的回调函数；<br>
+④有返回值；<br>
+如代码：
+
+```
+function foo(x, y, callback) {
+    console.log(this)	// ①
+    let result = x + y;	// ②
+    callback(result)	// ③
+    return result		// ④
+}
+```
+
+2、将foo函数传入Thunk函数转换器进行第一步处理：
+
+```
+let setting = Thunk(foo)
+// setting = function (...args) {
+//     return function (callback) {
+//         return foo.call(this, ...args, callback)
+//     }
+// }
+```
+
+**为了帮助理解，处理后的结果见注释**
+
+3、传入foo函数需要的其他参数，为了帮助理解，特通过bind绑定this指向的对象：
+
+```
+let fn = setting(1, 2).bind("abc")  //在这步绑定this指向的目标
+// fn = (function (callback) {
+//     return foo.call(this, 1, 2, callback)
+// }).bind("abc")
+```
+
+此时只是改变了this指向的目标，和传入了参数，但尚未执行foo
+
+4、传入回调函数，执行foo函数：
+
+```
+let result = fn(data => {
+    console.log(data)
+})
+// result = foo.call(this, 1, 2, data => {
+//     console.log(data)
+//     console.log(this)
+// })
+
+// 输出：
+// "abc"
+// 3
+```
+5、别忘了，为了测试，我们还添加了返回值，如果运转正确的话，返回值被赋值给了result（毫无疑问会运转正确）：
+
+```
+result;	//3
+```
+
+6、如果简化，也可以这么写，即第二三步合并。
+
+```
+let fn = Thunk(foo)(1, 2).bind("abc")
+```
+
+7、假如不用bind来修改this指向对象，然后改变this指向目标呢？
+
+两种解决办法：<br>
+①Thunk函数再封装一层，即执行callback的时候尚不执行foo函数，等调用call的时候再执行。<br>
+但这种缺点很明显，增加了复杂度，执行回调函数的时候，每次都需要加一个call、apply，或者加一对括号``()``
+
+```
+const Thunk = function (fn) {
+    return function (...args) {
+        return function (callback) {
+            return function () {		//额外增加的一层
+                return fn.call(this, ...args, callback)
+            }
+        }
+    }
+}
+```
+
+②在绑定参数的时候，让this指向第一个参数。这种方法需要修改Thunk函数转换器。<br>
+但缺点也有，即利用此Thunk转换器转换函数的时候，每次绑定参数，都必须指定this指向的目标，如果忘记的话，代码执行将出现问题。
+
+修改方式如下：
+
+```
+const Thunk = function (fn) {
+    return function (...args) {
+        return function (callback) {
+            return fn.call(...args, callback)   // 这里去掉原本的第一个参数this
+        }
+    }
+}
+
+function foo(x, y, callback) {
+    // 略
+}
+
+let fn = Thunk(foo)("abc", 1, 2)    // 这里的第一个参数就是this指向的目标
+let result = fn(data => {
+    // 略
+})
+```
+
+修改的地方参照注释
+
+<h4>4.3、实战演示改造3.3中的代码</h4>
+
+改造后的代码如下：
+
+```
+// delay函数略
+const Thunk = function (fn) {
+    return function (...args) {
+        return function (callback) {
+            return fn.call(this, ...args, callback)
+        }
+    }
+}
+function *g() {
+    yield Thunk(delay)(null, function () {
+        console.log('first')
+    })
+    yield Thunk(delay)(500, function () {
+        console.log('second')
+    })
+}
+// thunkForGenerator函数略
+```
+
+
+<h3>5、Promise对象的Generator函数自动执行器</h3>
+
+<h4>5.1、改造管理自动执行的函数</h4>
+
+上面用的是Thunk函数自动执行Generator函数，让其可以依次执行。
+
+原理是：
+
+1. 将管理Generator函数自动执行的Thunk函数称之为（T函数），并且要求每个Generator函数的yield表达式都是一个Thunk函数。
+2. T函数会判断遍历器的``next()``的返回值的done是否为true，不是true的话将下一次判断的函数作为回调函数传给yield表达式的Thunk函数；
+3. 而yield表达式因为是Thunk函数，因此在执行完毕后，会执行这个回调函数，让T函数的判断函数继续执行；
+4. 然后循环，直到done为true的时候终止
+
+关键点是什么？
+
+由于Generator函数的yield表达式是Thunk函数，那么只要T函数传过去的回调函数，能判断结果，再次执行判断并传递同样的回调函数，那么就可以做到。
+
+假如我们只改造管理管理Generator函数的T函数，使用Promise来实现，那么代码改如何改？
+
+很简单，只需要改上面``thunkForGenerator函数``的next函数即可
+
+```
+function promiseForGenerator(callback) {
+    let g = callback()
+
+    let next = function () {
+        let result = g.next()
+        if (result.done) {
+            return
+        }
+        return new Promise((resolve, reject) => {
+            resolve(result.value)
+        }).then(fn => {
+            fn(next)
+        })
+    }
+    next()
+}
+promiseForGenerator(g)
+```
+
+核心思想就一点，在没结束的时候返回一个Promise对象，将result.value作为resolve的参数，然后在then里面执行。
+
+讲道理说，如果只是这样，这种改造方法没啥意义，只是提供一种思路——我们还会面临使用Promise的情况。
+
+例如：
+
+yield表达式的值不是Thunk函数，而是Promise对象呢，显然之前的``thunkForGenerator函数``是不能解决这个问题的。
+
+<h4>5.2、使用promise管理Generator函数自动执行</h4>
+
+这时，假设yield表达式不是Thunk函数了，而是一个Promise对象呢（这显然很常见，异步请求用Promise对象来实现，在es6出来后是很正常的事情）。
+
+显然，上面的thunkForGenerator不能满足要求，我们需要改造他。
+
+首先，我们需要制造一个转换器，用于将普通的异步请求转换为Promise对象。
+
+```
+const bePromise = function (fn) {
+    return function (...args) {
+        return new Promise((resolve, reject) => {
+            fn.call(this, ...args, resolve)
+        })
+    }
+}
+```
+
+Generator函数和3.3比起来有变化，但和4.3的相同：
+
+```
+function *g() {
+    yield bePromise(delay)(null, function () {
+        console.log('first')
+    })
+    yield bePromise(delay)(500, function () {
+        console.log('second')
+    })
+}
+```
+
+因为改成了Promise对象，所以处理函数也需要做相应的改变
+
+```
+function thunkForGenerator(callback) {
+    let g = callback()
+    function next() {
+        // 这个时候，假如是Promise对象，已经开始执行异步请求了
+        let result = g.next()
+        if (result.done) {
+            return
+        }
+        // 当Promise的对象改变时，会触发then
+        result.value.then(() => {
+            next()
+        })
+    }
+    next()
+}
+```
+
+完整代码如下：
+
+```
+function delay(time, dealCallback, callback) {
+    setTimeout(function () {
+        dealCallback()
+        callback()
+    }, time ? time : 1000)
+}
+
+const bePromise = function (fn) {
+    return function (...args) {
+        return new Promise((resolve, reject) => {
+            fn.call(this, ...args, resolve)
+        })
+    }
+}
+
+function *g() {
+    yield bePromise(delay)(null, function () {
+        console.log('first')
+    })
+    yield bePromise(delay)(500, function () {
+        console.log('second')
+    })
+}
+
+function thunkForGenerator(callback) {
+    let g = callback()
+
+    function next() {
+        // 这个时候，假如是Promise对象，已经开始执行异步请求了
+        let result = g.next()
+        if (result.done) {
+            return
+        }
+        // 当Promise的对象改变时，会触发then
+        result.value.then(() => {
+            next()
+        })
+    }
+
+    next()
+}
+thunkForGenerator(g)
+```
+
+<h4>5.3、Co模块</h4>
+
+Co模块的具体介绍参照[阮一峰的博文](http://es6.ruanyifeng.com/#docs/generator-async#co-模块)，我这里只讲一些大概内容。
+
+首先，Co模块的实现原理，与5.2中的``thunkForGenerator函数``相近。
+
+5.2代码中的缺陷（Co模块改进内容）：
+
+1. 5.2中代码是没有返回值的，因此只能假定不会出错，但实际中显然是不可能的；
+2. yield表达式，虽然使用了Promise对象，但没考虑到对出错情况的捕获和管理。即，假如在执行next的时候出错了，会导致代码中断运行；
+3. 没有考虑到``thunkForGenerator函数``的参数不符合要求的情况；
+4. 没有考虑到yield表达式并非Promise对象的情况；
+
+[Co模块的github地址](https://github.com/tj/co/blob/master/index.js)
+
+但基于仿其原理，进行改造并不难，当然，不会像Co模块那样完善。
+
+另外，为了处理对错误的捕获，需要修改delay函数为模拟真正的Promise异步函数（而非取巧的）
+
+```
+function delay(time, dealCallback) {
+    return new Promise((resolve, reject) => {
+        setTimeout(function () {
+            try {
+                dealCallback()
+                throw new Error("abc")
+                resolve()
+            } catch (err) {
+                reject(err)
+            }
+        }, time ? time : 1000)
+    })
+}
+
+const byPromise = function (fn) {
+    return function (...args) {
+        return fn.call(this, ...args)
+    }
+}
+
+function *g() {
+    yield byPromise(delay)(null, function () {
+        console.log('first')
+    })
+    yield byPromise(delay)(500, function () {
+        console.log('second')
+    })
+}
+
+function co(gen) {
+    return new Promise((resolve, reject) => {
+        // 略去判断gen不是generator函数的代码
+
+        let g = gen()
+
+        function onSuccess(res) {
+            let result = g.next(res)
+            // 增加错误捕获
+            try {
+                next(result)
+            } catch (err) {
+                reject(err)
+            }
+        }
+
+        function onError(err) {
+            let ret;
+            try {
+                ret = g.throw(err)
+            } catch (e) {
+                return reject(e)
+            }
+            next(ret)
+        }
+
+        function next(result) {
+            if (result.done) {
+                return resolve(result.value)
+            }
+            // 略去对每一步的value属性是不是Promise对象的检查
+            result.value.then(onSuccess, onError)
+        }
+
+        onSuccess()
+    })
+}
+
+co(g).then(data => {
+    console.log(data)
+}, err => {
+    console.log(err)
+})
+```
+
+优化改造完毕
