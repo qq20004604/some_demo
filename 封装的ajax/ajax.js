@@ -219,4 +219,26 @@ function beginMyAjaxByWangdong() {
     }
     window.$.ajax = ajax;
 }
+
 beginMyAjaxByWangdong();
+
+$.ajax({
+    url: "/webaace/signinsrv/signinwithphone",
+    type: "post",
+    data: {
+        "signInPhone": {
+            "isWifiSignIn": false,
+            "orgId": "5717118013",
+            "longitude": 120.0607497829861,
+            "latitude": 30.31542534722222,
+            "deviceName": "",
+            "placeName": "浙江省杭州市西湖区三墩镇西园七路3号3幢",
+            "clientIp": "",
+            "shortPlace": "三墩镇西园七路3号3幢",
+            "wifiMacAddr": "",
+            "deviceId": "0357a715e378b92f88964b01c4ef5e07"
+        }
+    }
+}).done(function (result) {
+    console.log(result)
+})
