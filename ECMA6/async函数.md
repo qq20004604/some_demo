@@ -297,6 +297,137 @@ Foo().catch(err => {
 而上面三个方法，都可以捕获到白字错误（按照上面的2>1>3的顺序，择先捕获）。
 
 
-因此需要注意对于异步返回结果的处理，如果报错，那么应让该Promise对象执行reject方法，避免错误冒泡到外面来。
+因此需要注意对于异步返回结果的处理，如果报错，那么应让该Promise对象执行reject方法，避免抛出的错误无法被捕获。
 
 当执行了reject后，就可以被catch或者``try...catch``或者async返回的Promise的对象的catch方法捕获了。
+
+<h3>3、一些细节</h3>
+
+<h4>3.1、隐式转换</h4>
+
+当await后面跟的不是Promise对象，而是基本类型时，该值会被await通过``Promise.resolve``隐式转换。
+
+事实上，可以被转换的包括例如Boolean、String、Number、对象、数组等。甚至可以支持自定义类型，如代码：
+
+```
+async function Foo() {
+    console.log(await 'a')
+    console.log(await {b: 1})
+    console.log(await [1, 2])
+    console.log(await 3)
+    console.log(await baz)
+}
+Foo()
+// a
+// {b:1}
+// [1, 2]
+// 3
+// Bar {a:"a"}
+```
+
+<h4>3.2、await函数的限制</h4>
+
+await所在的位置只能是async函数的直接所在位置，而不能是async函数外，或者是async函数内部的函数。
+
+例如以下代码，虽然回调函数在async函数内，但也是会报错的
+
+```
+function bar(callback) {
+    callback()
+}
+async function Foo() {
+    bar(function () {
+        await "a"
+    })
+}
+Foo()
+// Uncaught SyntaxError: Unexpected string
+```
+
+<h4>3.3、返回值的状态变化</h4>
+
+async函数的返回值，是一个Promise对象，这些我们是知道的。
+
+既然是Promise对象，那么他就有pending、resolved、rejected三种状态。
+
+那么什么时候回从pending状态变化为另外两种呢？
+
+想想Generator函数，可以类比Generator函数，猜测是当函数执行完毕（done变为true）的时候，pending状态变化。
+
+证明代码如下：
+
+```
+async function Foo() {
+    await 'a1'
+    console.log(p)
+}
+let p = Foo()
+// Promise {[[PromiseStatus]]: "pending", [[PromiseValue]]: undefined}
+```
+
+另外注意，在p后面加console.log(p)，其结果只可能是pending，原因在于Promise的状态变化不是实时的，而是添加到队列里，在下一轮代码执行的时候再变更状态。
+
+**注：** ``Promise.resolve``或类似的，会立即执行，而不等待下一轮。
+
+<h4>3.4、async函数的实现原理</h4>
+
+还记得不记得[Thunk函数章节](http://blog.csdn.net/qq20004604/article/details/77555279#t17)的co模块。co模块，Generator函数的自动执行器以及async函数，他们的实现思路是十分相似的。
+
+具体思路在之前已经讲了，这里略略略。
+
+给一个阮一峰写的吧，[点击阅读](http://es6.ruanyifeng.com/#docs/async#async-函数的实现原理)
+
+
+<h4>3.5、async函数的套用</h4>
+
+之前学习Generator函数的时候，知道有``yield*``表达式，用于处理当一个Generator函数处在另一个Generator函数中的情况。
+
+那么假如一个async处于另外一个async函数中会发生什么事情呢？
+
+答案是相同的，会先执行完另外一个async函数中的内容，再继续执行本async函数的内容。看代码吧，理解起来很简单：
+
+```
+function delay(count) {
+    return new Promise(resolve => {
+        setTimeout(function () {
+            resolve(count)
+        }, 1000)
+    })
+}
+async function Foo() {
+    console.log(await delay('Foo1'))
+    console.log(await Bar())
+    console.log(await delay('Foo2'))
+}
+async function Bar() {
+    console.log(await delay('Bar1'))
+    console.log(await delay('Bar2'))
+    return delay('Bar return')
+}
+Foo()
+// Foo1
+// Bar1
+// Bar2
+// Bar return
+// Foo2
+```
+
+<h4>3.6、for await...of</h4>
+
+兼容性是个问题。
+
+[阮一峰的博文](http://es6.ruanyifeng.com/#docs/async#for-await---of)里提到了这个东西，但我自己实测来说（chrome 60）外加打开浏览器的实验性特性，会提示报错：
+
+```
+(async function () {
+    for await (const x of ['a', 'b']) {
+        console.log(x);
+    }
+})();
+// Uncaught SyntaxError: Unexpected reserved word
+```
+
+所以略略略略。
+
+<h3>4、异步Generator函数</h3>
+
