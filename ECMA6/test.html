@@ -6,32 +6,15 @@
     <title>Test</title>
 </head>
 <body>
-<script>
-    function delay(msg) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                console.log(msg)
-                resolve()
-            }, 500)
-        })
-    }
 
-    let foo = {
-        a: delay("a"),
-        b: delay("b"),
-        *[Symbol.iterator](){
-            yield foo.a
-            yield foo.b
+<script>
+    class Foo {
+        constructor() {
+            console.log("Foo")
         }
     }
-    (async function () {
-        for await (const x of ['a', 'b']) {
-            console.log(x);
-        }
-    })();
-    async function* gen() {yield 'hello';}
-    const genObj = gen();
-    genObj.next().then(x => console.log(x));
+    new Foo()
+
 </script>
 </body>
 </html>
