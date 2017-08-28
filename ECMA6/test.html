@@ -24,11 +24,14 @@
             yield foo.b
         }
     }
-(async function () {
-    for await (const x of ['a', 'b']) {
-        console.log(x);
-    }
-})();
+    (async function () {
+        for await (const x of ['a', 'b']) {
+            console.log(x);
+        }
+    })();
+    async function* gen() {yield 'hello';}
+    const genObj = gen();
+    genObj.next().then(x => console.log(x));
 </script>
 </body>
 </html>

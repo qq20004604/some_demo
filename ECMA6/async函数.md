@@ -431,3 +431,19 @@ Foo()
 
 <h3>4、异步Generator函数</h3>
 
+兼容性存在问题，具体来说：
+
+1. chrome60外加打开实验性javascript功能；
+2. Node6.7左右版本和8.1.2版本；
+
+以下代码依然不能执行：
+
+```
+async function* gen() {
+  yield 'hello';
+}
+const genObj = gen();
+genObj.next().then(x => console.log(x));
+```
+
+所以略过
