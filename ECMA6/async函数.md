@@ -434,7 +434,7 @@ Foo()
 兼容性存在问题，具体来说：
 
 1. chrome60外加打开实验性javascript功能；
-2. Node6.7左右版本和8.1.2版本；
+2. Node6.7左右版本和8.4.0版本；
 
 以下代码依然不能执行：
 
@@ -446,4 +446,4 @@ const genObj = gen();
 genObj.next().then(x => console.log(x));
 ```
 
-所以略过
+所以不太明白阮一峰这部分代码怎么写的，难道只是靠Babel转码后运行的？
