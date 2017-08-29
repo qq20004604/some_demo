@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Test</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
 </head>
 <body>
 
 <script>
-    class Foo {
-        constructor() {
-            console.log("Foo")
-        }
+let a = 1;
+function Foo() {
+    let a = 2;
+    this.logA = () => {
+        console.log(++a)
     }
-    new Foo()
+}
+let p = new Foo()
+p.logA();    // 输出？
+let {logA} = p
+logA();  // 输出？
 
 </script>
 </body>

@@ -333,3 +333,322 @@ class Foo {
 
 <h4>4.1、私有方法</h4>
 
+不得不遗憾的表示，目前来看，类似c++或者java里的那种私有方法和私有变量，在js里面还是实现不了的。
+
+因此变通方法有三个：
+
+**1、伪私有：**
+
+下划线开头表示私有方法。如代码：
+
+```
+class Foo {
+    _testPrivate() {
+        
+    }
+}
+```
+
+这种私有方法是一种**约定俗称**的私有方法**命名方式**。
+
+用下划线开头，表示告诉使用者，这些是私有方法，你最好不要改，改了有可能出错。但实际中，如果用户想要访问，还是可以访问到的。
+
+**2、作用域改变：**
+
+把私有方法移到类之外的同级作用域（或上级作用域中），当使用的时候，通过直接调用该方法，或者通过``fun.call(this, ..arg)``这样的方式调用。
+
+由于该方法位于类的同级或上级作用域，因此类是可以访问到的；
+
+而在使用类的实例的时候，便可能因为作用域的不同，无法调用该方法，因此达到私有方法的作用。
+
+如代码：
+
+```
+function test() {
+    let formatTime = function () {
+        let date = this.date
+        let hour = date.getHours()
+        let min = date.getMinutes()
+        let sec = date.getSeconds()
+        let milliseconds = date.getMilliseconds()
+        return `${hour}:${min}:${sec} ${milliseconds}ms`
+    }
+    class Foo {
+        constructor() {
+            this.date = new Date()
+        }
+
+        showCreateTime() {
+            console.log(formatTime.call(this))
+        }
+    }
+    this.getFoo = function () {
+        return new Foo()
+    }
+}
+
+let p = (new test()).getFoo()
+p.showCreateTime()
+setTimeout(function () {
+    let q = (new test()).getFoo()
+    q.showCreateTime()
+}, 1000)
+// 22:18:26 252ms
+// 22:18:27 262ms
+```
+
+在外层作用域，显然是访问不到``formatTime``这个函数的，因此达成了私有函数的效果。
+
+如果是模块的话，通过模块导出Foo这个类后，其他方法显然是无法访问到这个模块里的任何非被导出函数的。
+
+**3、Symbol变量作为方法名**
+
+关于Symbol的知识请复习这篇博客[Symbol简述](http://blog.csdn.net/qq20004604/article/details/72870576)。
+
+简单来说，通过Symbol生成的变量，他是唯一的。换句话说，只要你用的不是我这个Symbol的变量，那么你自己怎么生成，都无法生成一个和我这个Symbol变量相等的变量。
+
+```
+Symbol() !== Symbol()	// true
+```
+
+除此之外，Symbol变量可以作为对象/类的key使用。
+
+因此当我生成一个Symbol变量作为类的方法名，如果你访问不了我这个Symbol变量，那么你必定无法调用这个方法。
+
+如代码：
+
+```
+function Foo() {
+    const bar = Symbol()
+    class Foo {
+        [bar]() {
+            console.log("this is private")
+        }
+
+        test() {
+            this[bar]()
+        }
+    }
+    return new Foo()
+}
+
+let p = new Foo()
+p.test()
+```
+
+在以上代码中，你只能通过p.test()来间接调用``p[bar]``这个方法，但却不能直接通过p[bar]来调用这个方法。
+
+因此，达成了私有方法的效果。
+
+<h4>4.2、私有变量</h4>
+
+简单来说，目前不支持私有变量写法，甚至不支持把变量写在和类的方法平级的地方。
+
+有提案说可以用``#``放在变量名前，作为私有变量，但所谓提案，就是现在还不行，就是这样。
+
+如果只是创建变量（而非私有变量），那么一个变相的解决办法是可以专门用一个方法，来初始化该变量。然后在constructor函数中调用他即可。
+
+如代码：
+
+```
+class Foo {
+    constructor() {
+        this.createPrivateVarible()
+    }
+
+    createPrivateVarible() {
+        this.a = 1
+        this.b = "a"
+    }
+}
+let p = new Foo()
+console.log(p.a, p.b)   // 1 "a"
+```
+
+如果要创建私有变量，那么可以参照私有方法的办法。
+
+```
+function Foo() {
+    const p = 1
+    class Foo {
+        test() {
+            console.log(p)
+        }
+    }
+    return new Foo()
+}
+
+let p = new Foo()
+p.test()
+```
+
+<h3>5、this</h3>
+
+<h4>5.1、默认情况</h4>
+
+``this``可真是让人又爱又恨。
+
+不过搞清楚this的话，可以避免很多错误，还可以提升自己对要学习内容的认识。
+
+在class里，this默认情况下，指向的是当前实例
+
+如代码：
+
+```
+class Foo {
+    test() {
+        return this
+    }
+}
+let p = new Foo()
+p.test() === p  // true
+```
+
+<h4>5.2、需要调用类的某个方法</h4>
+
+由于类的实际实现，目前还是依靠原型链的。
+
+因此，可以通过原型链来调用。
+
+这个时候，this指向类的原型链（而不是类本身）；
+
+如果没注意的话，可能会误解指向类本身（记住对象的方法的this指向对象本身就好了）。
+
+如代码：
+
+```
+class Foo {
+    test() {
+        return this
+    }
+}
+Foo.prototype.test() === Foo.prototype; // true
+Foo.prototype.test() === Foo;	// false
+```
+
+<h4>5.3、单独提取类的方法</h4>
+
+假如我们看上类的某个方法了，想要提取出来，那么这个时候this指向谁呢？
+
+答案是undefined。
+
+原因有二：
+
+1. 当单独提取出类的方法时，他就是一个函数，而不是一个对象的方法了，因此this不再指向对象本身（对象的方法中的this，指向对象自己）；
+2. 如果是一个函数，那么this应该指向window，然而由于类天生是严格模式，因此提取出来的函数也是严格模式的，而严格模式下函数的this，默认是undefined；
+
+```
+class Foo {
+    test() {
+        return this
+    }
+}
+let {test} = Foo.prototype
+test()  // undefined
+
+function bar() {
+    "use strict"
+    return this
+}
+bar()   // undefined
+```
+
+与此同理的，是提取类的实例的方法，效果是一样的。
+
+<h4>5.4、改变this指向</h4>
+
+当知道提取出来的类的方法，this指向的是谁后，如果想改变this指向，那么方法很多啦。
+
+比如什么``Fn.call``、``Fn.apply``、``Fn.bind``之类之类的。
+
+<h4>5.5、默认this指向类的实例</h4>
+
+如果你需要该类的方法，默认指向类的实例，有两种比较常见的解决办法：
+
+1. 参照5.4中的，在提取出来之后，通过bind来绑定。这个办法的好处在于无需修改原来的类。
+2. 假如可以修改原本的类，那么也可以用一个绑定过this的函数，位于原型链更靠近实例的地方，用于替换未被绑定this的函数；
+
+第二种方法，具体来说，是这样实现的。
+
+1、由于类的方法，是挂在类的原型链上的（例如Foo.prototype.test）这样；
+
+2、因此当通过new生成实例后，该方法实际上是在实例的``__proto__``属性上（例如``bar.__proto__.test``）这样；
+
+3、那么假如我直接在实例的属性上挂载一个绑定后的test方法（例如``bar.test``），那么在获取test方法的时候，会优先获取``bar.test``，而不是``bar.__proto__.test``。
+
+4、而这个获取的``bar.test``是绑定了this，让this指向类的实例的；
+
+如示例代码：
+
+```
+class Foo {
+	// 在构造函数中，给实例添加一个绑定了this的test方法
+    constructor() {
+        this.test = this.test.bind(this)
+    }
+
+    test() {
+        return this
+    }
+}
+let bar = new Foo()
+bar;    // Foo {test: ƒ}
+
+let {test} = bar
+test() === bar; //true，可以证明test返回的this就是bar本身
+```
+
+除了上面两个常规方法之外，还有两个方法：
+
+1、利用Proxy，在获取函数的时候，自动绑定this。
+
+但有几个问题：
+
+1. 	Proxy在一般情况下，使用的比较少，若只是为了这个简单的要求使用Proxy，是把事情复杂化了，必要性不大；
+2. Babel的转换也是一件麻烦的事情。
+
+所以不推荐使用。
+
+2、箭头函数。
+
+箭头函数的原理，是通过一个特性：
+
+**箭头函数的this，指向其定义时的作用域，而不是箭头函数在使用时的作用域**
+
+只要记住这个特性，那么在理解下面这段代码的时候，就非常容易了：
+
+```
+class Foo {
+    constructor() {
+        this.test = () => {
+            return this
+        }
+    }
+
+    test() {
+        return this
+    }
+}
+let bar = new Foo()
+bar;    // Foo {test: ƒ}
+
+let {test} = bar
+test() === bar; //true
+```
+
+顺便出一道关于【箭头函数】的题，猜猜下面这段代码的输出结果是什么？
+
+```
+let a = 1;
+function Foo() {
+    let a = 2;
+    this.logA = () => {
+        console.log(++a)
+    }
+}
+let p = new Foo()
+p.logA();    // 输出？
+let {logA} = p
+logA();  // 输出？
+```
+
