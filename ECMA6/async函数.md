@@ -301,6 +301,43 @@ Foo().catch(err => {
 
 当执行了reject后，就可以被catch或者``try...catch``或者async返回的Promise的对象的catch方法捕获了。
 
+另外，除了``setTimeout``的回调函数里抛的错误无法捕获到，jQuery的ajax的回调函数里的错误也是无法捕获到的。如代码：
+
+```
+function delay() {
+    return new Promise((resolve, reject) => {
+        try {
+            $.ajax({
+                url: '/',
+                type: "get"
+            }).always(function () {
+                throw new Error("test error")
+            })
+        } catch (err) {
+            console.log(err)
+        }
+    })
+}
+
+const byPromise = function (fn) {
+    return function (...args) {
+        return fn.call(this, ...args)
+    }
+}
+
+async function Foo() {
+    await byPromise(delay)(true).catch(err => console.log(err))
+}
+Foo().catch(err => {
+    console.log(err)
+})
+// 除了404之外，还有红字错误，通过三种方式都无法捕获到
+```
+
+不过axios由于没专门试过，也没琢磨过其源码，因此不太确定。
+
+但axios是封装好的异步请求，我们写的代码一般是在then里面执行，而then里面抛的错误是会被catch捕获到的。所以倒不必担心。
+
 <h3>3、一些细节</h3>
 
 <h4>3.1、隐式转换</h4>
@@ -414,7 +451,7 @@ Foo()
 
 <h4>3.6、for await...of</h4>
 
-兼容性是个问题。
+因为是提案，所以兼容性是个问题。
 
 [阮一峰的博文](http://es6.ruanyifeng.com/#docs/async#for-await---of)里提到了这个东西，但我自己实测来说（chrome 60）外加打开浏览器的实验性特性，会提示报错：
 
