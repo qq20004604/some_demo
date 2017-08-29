@@ -455,6 +455,8 @@ Foo()
 
 [阮一峰的博文](http://es6.ruanyifeng.com/#docs/async#for-await---of)里提到了这个东西，但我自己实测来说（chrome 60）外加打开浏览器的实验性特性，会提示报错：
 
+Node8.4.0也不行
+
 ```
 (async function () {
     for await (const x of ['a', 'b']) {
