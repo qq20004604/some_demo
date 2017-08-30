@@ -9,17 +9,78 @@
 <body>
 
 <script>
-let a = 1;
-function Foo() {
-    let a = 2;
-    this.logA = () => {
-        console.log(++a)
+class Foo {
+    constructor(val) {
+        this._errorList = []
+        // 遍历作为构造函数传的参数的每个属性，然后赋值之
+        for (let i in val) {
+            this[i] = val[i]
+        }
+    }
+
+    get age() {
+        return this._age ? this._age : null
+    }
+
+    set age(val) {
+        // 赋值前进行数据验证
+        if (val >= 20 && val <= 100) {
+            this._age = val
+        } else {
+            this.errorList.push('age')
+        }
+    }
+
+    // 直接查看值可以得知赋值过程中是否有错
+    get isDataError() {
+        if (this.errorList.length === 0) {
+            return false
+        } else {
+            return true
+        }
+    }
+
+    // 获取错误列表
+    get errorList() {
+        return this._errorList
+    }
+
+    // 赋值的时候，只是将错误添加到错误列表里（简化示例，不考虑重置）
+    set errorList(val) {
+        this._errorList.push(val)
+    }
+
+    // 获取当前赋值的数据
+    getData() {
+        return {
+            age: this.age
+        }
     }
 }
-let p = new Foo()
-p.logA();    // 输出？
-let {logA} = p
-logA();  // 输出？
+
+let p1 = new Foo({age: 1})
+if (p1.isDataError) {
+    console.log(p1.errorList)
+} else {
+    console.log(p1.getData())
+}
+// ["age"]
+
+let p2 = new Foo({age: 30})
+if (p2.isDataError) {
+    console.log(p2.errorList)
+} else {
+    console.log(p2.getData())
+}
+// {age: 30}
+
+let p3 = new Foo()
+if (p3.isDataError) {
+    console.log(p3.errorList)
+} else {
+    console.log(p3.getData())
+}
+// {age: null}
 
 </script>
 </body>
