@@ -1,9 +1,11 @@
 {
   "devDependencies": {
-    "babel-cli": "^6.0.0"
+    "babel-cli": "^6.0.0",
+    "babel-preset-es2015": "^6.24.1"
   },
   "scripts": {
-    "test": "babel input -d output"
+    "test": "babel input -d output",
+    "input": "babel input.js -o output.js"
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0"

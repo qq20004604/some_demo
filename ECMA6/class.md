@@ -726,3 +726,219 @@ Foo.name;	// "Foo"
 1. 常见情况下：1（超限则赋值无效）、5（很好用的说）、8（比如改了当前值后，顺便改了和他联动的另外一个值）
 2. 不常见情况有：2（类似的效果可以参考[Vue的计算属性](https://cn.vuejs.org/v2/guide/computed.html#计算属性的缓存-vs-method-方法)、4（比如关键属性被修改，log一发）、7（比如只允许读或只允许写）
 
+关于class应用本特性的例子可以参考我的这篇博客：[利用setter和getter实现数据校验](http://blog.csdn.net/qq20004604/article/details/77727587)
+
+<h3>7、Generator函数</h3>
+
+不懂Generator函数的，请从我的这篇博客开始阅读[Generator函数(1)基本概念和示例](http://blog.csdn.net/qq20004604/article/details/77461069)。
+
+没有基础的话，直接阅读本篇内容是很有可能看不懂的。
+
+Generator函数在class里面的时候，在函数名之前加星号即可：
+
+```
+class Foo {
+    *g() {
+        yield "1";
+        yield "2"
+        return "3"
+    }
+}
+let p = new Foo()
+let i = p.g()
+i.next();   // {value: "1", done: false}
+i.next();   // {value: "1", done: false}
+i.next();   // {value: "3", done: true}
+```
+
+利用Generator函数，利用扩展运算符自动调用遍历器接口：
+
+```
+class Foo {
+    *[Symbol.iterator]() {
+        yield "1"
+        yield "2"
+    }
+}
+let p = new Foo()
+console.log([...p]) // ["1", "2"]
+```
+
+<h3>8、async函数</h3>
+
+既然支持Generator函数，当然也支持async函数啦。
+
+使用方法和Generator函数的套路是一样的，在函数名前加async就行了。
+
+示例代码如下：
+
+```
+function delay(msg) {
+    return new Promise(resolve => {
+        setTimeout(function () {
+            resolve(msg)
+        }, 1000)
+    })
+}
+class Foo {
+    async foo() {
+        let r1 = await delay('1').then(msg => {
+            console.log(msg)
+            return msg
+        })
+        console.log(r1)
+        await delay('2').then(msg => {
+            console.log(msg)
+        })
+    }
+}
+let p = new Foo()
+// "1"  第一个await表达式里then的log
+// "1"  r1的log
+// "2"  第二个await表达式里then的log
+```
+
+<h3>9、类静态方法</h3>
+
+<h4>9.1、基本概念</h4>
+
+所谓静态方法，在class指专属于class本身的方法，而且不会被类的实例所继承。
+
+如代码：
+
+```
+class Foo {
+    static test() {
+        console.log("this is static")
+    }
+}
+Foo.test()  // this is static
+let p = new Foo()
+p.test()    // Uncaught TypeError: p.test is not a function
+```
+
+至于实现原理，很简单。只有构造函数原型链上（prototype属性）的方法才会被构造函数的实例所继承。
+
+因此，把静态方法直接挂载在类本身上，而不是类的原型链上，即可以。
+
+如何证明这一点呢？普通方法是不行的，原因在于通过类声明的方法，他的enumberable的属性是false，因此是不可以枚举的。
+
+例如``Object.keys(Foo)``之类的方法是不可行的
+
+有两个办法：
+
+1. 通过``console.dir(Foo)``来查看整个Foo类的原型链；
+2. 通过``Object.getOwnPropertyNames(Foo)``或``Reflect.ownKeys(Foo)``来查看Foo上面有哪些属性，这两个方法可以查看enumberable值为false的属性。参照博客[对象的扩展（3）当枚举、原型链遇见对属性的操作](http://blog.csdn.net/qq20004604/article/details/72860849#t1)
+
+```
+Object.getOwnPropertyNames(Foo)	// ["length", "prototype", "test", "name"]
+Reflect.ownKeys(Foo)	// ["length", "prototype", "test", "name"]
+```
+
+<h4>9.2、this</h4>
+
+静态方法的this指向谁呢？
+
+我们知道，对象的方法中的this，指向对象自己。
+
+而类是对象，类的静态方法就是对象的方法，因此，类的静态方法里的this也指向类本身。
+
+```
+class Foo {
+    static test() {
+        return this
+    }
+}
+Foo.test() === Foo  // true
+```
+
+<h4>9.3、继承的静态方法</h4>
+
+目前还没涉及到类的继承，但可以给出一个结论：
+
+1. 类的静态方法可以被继承；
+2. 父类的静态方法被继承后，this指向子类；
+
+另外提一句，类的继承，是让子类的``__proto__``属性指向父类。
+
+<h4>9.4、类没有静态属性</h4>
+
+至少目前没有。
+
+当然，可以在类的constructor方法里，通过this.xx设置类的静态属性，但不能直接通过``static xx``这样的方式来定义静态属性。
+
+<h3>10、new.target</h3>
+
+<h4>10.1、基本概念</h4>
+
+简单来说，这个属性用于表示当函数通过new来调用时（即函数被当做构造函数），new命令作用的那个构造函数是谁。
+
+他有以下几个规律：
+
+1、被用在函数内部，函数外部直接调用会报错；
+
+```
+new.target;	// Uncaught SyntaxError: new.target expression is not allowed here
+```
+
+2、当函数被作为构造函数new时，new.target指向构造函数；
+
+```
+function Test() {
+    return new.target
+}
+new Test() === Test;	// true
+```
+
+3、当new.target处于类的constructor属性中时，指向类本身
+
+```
+class Foo {
+    constructor() {
+        return new.target
+    }
+}
+new Foo() === Foo;  // true
+```
+
+4、当父类被子类继承时，父类中的constructor的new.target指向子类（而非父类）。
+
+[MDN的介绍](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/new.target)
+
+这个比较特殊，在es5中似乎实现起来很复杂
+
+```
+class Foo {
+    constructor() {
+        console.log(new.target === Bar)
+    }
+}
+class Bar extends Foo {
+    constructor() {
+        super() // 这个表示是父类的构造函数
+        console.log(new.target === Bar)
+    }
+}
+new Bar()
+// true
+// true
+```
+
+5、当函数并没有被new所调用时，而是普通调用，那么new.target的值是undefined
+
+```
+function Test() {
+    return new.target
+}
+Test()  // undefined
+```
+
+<h4>10.2、应用</h4>
+
+由于这个特点，因此在父类的constructor函数内，可以通过new.target是否等于父类，来限制允对父类的使用。
+
+例如：
+
+1、如果只允许在等于父类的情况下执行，否则报错，那么该父类是无法被继承的；
+
+2、如果只允许在不等于父类的情况下执行，否则报错，那么该父类是无法被单独使用的，必须被继承后才能使用。
