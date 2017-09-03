@@ -11,21 +11,31 @@
 <script>
     class Foo {
         constructor() {
-            console.log(new.target === Bar)
+            console.log('Foo constructor')
         }
-    }
-    class Bar extends Foo {
-        constructor() {
-            super() // 这个表示是父类的构造函数
-            console.log(new.target === Bar)
-        }
-    }
-    // true
 
-function Test() {
-    return new.target
-}
-Test()  // undefined
+        foo() {
+            console.log('foo')
+        }
+    }
+
+    class Bar {
+        constructor() {
+            console.log(this.__proto__.__proto__.constructor === Foo)
+            this.__proto__.__proto__.constructor()  // Uncaught TypeError: Class constructor Foo cannot be invoked without 'new'
+            console.log('Bar constructor')
+        }
+
+        bar() {
+            console.log('bar')
+        }
+    }
+
+    Object.setPrototypeOf(Bar, Foo)
+    Object.setPrototypeOf(Bar.prototype, Foo.prototype)
+    let p = new Bar()
+    p.foo() // foo
+    p.bar() // bar
 
 </script>
 </body>
