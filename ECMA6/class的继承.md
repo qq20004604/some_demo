@@ -684,7 +684,7 @@ Bar.prototype.__proto__ === Function.prototype  //true
 
 2、因为Bar的原型的原型链指向Function的原型，因此Bar的实例的原型链的原型链指向Function的原型。
 
-3、所以当类继承Function的时候，最大不同之处在于，<b>类的实例可以调用被继承对象的原型链上的方法</b>
+3、所以当类继承Function的时候，最大不同之处在于，<b>类的实例可以调用被继承对象的原型链上的方法</b>，放在这里就是可以使用Function原型链上的方法（比如apply或者call），而正常是不行的
 
 ```
 let p = new Bar()
