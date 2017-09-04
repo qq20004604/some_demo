@@ -4,39 +4,40 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Test</title>
-    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <!--<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>-->
 </head>
 <body>
 
 <script>
-    class Foo {
-        constructor() {
-            console.log('Foo constructor')
-        }
+    // 说明：prototype是原型，__proto__是原型链
 
-        foo() {
-            console.log('foo')
-        }
+    function m() {
+
     }
+    // Function的原型链指向Function的原型
+    Function.__proto__ === Function.prototype   // true
+    // Function原型的原型链，指向Object的原型
+    Function.prototype.__proto__ === Object.prototype   // true
 
-    class Bar {
-        constructor() {
-            console.log(this.__proto__.__proto__.constructor === Foo)
-            this.__proto__.__proto__.constructor()  // Uncaught TypeError: Class constructor Foo cannot be invoked without 'new'
-            console.log('Bar constructor')
-        }
+class Foo {
+}
+// 说明类的原型链指向Function的原型链，相当于类Foo的构造函数就是Function
+Foo.__proto__ === Function.prototype    // true
+Foo.__proto__ === Function.__proto__    // true
+Object.prototype.toString.call(Foo)     // "[object Function]"
+Foo.constructor === Function    // true
 
-        bar() {
-            console.log('bar')
-        }
-    }
+// 但类Foo的原型显然指向他自己的原型链（是一个对象），所以以下是false
+Foo.prototype === Function.prototype    // false
+// 因为Foo.prototype是对象，所以对象的原型链向对象的原型
+Foo.prototype.__proto__ === Object.prototype
 
-    Object.setPrototypeOf(Bar, Foo)
-    Object.setPrototypeOf(Bar.prototype, Foo.prototype)
-    let p = new Bar()
-    p.foo() // foo
-    p.bar() // bar
-
+class Bar extends Function {
+}
+// 原型链指向对象本身
+Bar.__proto__ === Function  // true
+// 原型的原型链指向函数的原型
+Bar.prototype.__proto__ === Function.prototype  //true
 </script>
 </body>
 </html>

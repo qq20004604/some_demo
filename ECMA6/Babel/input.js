@@ -1,74 +1,31 @@
 ﻿import "babel-polyfill"
-
-function delay(time, dealCallback) {
-    return new Promise((resolve, reject) => {
-        setTimeout(function () {
-            try {
-                dealCallback()
-                throw new Error("abc")
-                resolve()
-            } catch (err) {
-                reject(err)
-            }
-        }, time ? time : 1000)
-    })
+function Foo() {
+    console.log('Foo constructor')
+}
+Foo.staticFoo = function () {
+    console.log("static foo")
+}
+Foo.prototype.foo = function () {
+    console.log('foo')
 }
 
-const byPromise = function (fn) {
-    return function (...args) {
-        return fn.call(this, ...args)
+class Bar {
+    constructor() {
+        Foo.prototype.constructor.call(this)
+        console.log('Bar constructor')
+    }
+
+    bar() {
+        console.log('bar')
     }
 }
+Bar.__proto__ = Foo
+Bar.prototype.__proto__ = Foo.prototype
 
-function *g() {
-    yield byPromise(delay)(null, function () {
-        console.log('first')
-    })
-    yield byPromise(delay)(500, function () {
-        console.log('second')
-    })
-}
-
-function co(gen) {
-    return new Promise((resolve, reject) => {
-        // 略去判断gen不是generator函数的代码
-
-        let g = gen()
-
-        function onSuccess(res) {
-            let result = g.next(res)
-            // 增加错误捕获
-            try {
-                next(result)
-            } catch (err) {
-                reject(err)
-            }
-        }
-
-        function onError(err) {
-            let ret;
-            try {
-                ret = g.throw(err)
-            } catch (e) {
-                return reject(e)
-            }
-            next(ret)
-        }
-
-        function next(result) {
-            if (result.done) {
-                return resolve(result.value)
-            }
-            // 略去对每一步的value属性是不是Promise对象的检查
-            result.value.then(onSuccess, onError)
-        }
-
-        onSuccess()
-    })
-}
-
-co(g).then(data => {
-    console.log(data)
-}, err => {
-    console.log(err)
-})
+let p = new Bar()
+// Foo constructor
+// Bar constructor
+p.foo() // foo
+p.bar() // bar
+Bar.staticFoo() // static foo
+p.staticFoo()   // Uncaught TypeError: p.staticFoo is not a function
