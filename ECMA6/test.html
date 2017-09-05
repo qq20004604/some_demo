@@ -9,35 +9,34 @@
 <body>
 
 <script>
-    // 说明：prototype是原型，__proto__是原型链
 
-    function m() {
-
+    function add(a, b, c) {
+        return a + b + c
     }
-    // Function的原型链指向Function的原型
-    Function.__proto__ === Function.prototype   // true
-    // Function原型的原型链，指向Object的原型
-    Function.prototype.__proto__ === Object.prototype   // true
 
-class Foo {
-}
-// 说明类的原型链指向Function的原型链，相当于类Foo的构造函数就是Function
-Foo.__proto__ === Function.prototype    // true
-Foo.__proto__ === Function.__proto__    // true
-Object.prototype.toString.call(Foo)     // "[object Function]"
-Foo.constructor === Function    // true
-
-// 但类Foo的原型显然指向他自己的原型链（是一个对象），所以以下是false
-Foo.prototype === Function.prototype    // false
-// 因为Foo.prototype是对象，所以对象的原型链向对象的原型
-Foo.prototype.__proto__ === Object.prototype
-
-class Bar extends Function {
-}
-// 原型链指向对象本身
-Bar.__proto__ === Function  // true
-// 原型的原型链指向函数的原型
-Bar.prototype.__proto__ === Function.prototype  //true
+    // 参数1是被处理的函数
+    function auto(fun) {
+        // 先获取函数的参数个数
+        let length = fun.length
+        let array = []  // 当前攒好的函数参数
+        let f = function () {
+            // 把已有的参数添加进去
+            array = [...array, ...arguments]
+            // 判断当前参数够不够
+            if (array.length < length) {
+                return f
+            } else {
+                // 够的话，放到另外一个temp数组里
+                let temp = [...array]
+                // 将原数组重置
+                array = []
+                // 执行你预设的函数
+                return fun.apply(this, temp)
+            }
+        }
+        return f
+    }
+    let p = auto(add)
 </script>
 </body>
 </html>
