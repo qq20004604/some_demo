@@ -4,39 +4,41 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Test</title>
-    <!--<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>-->
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
 </head>
 <body>
 
 <script>
-
-    function add(a, b, c) {
-        return a + b + c
+    function require(url) {
+        // 去拿取加载的信息
+        let text = sync(url)
+        // 前后添加一些字符串，封装成一个函数，用括号括起来表示是一个表达式
+        text = '(function(module){' + text + '})'
+        // eval这个字符串，把他变为一个真函数
+        let fn = eval(text)
+        // 调用这个函数，并将module这个对象作为参数传进去
+        // 这样module就可以拿到导出的数据了
+        let module = {}
+        fn(module)
+        // 我们是通过module.exports导出的，所以返回他
+        return module.exports
     }
 
-    // 参数1是被处理的函数
-    function auto(fun) {
-        // 先获取函数的参数个数
-        let length = fun.length
-        let array = []  // 当前攒好的函数参数
-        let f = function () {
-            // 把已有的参数添加进去
-            array = [...array, ...arguments]
-            // 判断当前参数够不够
-            if (array.length < length) {
-                return f
-            } else {
-                // 够的话，放到另外一个temp数组里
-                let temp = [...array]
-                // 将原数组重置
-                array = []
-                // 执行你预设的函数
-                return fun.apply(this, temp)
-            }
-        }
-        return f
+    // 因为是CommonJS是同步的，因此用本函数模拟同步加载
+    function sync(url) {
+        // 省去加载文件的过程，直接输出返回结果
+        return `module.exports = {
+foo(){
+    console.log('foo')
+},
+bar: 'bar'
+}`
     }
-    let p = auto(add)
+
+    let myModel = require('test')
+    myModel.foo()
+    console.log(myModel.bar)
+
 </script>
 </body>
 </html>
