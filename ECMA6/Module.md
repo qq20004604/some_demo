@@ -144,3 +144,123 @@ console.log(myModel.bar)
 
 简单总结一下，通过``define``函数，可以加载一些依赖，全加载完之后，会执行一个函数（依赖作为参数传入）。如果这个函数没值返回，那就单纯只是执行而已，如果有值返回，那么这个值就是本模块的输出值。
 
+先附一个符合AMD规范的函数：
+
+```
+define(['3'], function (obj) {
+    return Object.assign({}, obj, {b: 2})
+})
+```
+
+再上一个带AMD模块自制加载器，完整注释的模拟异步加载的代码，有以下特点：
+
+1. 根组件异步加载2个模块；
+2. 异步的模块之一，也异步加载第三个模块；
+3. 三个模块情况各不同，分别是：①只有参数3，值是对象；②有依赖，且参数三是函数并有返回值；③只有参数三，是函数，有返回值；
+
+```
+// 接受3个参数，分别是id（可选），依赖（可选），工厂函数/对象
+function define() {
+    let array = [...arguments]	// 参数直接用...array可以省略本行
+    let id, dependencies, factory;
+    if (array.length > 2) {
+        [id, dependencies, factory] = array
+    } else if (array.length > 1) {
+        [dependencies, factory] = array
+    } else {
+        [factory] = array
+    }
+    // 略过id，太麻烦不写，也不考虑缓存什么的
+
+    // 如果有依赖，先加载依赖
+    if (dependencies) {
+        // 创建一个空数组备用
+        let deArr = []
+        dependencies.forEach(item => {
+            // ajaxGet函数是返回一个Promise对象
+            // 所以deArr变成一个放满Promise对象的数组
+            deArr.push(ajaxGet(item))
+        })
+        // 利用Promise.all的特性
+        // 只有当deArr里面所有Promise对象的值都变为resolve才会执行all的then
+        // 具体原理请谷歌
+        return Promise.all(deArr).then(array => {
+            // deArray的所有结果被放到数组里然后返回
+            // 由于异步请求到的被当做字符串处理，所以先要eval解析
+            // funArray是放解析后的结果，每个元素都是Promise对象
+            // 因为define函数的返回值是Promise对象
+            let funArray = array.map(str => {
+                return eval(str)
+            })
+            // 这个时候，Promise对象的状态还没变化，
+            // 因此用all的特性，等待他们全部状态变化为正常的，再执行then
+            return Promise.all(funArray).then(result => {
+                // 这次有结果了，result是每个依赖的define函数的返回值
+                // 如果是函数，那么执行函数，并返回函数结果
+                if (typeof factory === 'function') {
+                    return factory(...result)
+                }
+                // 如果不是函数，那么直接返回参数3的值
+                return factory
+            })
+        })
+    }
+    // 是函数，则直接执行函数（因为没有依赖）
+    if (typeof factory === 'function') {
+        return factory()
+    }
+    // 不是函数，则直接返回参数三的值
+    return factory
+}
+
+// 模拟请求依赖
+function ajaxGet(sign) {
+    // 简化代码，只考虑成功
+    return new Promise(resolve => {
+        setTimeout(() => {
+            let str = {
+                // 依赖1只有一个参数3，值是对象
+                '1': 'define({a: 1})',
+                // 依赖2有一个自己的依赖（依赖3），值是函数
+                '2': `define(['3'], function (obj) {return Object.assign({}, obj, {b: 2})})`,
+                // 依赖3是一个函数，他有返回值
+                '3': `define(function () {return {c: 3}})`
+            }
+            resolve(str[sign])
+        }, 1000)
+    })
+}
+
+// 这是root
+define(['1', '2'], function () {
+    console.log(arguments)
+    // {a:1}
+    // {c:3, b:2}
+})
+```
+
+
+<h4>1.4、CMD规范</h4>
+
+上面讲了CommonJS和AMD规范，还剩下一个Sea.js推荐的CMD规范。
+
+老规矩先上链接[CMD规范](https://github.com/seajs/seajs/issues/242)
+
+CMD规范和AMD规范的区别有：
+
+1. 同步加载，类似Common.js（**性能好**）；AMD是依赖前置，提前执行了（**用户体验好**）;
+2. 按顺序加载，放在代码前的先加载，代码后的后加载——**依赖前置**；AMD的是依赖加载完后，哪个依赖先下载完就先加载和执行哪个依赖——**依赖就近**；
+3. CMD是就近原则，先下载好依赖，然后需要执行的时候再解析（**延迟执行**）；AMD是下载好就立刻解析（**提前执行**）；
+
+上CMD的核心函数：
+
+> define(id?, deps?, factory);
+
+是不是觉得和AMD的很像，事实也如此，defined的参数基本是一致的，区别在于factory的参数。
+
+> factory(require, exports, module) {//...}
+
+1. require类似Common.js的require，但他不负责去同步加载（因为模块已经加载好了），他主要负责解析；
+2. exports类似Common.js的module.exports，用于向外提供接口；
+3. module是一个对象，上面存储了与当前模块相关联的一些属性和方法；
+
