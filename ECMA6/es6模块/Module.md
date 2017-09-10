@@ -42,4 +42,5 @@ es6的模块化设计思想有以下特点：
 
 由于浏览器还不支持import和export，因此需要转码。
 
-转码的教程参照我这篇文章
+转码的教程参照我这篇文章[如何在修改代码后，查阅效果](https://github.com/qq20004604/some_demo/tree/master/ECMA6/es6%E6%A8%A1%E5%9D%97)
+
