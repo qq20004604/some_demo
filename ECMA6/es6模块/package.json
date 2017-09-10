@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "test": "compile-modules convert foo.js -o test.js"
+  }
+}
