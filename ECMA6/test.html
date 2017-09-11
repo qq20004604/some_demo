@@ -9,7 +9,14 @@
 <body>
 
 <script>
-
+    let foo = []
+    foo.valueOf = function () {
+        return Symbol()
+    }
+    foo.toString = function () {
+        return 'toString'
+    }
+    console.log(foo + '←')  // toString←
 </script>
 </body>
 </html>
