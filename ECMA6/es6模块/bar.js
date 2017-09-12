@@ -1,3 +1,1 @@
-export function log() {
-    console.log('test3')
-}
+export let bar = {}

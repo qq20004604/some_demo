@@ -1,2 +1,7 @@
-import {log} from './bar.js'
-log()
+// config.js
+let successIconUrl = './success-icon.png'
+export {successIconUrl}
+
+// field.js
+import {successIconUrl} from 'config'
+icon.url = successIconUrl

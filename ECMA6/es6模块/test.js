@@ -1,9 +1,9 @@
 (function() {
     "use strict";
-    function $$bar$$log() {
-        console.log('test3')
-    }
-    $$bar$$log();
+    let bar$$bar = {}
+
+    bar$$bar.bar = 'bar';
+    console.log(bar$$bar.bar);
 }).call(this);
 
 //# sourceMappingURL=test.js.map
