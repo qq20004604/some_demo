@@ -64,35 +64,41 @@ bar
 另附一个我自己写的模拟CommonJS规范的CommonJS极简易加载器，附上。
 
 ```
-function require(url) {
-    // 去拿取加载的信息
-    let text = sync(url)
-    // 前后添加一些字符串，封装成一个函数，用括号括起来表示是一个表达式
-    text = '(function(module){' + text + '})'
-    // eval这个字符串，把他变为一个真函数
-    let fn = eval(text)
-    // 调用这个函数，并将module这个对象作为参数传进去
-    // 这样module就可以拿到导出的数据了
-    let module = {}
-    fn(module)
-    // 我们是通过module.exports导出的，所以返回他
-    return module.exports
-}
+    function require(url) {
+        // 去拿取加载的信息，这里假定获取到的是字符串
+        let text = sync(url)
+        // 前后添加一些字符串，封装成一个函数，用括号括起来表示是一个表达式
+        text = '(function(module){' + text + '})'
+        // eval这个字符串，把他变为一个真函数
+        let fn = eval(text)
+        // 调用这个函数，并将module这个对象作为参数传进去
+        // 这样module就可以拿到导出的数据了
+        let module = {}
+        fn(module)
+        // 我们是通过module.exports导出的，所以返回他
+        return module.exports
+    }
 
-// 因为是CommonJS是同步的，因此用本函数模拟同步加载
-function sync(url) {
-    // 省去加载文件的过程，直接输出返回结果
-    return `module.exports = {
-foo(){
-    console.log('foo')
-},
-bar: 'bar'
-}`
-}
+    // 因为是CommonJS是同步的，因此用本函数模拟同步加载
+    function sync(url) {
+        let str = {
+            foo: `let bar = require('bar')
 
-let myModel = require('test')
-myModel.foo()
-console.log(myModel.bar)
+module.exports = {
+    foo(){
+        console.log('foo')
+    },
+    bar: bar
+}`,
+            bar: `module.exports = 'bar'`
+        }
+        // 省去加载文件的过程，直接输出返回结果
+        return str[url]
+    }
+    
+    let myModel = require('foo')
+    myModel.foo()
+    console.log(myModel.bar)
 ```
 
 <h3>2、AMD规范</h3>
