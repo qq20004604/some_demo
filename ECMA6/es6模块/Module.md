@@ -51,7 +51,7 @@ es6的模块化设计思想有以下特点：
 [qq20004604/some_demo/ECMA6/es6模块/](https://github.com/qq20004604/some_demo/tree/master/ECMA6/es6%E6%A8%A1%E5%9D%97)
 
 1. 先全局安装转码工具；
-2. 然后再修改入口文件``foo.js``，以及他引用的文件的代码；
+2. 然后再修改入口文件``foo.mjs``，以及他引用的文件的代码；
 3. 并运行``npm run test``完成转码；
 4. 打开``test.html``查看效果。
 
@@ -78,13 +78,13 @@ es6的模块化设计思想有以下特点：
 1、声明后直接导出的写法：
 
 ```
-// bar.js
+// bar.mjs
 export const myFirstName = 'Dong';
 export let myLastName = 'Wang'
 
-// foo.js
-import {myFirstName} from './bar.js'
-import {myLastName} from './bar.js'
+// foo.mjs
+import {myFirstName} from './bar.mjs'
+import {myLastName} from './bar.mjs'
 console.log(`My name is ${myFirstName} ${myLastName}`)
 ```
 
@@ -104,12 +104,12 @@ export const myLastName = 'Wang';
 2、先声明后导出的写法：
 
 ```
-// bar.js
+// bar.mjs
 const myFirstName = 'Dong';
 let myLastName = 'Wang';
 export {myFirstName, myLastName}
 
-// foo.js 和上面保持一致
+// foo.mjs 和上面保持一致
 ```
 
 被导出的变量，用大括号包裹起来，注意有这种并不是es6对象的简洁写法，请不要混淆了。（具体参照下面的**注意点【3】**）
@@ -125,7 +125,7 @@ export {myFirstName, myLastName}
 因此，如果为了稳妥起见，建议规避这种方法。
 
 ```
-// bar.js
+// bar.mjs
 
 const firstName = 'Dong';
 let lastName = 'Wang';
@@ -139,8 +139,8 @@ export {firstName as myFirstName, lastName as myLastName}
 引入的文件foo.js代码如下，如无特殊声明，那么只使用这个。
 
 ```
-// foo.js
-import {log} from './bar.js'
+// foo.mjs
+import {log} from './bar.mjs'
 log()
 ```
 
@@ -206,16 +206,16 @@ export { name1 as default, … };
 以下代码可验证：
 
 ```
-// bar.js
+// bar.mjs
 function log() {
     console.log('test4')
 }
 export default log  // 如果是export，这里就不能是log，而应该是{log}
 export let a = 1    // 可以同时export和export default都存在
 
-// foo.js
-import log from './bar.js'
-import {a} from './bar.js'
+// foo.mjs
+import log from './bar.mjs'
+import {a} from './bar.mjs'
 log()	// test4
 console.log(a)	// 1
 ```
@@ -224,22 +224,22 @@ console.log(a)	// 1
 
 6.1、导出默认接口
 
-需要注意的是，``bar.js``不能直接用``export default from './baz'``，转码的时候回报错。
+需要注意的是，``bar.mjs``不能直接用``export default from './baz'``，转码的时候回报错。
 
-也不能用``export {default} from './baz'``，转码后用现有``foo.js``代码无法正常导入。
+也不能用``export {default} from './baz'``，转码后用现有``foo.mjs``代码无法正常导入。
 
 总之，稳妥起见，请用以下方式来实现
 
 ```
-// baz.js
+// baz.mjs
 export default 'baz'
 
-// bar.js
+// bar.mjs
 import baz from './baz'
 export default baz
 
-// foo.js
-import baz from './bar.js'
+// foo.mjs
+import baz from './bar.mjs'
 console.log(baz)    // baz
 ```
 
@@ -248,15 +248,15 @@ console.log(baz)    // baz
 由于转码问题，理论上一些合法的写法不能写，例如``export * from './baz'``这样可以导出全部接口的，在转码后无法正常显示数据，因此建议以以下这种方式来写。（即导入导出分两行代码来写）
 
 ```
-// baz.js
+// baz.mjs
 export let baz = 'baz', BAZ = 'BAZ'
 
-// bar.js
+// bar.mjs
 import {baz} from './baz'
 export {baz}
 
-// foo.js
-import {baz} from './bar.js'
+// foo.mjs
+import {baz} from './bar.mjs'
 console.log(baz)    // baz
 ```
 
@@ -308,11 +308,11 @@ export {myLastName:myFirstName, myLastName:'1'}
 1、引入默认模块：
 
 ```
-// bar.js
+// bar.mjs
 export default 'bar'
 
-// foo.js
-import bar from './bar.js'
+// foo.mjs
+import bar from './bar.mjs'
 console.log(bar)    // bar
 ```
 
@@ -321,11 +321,11 @@ import后面直接跟变量名即可，变量名即是导出的变量/常量/函
 2、引入模块的多个/指定变量/常量/方法等：
 
 ```
-// bar.js
+// bar.mjs
 export let bar = 'bar', BAR = 'BAR'
 
-// foo.js
-import {bar, BAR} from './bar.js'
+// foo.mjs
+import {bar, BAR} from './bar.mjs'
 console.log(bar, BAR)    // bar BAR
 ```
 
@@ -334,15 +334,15 @@ console.log(bar, BAR)    // bar BAR
 这里必须通过as重新命名
 
 ```
-// bar.js
+// bar.mjs
 export let bar = 'bar', BAR = 'BAR'
 
-// foo.js
-import * as bar from './bar.js'
+// foo.mjs
+import * as bar from './bar.mjs'
 console.log(bar.bar, bar.BAR)    // bar BAR
 ```
 
-相当于让整个``bar.js``的对外接口被挂载了``foo.js``的bar对象上。
+相当于让整个``bar.mjs``的对外接口被挂载了``foo.mjs``的bar对象上。
 
 注意，因为是按引用传递的，因此只能输出值，或者执行方法，但是不能修改变量（比如``bar.bar``指向的值）
 
@@ -351,12 +351,12 @@ console.log(bar.bar, bar.BAR)    // bar BAR
 无非是1和3的结合罢了，看完代码就秒懂。如果是1和2的组合，写法是类似的，把``* as bar``替换成2的写法即可
 
 ```
-// bar.js
+// bar.mjs
 export let bar = 'bar', BAR = 'BAR'
 export default 'bar default'
 
-// foo.js
-import barDefault, * as bar from './bar.js'
+// foo.mjs
+import barDefault, * as bar from './bar.mjs'
 console.log(bar.bar, bar.BAR, barDefault)    // bar BAR bar default
 ```
 
@@ -435,7 +435,7 @@ export {default as bar} from 'baz';
 例如，以下代码应该是允许的：
 
 ```
-// bar.js
+// bar.mjs
 export * from 'baz'
 export let bar = 'bar'
 ```

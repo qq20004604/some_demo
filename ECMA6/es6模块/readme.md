@@ -4,13 +4,13 @@
 
 >npm install -g es6-module-transpiler
 
-然后入口文件为：foo.js
+然后入口文件为：foo.mjs
 
 html里引入的文件是转码完毕后的文件，命名为test.js，并在test.html里引入
 
 转码命令为：
 
-> compile-modules convert foo.js -o test.js
+> compile-modules convert foo.mjs -o test.js
 
 但全额下载下来本文件夹后，可以通过运行
 
