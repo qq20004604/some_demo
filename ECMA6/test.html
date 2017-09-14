@@ -9,14 +9,19 @@
 <body>
 
 <script>
-    let foo = []
-    foo.valueOf = function () {
-        return Symbol()
+    function test(a, b = 3) {
+        console.log(a, b)
+        console.log(this)
     }
-    foo.toString = function () {
-        return 'toString'
+    test.bind('Is this')(1)
+    // 1 3
+    // Is this
+
+    function test2(...args) {
+        console.log(args.length)
     }
-    console.log(foo + '←')  // toString←
+    test2(1, 2, 3, 4, 5)
+    // 5
 </script>
 </body>
 </html>
