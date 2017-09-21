@@ -5,9 +5,11 @@
     <title>Title</title>
 </head>
 <body>
-<script>
-
-
+<!--<script type="module" src="./bar.js"></script>-->
+<script type="module" src="./foo.js"></script>
+<script type="module">
+    import bar from './bar.js'
+    console.log(bar)
 </script>
 </body>
 </html>

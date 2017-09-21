@@ -1,1 +1,3 @@
-import bar from './bar'
+import bar from './bar.js'
+console.log(bar)
+// console.log('foo')
