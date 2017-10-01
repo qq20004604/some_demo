@@ -8,7 +8,7 @@
    表示这个画布是宽高是200px，他所在的范围，就是画图的范围（超出部分无法绘图）
 3. 前获取的canvas标签所在的DOM，和正常获取一个DOM方法一致（比如document.getElementById()）
 4. 假设之前获取的DOM被赋给变量canvas，然后获取绘图用的渲染上下文，具体方法是：  
-   ```var ctx = canvas.getContent('2d');```  
+   ```var ctx = canvasNode.getContext('2d')```  
    这个ctx就是我们需要的绘图用的对象。  
    **调用接口时，如无特殊声明，都指的是通过这个ctx对象来调用**
    
