@@ -14,7 +14,7 @@ function randomColor () {
     return str
 }
 
-let tool = new ToolOfCanvas(document.getElementById('canvas'))
+let tool = new ToolOfCanvas(document.getElementById('canvas'), {FPS: 60})
 tool.beginDrawing()
 
 let isSinItemRunning = false

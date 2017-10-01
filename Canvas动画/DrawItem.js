@@ -121,8 +121,8 @@ class Parabola extends DrawItem {
             hundredPercentY: 5,   // 当理论上y是多少时，在y轴上移动了100%的距离
             MaxHeight: 300,  // 表示y坐标上的值
             offsetY: -250,   // y坐标偏移值
-            // 理论x值每秒增加数值
-            xBySecond: 1,
+            // 理论x值每秒增加数值，更改这个可以影响动画速度
+            xBySecond: 2,
             // 理论x值乘以increaseX将是实际x值
             increaseX: 50,
             // x、y坐标的实际偏移值（px）
