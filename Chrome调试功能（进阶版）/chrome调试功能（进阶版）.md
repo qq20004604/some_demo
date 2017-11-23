@@ -2,7 +2,7 @@
 
 [英文原文](https://raygun.com/javascript-debugging-tips)
 
-本文基于[译文](https://www.oschina.net/translate/javascript-debugging-tips)，在原有基础上进行<b><i>增强</i></b>。
+本文基于[译文](https://www.oschina.net/translate/javascript-debugging-tips)，在原有基础上进行<b><i>增强</i></b>，根据我个人了解，额外加了很多内容。
 
 默认是基于chrome来进行调试的，如果是其他浏览器，不一定能支持（特别是IE）
 
@@ -246,4 +246,83 @@ fn1 @ 新建文本文档 (4).html:13
 fn4 @ 新建文本文档 (4).html:25
 (anonymous) @ 新建文本文档 (4).html:29
 ```
+
+<h3>7、格式化代码</h3>
+
+我们在使用webpack打包的时候，一般会将代码压缩混淆。
+
+好处是可以减少代码体积，但坏处是如果打包后报错（比如在测试环境），通过点击console的堆栈跳到代码处，会发现一堆代码无换行杂糅一起，基本无法调试。
+
+解决办法chrome浏览器已经提供了，以[阿里巴巴的矢量图标库](http://www.iconfont.cn/)为例。
+
+首先打开控制台，进入以下页面（进入方法已经用箭头标注）。
+
+<img src='./5.png' width='100%'>
+
+会发现中间区域的代码明显是压缩混淆之后的。
+
+格式化代码很简单，如图箭头指向的地方，点一下：
+
+<img src='./6.png' width='100%'>
+
+然后原本的js文件被一个文件后加了``:formatted``的文件所替代，代码行数从23行变成了600多行如下图：
+
+<img src='./7.png'>
+
+这个文件替代了原文件。
+
+点击console的报错，或者在这里打断点，都是可以正常生效的。
+
+建议自己试试，试完后理解起来很简单。
+
+<h3>8、断点某函数</h3>
+
+控制台输入：
+
+> debug(函数名)
+
+效果：在执行某个函数的时候，自动触发断点。
+
+但这个其实不实用，原因有几点：
+
+1. 如果某个函数在页面刷新后就执行，而不是例如点击按钮后执行，那么是基本用不到的。理由是执行这个命令后，再刷新页面，之前的输入无效（而刷新后立即执行的话，执行速度太快了）；
+2. 现在通行的是混淆打包编译，在局部作用域内，在控制台，基本是没办法访问到这个函数的。
+
+示例代码：
+
+```
+<script>
+    function test () {
+        console.log('test')
+        let foo = function () {
+            console.log('foo')
+        }
+        foo()
+    }
+
+    test()
+</script>
+<button onclick="test()">点击执行test</button>
+```
+
+1. 输入``debug(test)``，再刷新页面，调试不会生效；
+2. 输入``debug(test)``，点击按钮，会触发调试；
+3. 输入``debug(foo)``，会报错``foo is not defined``；
+4. 如果想在执行foo的时候生效，代码需要如下改写：
+
+```
+<script>
+    function test () {
+        this.foo = function foo () {
+            console.log('foo')
+        }
+        this.foo()
+    }
+
+    let bar = new test()
+</script>
+<button onclick="test()">点击执行test</button>
+```
+
+输入``debug(bar.foo)``，然后点击按钮，会触发断点。
 
