@@ -326,3 +326,144 @@ fn4 @ 新建文本文档 (4).html:25
 
 输入``debug(bar.foo)``，然后点击按钮，会触发断点。
 
+所以还是推荐打``debugger``来进行指定代码的调试。
+
+<h3>9、调试跳过某些文件</h3>
+
+简单来说，就是指调试的时候，如果需要进入某个js文件，那么不再进入，而是``Sources``面板保持在在进入之前的位置和离开该文件后的位置。
+
+举个简单的例子，当我们调试需要调用jQuery的代码时，由于jQuery代码一般是压缩混淆后的最小化代码，阅读困难，所以进入其代码内往往是没有意义的。
+
+那么我们就可以通过这个办法让调试器在执行jQuery源码的时候，面板不进入（当然，实际还是在执行的），停留在进入之前的js文件。
+
+<b>步骤说明：</b>
+
+0、原文的方法，在我实测的时候，不可行，如果有人可以重现原文方法，请联系我的QQ：20004604，我会对本文进行订正；
+
+0.5、建立2个文件，一个html（名字随便起），一个js文件（我这里随便起了一个``2.js``的名字）；
+
+1、打开Source面板，右键js文件，复制文件链接（如下图）：
+
+<img src='./8.png' width='100%'>
+
+2、打开settings面板，如图：
+
+<img src='./9.png'>
+
+3、在settings面板内，如下操作：
+
+<img src='./10.png'>
+
+4、然后将之前复制的链接粘贴进去，点击【add】按钮：
+
+<img src='./11.png' width='100%'>
+
+5、两个文件的内容如下：
+
+```
+// html文件
+<!doctype html>
+<html lang="en">
+<head>
+    <script src="2.js"></script>
+</head>
+<body>
+<script>
+    function bar () {
+        console.log('bar')
+    }
+
+    foo()
+</script>
+<button onclick="foo()">点击执行foo</button>
+</body>
+</html>
+
+// 2.js
+function foo () {
+    console.log('foo')
+    debugger
+    bar()
+}
+```
+
+会发现``2.js``中的debugger是无效的。但是如果给``2.js``文件打断点，执行``foo()``或者点击按钮执行``foo()``时，断点会停留在html文件中，不会切换到js文件。
+
+<h3>10、给console上色</h3>
+
+示例：
+
+```
+console.log('%c%s', 'color:red', '红色字体')
+```
+
+这个在Python等语言里有，如果没接触过类似语法可能比较难理解。建议大家先复制以上代码到控制台看看效果。
+
+简单来说，有点类似``str.replace()``的替换。
+
+1. ``%c``，被认为是样式描述符，如果输入``color:red``，那么console的结果会被变为红色；
+2. ``%s``，被认为是字符串，因此显示的文字是``红色字体``；
+3. ``console.log``一共有三个参数，第一个是显示内容，有两个``%``运算符，第二个参数会被匹配到第一个``%``运算符，第三个参数会被匹配到第二个``%``运算符；
+
+再举几个例子：
+
+```
+console.log('第一个字符串：%s，第二个字符串%s', 'foo', 'bar')
+// 第一个字符串：foo，第二个字符串bar
+
+console.log('第一个字符串：%s，第二个字符串%s', 'foo')
+// 第一个字符串：foo，第二个字符串%s
+
+console.log('第一个字符串：%s，第二个字符串%s', 'foo', 'bar', 'baz')
+// 第一个字符串：foo，第二个字符串bar baz
+```
+
+1. 第一个的解释：``%``运算符可以直接和普通字符串拼接；
+2. 第二个的解释：没有可匹配的参数时，``%``运算符会被认为是普通字符串（即``%s``）；
+3. 第三个的解释：多出来的那个参数，之所以这么显示，是因为``console.log('bar', 'baz')``这样的原因；
+
+<br>
+<b>``%``运算符不完全解释；</b>
+
+<table>
+    <tr>
+        <td>运算符</td>
+        <td>匹配要求</td>
+        <td>效果</td>
+        <td>和要求不匹配时效果</td>
+    </tr>
+    <tr>
+        <td>%c</td>
+        <td>对应css样式</td>
+        <td>用css样式修饰log（部分css无效，比如height和动画）</td>
+        <td>错误的样式不生效，不影响其他正常的</td>
+    </tr>
+    <tr>
+        <td>%s</td>
+        <td>字符串</td>
+        <td>将字符串替换到该位置</td>
+        <td>正常显示</td>
+    </tr>
+    <tr>
+        <td>%d</td>
+        <td>数字（必须number类型）</td>
+        <td>格式化为整数显示</td>
+        <td>非number类型则NaN（包括'123'这样的字符串）</td>
+    </tr>
+    <tr>
+        <td>%f</td>
+        <td>浮点数（必须number类型）</td>
+        <td>可以显示浮点数（但类似%1f只显示一位小数的设置无效）</td>
+        <td>非number类型则NaN</td>
+    </tr>
+</table>
+
+示例代码：
+
+```
+console.log('%c效果展示', 'font-size:100px;color:red;border:10px solid green;border-radius:30px;')
+console.log('%s%s%s', '---', '效果展示', '---')
+console.log('整数：%d', 123.45)
+console.log('浮点数：%f', 123.45)
+```
+
