@@ -467,3 +467,144 @@ console.log('整数：%d', 123.45)
 console.log('浮点数：%f', 123.45)
 ```
 
+<h3>11、当某函数被调用时，提示和显示参数</h3>
+
+这个和【断点某函数】存在同样的问题，你必须首先在控制台拿到该函数，才能实现，如果拿不到，或者很复杂的话，那么就特别不实用了。
+
+示例代码（将这个直接输入到下面）：
+
+```
+function foo (a, b, c) {
+    console.log(arguments)
+}
+
+monitor(foo)
+foo(1, 2)
+```
+
+效果如图：
+
+<img src='./12.png' width='100%'>
+
+<h3>12、控制台专用的类jQuery选择器</h3>
+
+jQuery的美元符选择器很好用，但如果没引用jQuery的话，做起来就很麻烦。
+
+但浏览器的控制台自带类似jQuery的选择器语法，可以拿取DOM。
+
+> $(css-selector)    // 返回单个DOM元素
+<br>
+> $$(css-selector)    // 返回数组
+
+示例代码：
+
+```
+// html文件
+<!doctype html>
+<html lang="en">
+<body>
+<div id="foo"></div>
+<div class="bar"></div>
+</body>
+</html>
+
+// 控制台输入
+$("#foo")
+$$("#foo")
+$(".bar")
+$$(".bar")
+```
+
+效果如下图：
+
+<img src='./13.png'/>
+
+注意，可以理解为``document.querySelector()``和``document.querySelectorAll()``，但是返回数组的那个不一样。
+
+因为``$$()``返回的是``[object Array]``，而``document.querySelectorAll()``返回的是``[object NodeList]``。
+
+不过这个好像也没什么意义喔。
+
+<h3>13、浏览器端编辑ajax请求</h3>
+
+略略略，chrome貌似不行。
+
+<h3>14、DOM被修改时自动断点</h3>
+
+前端很多时候就是玩DOM，所以有时候我们需要关心DOM什么时候被改变（移除），或者修改。
+
+先上HTML代码：
+
+```
+<!doctype html>
+<html lang="en">
+<body>
+<script>
+    function remove () {
+        document.querySelector('.bar').remove()
+        console.log('remove')
+    }
+</script>
+<button id="foo" onclick="remove()">移除bar</button>
+<div class="bar">bar</div>
+</body>
+</html>
+```
+
+然后如图做：
+
+<img src='./14.png'/>
+
+这个的效果就是当DOM被移除时，自动断点，且断点位置是DOM移除时的那一行代码（移除前最后一步）。
+
+<b>需要控制台保持在``Elements``标签下才可触发断点！</b>
+
+点击按钮移除，会发现自动触发断点（注意右边，bar这个HTML元素还在）：
+
+<img src='./15.png'/>
+
+在``Break on...``的三个选项中：
+
+1、第一个是DOM树改变，如下代码，当``#bar``添加了一个新的子元素（包括孙元素）时，或者子元素被移除时，就会触发断点：
+
+```
+<!doctype html>
+<html lang="en">
+<body>
+<script>
+    function add () {
+        let DOM = document.createElement('a')
+        DOM.innerHTML = '123'
+        document.querySelector('#baz').appendChild(DOM)
+    }
+</script>
+<button id="foo" onclick="add()">添加一个孙标签</button>
+<div id="bar">
+    <div id="baz"></div>
+</div>
+</body>
+</html>
+```
+
+注意，当前DOM被移除时<b>不会触发这一个事件</b>
+
+2、第二个是：当DOM属性更改，自动触发断点。
+
+例如添加了一个class呀，之类之类的，都可以触发，代码如下：
+
+```
+<!doctype html>
+<html lang="en">
+<body>
+<script>
+    function add () {
+        document.querySelector('#bar').classList.add('foo')
+    }
+</script>
+<button id="foo" onclick="add()">添加一个class</button>
+<div id="bar"></div>
+</body>
+</html>
+```
+
+先打断点，然后点击按钮添加一个新的class类，就会触发断点效果了。
