@@ -1,14 +1,14 @@
 /**
  * Created by 王冬 on 2017/6/11.
  */
-function beginMyAjaxByWangdong() {
+(function () {
     var ajax = function (options) {
         /*  参数
          *   1、类型对象，以下是key：
          *   2、url：链接
          *   3、type：请求方式
          *  示例代码：
-         *  this.$ajax({
+         *  $.ajax({
          *      url: "/getForLearn",
          *      type: "get",
          *      data:{},
@@ -218,27 +218,15 @@ function beginMyAjaxByWangdong() {
         window.$ = {};
     }
     window.$.ajax = ajax;
-}
-
-beginMyAjaxByWangdong();
+})()
 
 $.ajax({
-    url: "/webaace/signinsrv/signinwithphone",
-    type: "post",
-    data: {
-        "signInPhone": {
-            "isWifiSignIn": false,
-            "orgId": "5717118013",
-            "longitude": 120.0607497829861,
-            "latitude": 30.31542534722222,
-            "deviceName": "",
-            "placeName": "浙江省杭州市西湖区三墩镇西园七路3号3幢",
-            "clientIp": "",
-            "shortPlace": "三墩镇西园七路3号3幢",
-            "wifiMacAddr": "",
-            "deviceId": "0357a715e378b92f88964b01c4ef5e07"
-        }
-    }
-}).done(function (result) {
-    console.log(result)
+    url: "/getForLearn",
+    type: "get",
+    data: {},
+    isFormData: true / false   //默认false
+}).done(function (val) {
+    console.log(val)
+}).fail(function (err) {
+    console.error(err);
 })
