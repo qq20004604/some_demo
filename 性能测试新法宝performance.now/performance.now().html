@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>performance.now()</title>
+</head>
+<body>
+<script>
+    window.onload = function () {
+        console.log('---------console.time()--------')
+        var a = console.time('1')
+        var m = 0
+        for (var i = 0; i < 1000000; i++) {
+            m += i
+        }
+        var b = console.timeEnd('1')
+        console.log(a)
+        console.log(b)
+        console.log(b - a)
+
+        console.log('---------Date.now()--------')
+        var a = Date.now()
+        var m = 0
+        for (var i = 0; i < 1000000; i++) {
+            m += i
+        }
+        var b = Date.now()
+        console.log(a)
+        console.log(b)
+        console.log(b - a)
+
+        console.log('--------new Date()---------')
+        var a = new Date()
+        var m = 0
+        for (var i = 0; i < 1000000; i++) {
+            m += i
+        }
+        var b = new Date()
+        console.log(a)
+        console.log(b)
+        console.log(b - a)
+
+        console.log('--------performance.now()---------')
+        var a = performance.now()
+        var m = 0
+        for (var i = 0; i < 1000000; i++) {
+            m += i
+        }
+        var b = performance.now()
+        console.log(a)  // 6.32
+        console.log(b)  // 6.325000000000001
+        console.log(b - a)  // 0.005000000000000782
+    }
+</script>
+</body>
+</html>
