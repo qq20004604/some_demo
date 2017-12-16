@@ -9,7 +9,7 @@ console.time(str)
 console.timeEnd(str)
 ```
 
-可以参照[你所不知道的Chrome调试技巧（上）：2、获取时间段](http://blog.csdn.net/qq20004604/article/details/78588300#t2)
+可以参照[你所不知道的Chrome调试技巧：5、获取时间段](https://github.com/qq20004604/some_demo/blob/master/Chrome调试功能（进阶版）/chrome调试功能（进阶版）.md)
 
 优点在于：
 
