@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<style>
+    .img {
+        width: 26.6px;
+        height: 26.6px;
+        background-image: url(./demo.png);
+        background-position: 0 0;
+        background-repeat: no-repeat;
+    }
+</style>
+<div class="img"></div>
+<button onclick="show()">暂停/恢复，并显示当前的位置</button>
+<div id="href"></div>
+<script>
+    // 支持保存当前图片状态（以url形式）
+    // 读取url参数可以生成url表示的图片状态
+    // 图片可以暂停、恢复动画
+    const DOM = document.querySelector(".img")
+
+    // 这个是x轴展开的图片
+    // 参数二是最大宽度，参数三是每个图片的宽度，参数四是跑一轮需要的时间
+    function Animate(DOM, maxSize = 800, perSize = 26.66, timePerRound = 3000) {
+        let size = 0
+        var currentSize = window.location.search.match(/size=\d+/)
+        // 初始化当前帧图片
+        if (currentSize) {
+            size = Number(currentSize[0].replace('size=', ''))
+            console.log(size)
+            DOM.style.backgroundPosition = `-${size}px 0`
+        }
+        let pause = true
+        this.pauseOrStart = function () {
+            pause = !pause
+        }
+        this.getSize = function () {
+            return size
+        }
+        setInterval(() => {
+            if (pause) {
+                return
+            }
+            size += perSize;
+            if (size > maxSize) {
+                size = 0
+            }
+            DOM.style.backgroundPosition = `-${size}px 0`
+        }, timePerRound / (maxSize / perSize))
+    }
+
+    let first = new Animate(DOM)
+
+    function show() {
+        first.pauseOrStart()
+        console.log(`当前位置：${first.getSize()}`)
+        document.querySelector('#href').innerHTML = `${window.location.origin}${window.location.pathname}?size=${first.getSize()}<br>复制以上地址给别人，可以获取当前图片的状态`
+    }
+</script>
+</body>
+</html>
