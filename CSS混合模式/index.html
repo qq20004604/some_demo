@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #box {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #000;
+        }
+
+        .a, .b {
+            position: absolute;
+            width: 100px;
+            height: 100px;;
+        }
+
+        .a {
+            top: 0;
+            left: 0;
+            background-color: rgb(255, 100, 0);
+            /*mix-blend-mode: multiply;*/
+            /*z-index: 1;*/
+        }
+
+        .b {
+            top: 50px;
+            left: 50px;
+            background-color: rgb(100, 255, 0);
+            mix-blend-mode: color-burn;
+        }
+    </style>
+</head>
+<body>
+<div id="box">
+    <div class="a"></div>
+    <div class="b"></div>
+</div>
+</body>
+</html>
