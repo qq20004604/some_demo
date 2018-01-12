@@ -5,7 +5,7 @@ const webpack = require('webpack')
 module.exports = {
     // 入口文件
     entry: {
-        app: './app.js'
+        app: './src/app.js'
     },
     // 出口文件
     output: {
