@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Leaner from './Leaner';
 
 function formatDate(date) {
     return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
@@ -12,6 +11,7 @@ class HelloWord extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            props: props,
             seconds: 0
         }
         setInterval(() => {
@@ -23,16 +23,19 @@ class HelloWord extends React.Component {
 
     render() {
         return <div className={domClass}>
-            你好，距离上一次修改页面，过去了{this.state.seconds}秒
+            你好，{this.state.props.user}距离上一次修改页面，过去了{this.state.seconds}秒
         </div>
     }
 }
 
+let abc = 'abc'
+
 ReactDOM.render(
     <div>
-        <HelloWord/>
+        <Foo></Foo>
+        {/*<HelloWord user={abc}/>*/}
         <p>当前时间是：{formatDate(new Date())}</p>
-        <Leaner/>
+        {/*<Leaner/>*/}
     </div>,
     document.getElementById('root')
-);
+)
