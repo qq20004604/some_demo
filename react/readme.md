@@ -293,7 +293,7 @@ ReactDOM.render(
 >例如，class 变成了 className，而 tabindex 则对应着 tabIndex.
 
 
-<h3>10、onChange和onClick</h3>
+<h3>10、事件处理</h3>
 
 > 事件的 this
 
@@ -370,6 +370,92 @@ class HelloWord extends React.Component {
 }
 ```
 
+<b>阻止默认事件：</b>
+
+1. 阻止默认事件，需要通过 ``e.preventDefaul()`` 来实现（e 是事件的回调函数的参数）
+
+<b>React 事件函数的特点：</b>
+
+1. 事件参数是一个合成事件。React 根据 W3C spec 来定义这些合成事件，所以你不需要担心跨浏览器的兼容性问题；
+2. 在 render 里，写成 ``this.xx``，但是这个事件执行时的 this 是 undefined，所以需要手动绑定（``bind``）；
+
+<b>事件的传参：</b>
+
+1. 原则上，就是返回一个带参数的函数；
+
+【方法一】
+
+返回通过 ``bind`` 绑定了 this 和 参数的函数;
+
+需要注意的是，事件参数无需添加，会被默认后置到最后一个参数的位置：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            count: 0
+        }
+    }
+
+    // 渲染函数，this 指向实例本身
+    render() {
+        return <div>
+            {/* 这种方法省略了 this 绑定的过程 */}
+            <button onClick={this.clickCount.bind(this, 5)}>增加count</button>
+            <br/>
+            计数器二：{this.state.count}
+        </div>
+    }
+
+    clickCount(number, e) {
+        // 先是自定义参数，最后一个是事件参数
+        console.log(arguments)
+        this.setState({
+            count: this.state.count + number
+        })
+    }
+}
+```
+
+【方法二】
+
+参数是一个函数，这个函数里执行了你准备执行的那个函数。
+
+核心思想是：参数函数被执行 ——> 参数函数里执行了原本预期执行的函数 ——> 预期执行的函数里，放置了需要的参数
+
+如代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            count: 0
+        }
+    }
+
+    // 渲染函数，this 指向实例本身
+    render() {
+        return <div>
+            {/* 这种方法省略了 this 绑定的过程 */}
+            <button onClick={e => this.clickCount.call(this, 5, e)}>增加count</button>
+            <br/>
+            计数器二：{this.state.count}
+        </div>
+    }
+
+    clickCount(number, e) {
+        // 先是自定义参数，最后一个是事件参数
+        console.log(arguments)
+        this.setState({
+            count: this.state.count + number
+        })
+    }
+}
+```
+
+
 <h3>11、组件复用</h3>
 
 同一个组件可以同时插入多个到父组件中，并且各个组件的状态是独立的。
@@ -414,6 +500,8 @@ ReactDOM.render(
 <b>参考链接：</b>
 
 [React组件生命周期小结](https://www.jianshu.com/p/4784216b8194)
+
+两个生命周期，分别是组件的生命周期，和状态变更的声明周期
 
 <b>组件结构：</b>
 
@@ -460,7 +548,7 @@ ReactDOM.render(
 7. 如果子组件还有子组件，则重复 3 ~ 6 ；
 8. 子组件渲染完毕后，执行子组件 **渲染完毕函数**，并冒泡执行父组件 **渲染完毕函数**；
 
-建议参照 DEMO 查看。
+建议参照 [DEMO](https://github.com/qq20004604/some_demo/tree/master/react/React%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9FDEMO) 查看。
 
 使用说明：
 
@@ -471,11 +559,223 @@ ReactDOM.render(
 
 即父组件第 2n+1 次点击渲染，2n 次不渲染；子组件是父组件第 2n 次渲染时，不渲染，第 2n+1 次渲染时，渲染；
 
-<h3>13、</h3>
+<h3>13、setState 是异步行为</h3>
 
-<h3>14、</h3>
+>setState()
 
-<h3>15、</h3>
+这是一个异步操作，如：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            count: 0
+        }
+        this.clickCountAsync = this.clickCountAsync.bind(this)
+    }
+
+    // 渲染函数，this 指向实例本身
+    render() {
+        return <div>
+            <button onClick={this.clickCountAsync}>异步增加count</button>
+        </div>
+    }
+
+    clickCountAsync() {
+        console.log('【异步】setState之前，count的值：', this.state.count)
+        this.setState({
+            count: this.state.count + 1
+        })
+        console.log('【异步】setState之后，count的值：', this.state.count)
+    }
+}
+```
+
+会发现，两个 log 语句，输出的结果的值，都是一样的。
+
+原因是 React 会合并多个 setState，然后统一更新；
+
+那么如何获取更新后的数据，答案是通过回调函数；
+
+说明见注释
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            count: 0,
+            anotherCount: 0
+        }
+        this.clickCountAsync = this.clickCountAsync.bind(this)
+        this.clickCountSync = this.clickCountSync.bind(this)
+    }
+
+    // 渲染函数，this 指向实例本身
+    render() {
+        return <div>
+            <button onClick={this.clickCountAsync}>异步增加count</button>
+            <br/>
+            <button onClick={this.clickCountSync}>增加count，并同步更新计数器二的值等于异步增加后的count</button>
+            <br/>
+            计数器二：{this.state.anotherCount}
+        </div>
+    }
+
+    clickCountAsync() {
+        console.log('【异步】setState之前，count的值：', this.state.count)
+        this.setState({
+            count: this.state.count + 1
+        })
+        console.log('【异步】setState之后，count的值：', this.state.count)
+    }
+
+    clickCountSync() {
+        // 通过setState 更新 state.count 的值
+        this.clickCountAsync()
+        // 1、这里是更新前的值
+        console.log('【同步】setState之前，count的值：', this.state.count)
+        this.setState((prevState, props) => {
+            // 3、这里的回调函数，是更新后执行（即
+            console.log(prevState, props)
+            // 返回值就像设置 setState 的参数一样
+            return {
+                anotherCount: prevState.count
+            }
+        })
+        // 2、这里也是更新前的值
+        console.log('【同步】setState之后，count的值：', this.state.count)
+    }
+}
+```
+
+当然，这又出现一个问题，那就是假如我调用一个方法，分别修改了 A 变量，然后又调用某个方法需要修改 B 变量，并且 B 变量依赖于 A 变量修改后的值（这就是以上场景）；
+
+可是假如我又需要调用第三个方法修改 C 变量，并且 C 的值依赖于 B 修改后的值。那么这就有问题了。
+
+原因是：
+
+1. React 里并不存在类似 Vue 的 computed/watch 这样的计算属性。如果需要实现，那么可能需要引入额外的库（watch.js/Rx.js/mobx）；
+2. setState 本身是异步的，并且回调函数获取变更后的值，也是异步的。因此在场景复杂的情况下，你很难判断哪一个 setState 的回调函数，会优先执行；
+
+解决办法：
+
+1. 一个是引入额外的库，仿 Vue.js；
+2. 考虑使用生命周期函数 ``componentWillUpdate(nextProps, nextState)``，将依赖的变量的修改逻辑，添加到这个函数里，如下面代码，可以解决部分场景的问题；
+
+```
+componentWillUpdate(nextProps, nextState) {
+    nextState.anotherCount *= 2
+    console.log(nextProps, nextState)
+}
+```
+
+
+<h3>14、条件渲染（类似 Vue 的 v-if）</h3>
+
+讲道理说，React 本身的条件渲染，没有 Vue.js 用起来舒服。Vue.js 只需要在标签上添加 ``v-if`` 或者 ``v-show`` 就行，但 React 就比较麻烦了。
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: false
+        }
+    }
+
+    // 渲染函数，this 指向实例本身
+    render() {
+        let display = this.display.bind(this)
+        return <div>
+            {/* 这种方法省略了 this 绑定的过程 */}
+            <button onClick={display}>{this.state.show ? '点击隐藏' : '点击显示'}</button>
+            {
+                this.state.show
+                    ?
+                    <p>显示出来啦</p>
+                    :
+                    null
+            }
+        </div>
+    }
+
+    display() {
+        this.setState({
+            show: !this.state.show
+        })
+    }
+}
+```
+
+如以上示例，通过三元操作符里面，返回 ``JSX`` 语法的 DOM 标签，或者 null ，来决定是否显示；
+
+也可以将 JSX 语法的 DOM 作为变量，像下面这样使用。
+
+```
+render() {
+    let display = this.display.bind(this)
+    let DOM = null
+    if (this.state.show) {
+        DOM = <p>显示出来啦</p>
+    }
+
+    return <div>
+        {/* 这种方法省略了 this 绑定的过程 */}
+        <button onClick={display}>{this.state.show ? '点击隐藏' : '点击显示'}</button>
+        {DOM}
+    </div>
+}
+```
+
+关于 v-show 就没什么好说的了吧？手动设置标签的 style 就行，很简单。
+
+<h3>15、列表渲染（对标 v-for）</h3>
+
+【实现思路】
+
+1. 基础：数组的元素是 JSX 语法的 DOM，该数组作为 JSX 语法的 DOM，可以自动拼起来；
+2. 实现：遍历数组，然后将将数组元素变为 JSX 语法的 DOM，得到一个新的数组（元素是 JSX 的 DOM），将这个新数组作为变量插入到渲染元素中即可。
+
+如以下代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            list: [1]
+        }
+        this.add = this.add.bind(this)
+    }
+
+    render() {
+        console.log(this.state)
+        let DOM = this.state.list.map((item, index) => (<li key={index}>{item}</li>))
+
+        return <div>
+            <p>列表元素：</p>
+            <ul>
+                {DOM}
+            </ul>
+            <button onClick={this.add}>点击添加一个列表元素</button>
+        </div>
+    }
+
+    add() {
+        this.state.list.push(parseInt(Math.random() * 1000))
+        this.setState({
+            list: this.state.list
+        })
+    }
+}
+```
+
+【key】
+
+注意，必须在列表的标签里设置唯一的 key 属性，不然会抛出异常（虽然还会正常执行）。通常建议使用 id（因为 id 一般唯一）来作为 key，实在不行，使用数组的索引作为 key 也勉勉强强了。
+
 
 <h3>16、</h3>
 
