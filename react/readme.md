@@ -511,10 +511,10 @@ ReactDOM.render(
 
 1. constructor 【父组件】构造函数
 2. componentWillMount 【父组件】挂载前
-3. render 【父组件】
+3. render 【父组件】渲染
 4. constructor 【子组件】构造函数
 5. componentWillMount 【子组件】挂载前
-6. render 【子组件】渲染完毕
+6. render 【子组件】渲染
 7. componentDidMount 【子组件】挂载后执行
 8. componentDidMount 【父组件】挂载后执行
 
@@ -558,6 +558,71 @@ ReactDOM.render(
 4. 第四次点击，同第二次；
 
 即父组件第 2n+1 次点击渲染，2n 次不渲染；子组件是父组件第 2n 次渲染时，不渲染，第 2n+1 次渲染时，渲染；
+
+<table>
+    <thead>
+    <tr>
+        <td>生命周期钩子函数</td>
+        <td>执行时间</td>
+        <td>描述</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>constructor</td>
+        <td>创建组件时调用</td>
+        <td>显然创建组件时，会第一时间调用这个</td>
+    </tr>
+    <tr>
+        <td>componentWillMount</td>
+        <td>组件挂载前</td>
+        <td>在组件挂载之前调用一次。如果在这个函数里面调用setState，本次的render函数可以看到更新后的state，并且只渲染一次。</td>
+    </tr>
+    <tr>
+        <td>componentDidMount</td>
+        <td>组件挂载后</td>
+        <td>此时子组件挂载好了，可以在这里使用 refs。<br/>注意，在此之前子组件会先执行完生命周期钩子（比如子组件的这个函数比父组件的这个函数优先执行）</td>
+    </tr>
+    <tr>
+        <td>componentWillReceiveProps(nextProps)</td>
+        <td>父组件的 state 改变后，子组件的这个函数会被执行</td>
+        <td>父组件的 state 被改变后，子组件的这个函数会执行（参数是props），并且子组件的 render 函数随后会被执行</td>
+    </tr>
+    <tr>
+        <td>shouldComponentUpdate(nextProps, nextState)</td>
+        <td>state 被改变后（包括父组件），这个函数会被执行；<br/>
+            return true 会触发render和子组件的这个函数（默认true）<br/>
+            return false 值已被修改但不会触发 render；
+        </td>
+        <td>
+            返回true，会导致先执行父组件的 render（渲染），再执行子组件的 componentWillReceiveProps（子组件props更新），再执行子组件的
+            shouldComponentUpdate（子组件是否渲染）；如果子组件返回true，则依次类推；<br/>
+            返回false，上面后续的全部不会执行
+        </td>
+    </tr>
+    <tr>
+        <td>componentWillUpdate(nextProps, nextState)</td>
+        <td>shouldComponentUpdate 返回 true 后，执行这个（更新前）</td>
+        <td>上面返回 true 才会执行，否则不会</td>
+    </tr>
+    <tr>
+        <td>render</td>
+        <td>渲染函数</td>
+        <td>这个是核心，一般返回 JSX 语法的 DOM；<br/>建议不要在这里修改state的值</td>
+    </tr>
+    <tr>
+        <td>componentDidUpdate(preProps, preState)</td>
+        <td>渲染完毕后执行</td>
+        <td>先执行子组件的这个函数，再执行父组件的这个函数。<br>注意，这里的2个参数，是之前的 state 的值，而不是最新的 state 的值，如果要拿最新的，请通过 this.state.xx 来获取</td>
+    </tr>
+    <tr>
+        <td>componentWillUnmount</td>
+        <td>组件卸载时执行</td>
+        <td>卸载时执行</td>
+    </tr>
+    </tbody>
+</table>
+
 
 <h3>13、setState 是异步行为</h3>
 
@@ -774,11 +839,324 @@ class HelloWord extends React.Component {
 
 【key】
 
-注意，必须在列表的标签里设置唯一的 key 属性，不然会抛出异常（虽然还会正常执行）。通常建议使用 id（因为 id 一般唯一）来作为 key，实在不行，使用数组的索引作为 key 也勉勉强强了。
+注意，必须在列表的标签里设置唯一的 key 属性，不然会抛出异常（虽然还会正常执行）。
+
+通常建议使用 id（因为 id 一般唯一）来作为 key，实在不行，使用数组的索引作为 key 也勉勉强强了（至少不会报错）。
 
 
-<h3>16、</h3>
+<h3>16、表单</h3>
 
-<h3>17、</h3>
+<B>总结写前面</b>
+
+1. 值的改变，通过 ``onChange`` 事件触发（包括文字输入框、radio、checkbox）；
+2. 
+
+【form】标签：
+
+如果用 form 标签的话，在通过 submit 按钮提交时，会自动触发页面跳转，但这个通常是我们不需要的；
+
+解决办法是，添加 onSubmit 事件，如：``<form onSubmit={this.submit}>``，在这个函数里，通过 ``e.preventDefault()`` 阻止默认的提交行为，
+
+示例代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            name: ''
+        }
+        this.submit = this.submit.bind(this)
+    }
+
+    render() {
+        return <form onSubmit={this.submit}>
+            <label>
+                male
+                <input type="radio" name='gender' value='male'/>
+            </label>
+            <label>
+                female
+                <input type="radio" name='gender' value='female'/>
+            </label>
+            <input type="submit"/>
+        </form>
+    }
+
+    submit(e) {
+        console.log(arguments)
+        e.preventDefault();
+    }
+}
+```
+
+【``input[type=text]``】标签：
+
+默认情况下，通过 ``value=this.state.xxx`` 绑定，是单向绑定。即改变 state 存储的值，可以自动修改 input 的值，但是用户修改 input 的值，是无法修改成功的。
+
+用户想要输入值，必须设置 onChange 事件才可以，这样才能实现 **双向绑定**。
+
+示例代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            value: ''
+        }
+        this.valueChange = this.valueChange.bind(this)
+    }
+
+    render() {
+        return <form onSubmit={this.submit}>
+            <input type="text" value={this.state.value} onChange={this.valueChange}/>
+            <br/>
+            输入框的值：{this.state.value}
+        </form>
+    }
+
+    valueChange(e) {
+        this.setState({
+            value: e.target.value
+        })
+    }
+}
+```
+
+【``textarea``】标签：
+
+使用方法等同 ``input[type=text]``，略。
+
+【``input[type=radio]``】标签：
+
+注意，radio 以及 checkbox 的 value 设置和一般不同。
+
+原因在于，radio 的 value 属性，表示当你选中这个单选框时，这个单选框的值，当你需要表示我选中这个单选框，那么应该通过 ``checked = true|'check'`` 来实现选中。
+
+示例代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            gender: 'male'
+        }
+        this.select = this.select.bind(this)
+    }
+
+    render() {
+        return <form>
+            <label>
+                male
+                {/* 可以返回 true 表示选中 */}
+                <input type="radio" name='gender' value='male'
+                       checked={this.state.gender === 'male'}
+                       onChange={this.select}/>
+            </label>
+            <label>
+                female
+                {/* 也可以返回checked 表示选中 */}
+                <input type="radio" name='gender' value='female'
+                       checked={this.state.gender === 'female' ? 'checked' : ''}
+                       onChange={this.select}/>
+            </label>
+            <br/>
+            你当前选择的性别是：{this.state.gender}
+        </form>
+    }
+
+    select(e) {
+        this.setState({
+            gender: e.target.value
+        })
+    }
+}
+```
+
+【``input[type=checkbox]``】标签：
+
+这个显然就更麻烦了。他表现 选中/未选中 状态，和 radio 是一样的。
+
+但问题在于，checkbox 在一个 name 属性下可能有多个变量，
+
+所以你需要用数组来存储当前选中的 checkbox 有谁，
+
+例如：``gender: ['male', 'female']``，
+
+然后通过 ``indexOf(xx) > -1`` 来判断存在不存在（-1 表示不存在）。
+
+示例代码：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            gender: ['male', 'female']
+        }
+        this.select = this.select.bind(this)
+    }
+
+    render() {
+        return <form>
+            <label>
+                male
+                {/* 可以返回 true 表示选中 */}
+                <input type="checkbox" name='gender' value='male'
+                       checked={this.state.gender.indexOf('male') > -1}
+                       onChange={this.select}/>
+            </label>
+            <label>
+                female
+                {/* 也可以返回checked 表示选中 */}
+                <input type="checkbox" name='gender' value='female'
+                       checked={this.state.gender.indexOf('female') > -1}
+                       onChange={this.select}/>
+            </label>
+            <br/>
+            你当前选择的性别是：{this.state.gender.join(',')}
+        </form>
+    }
+
+    select(e) {
+        // 先拿到值和索引
+        let v = e.target.value
+        let i = this.state.gender.indexOf(v)
+        // 有则移除，无则添加
+        if (i === -1) {
+            this.state.gender.push(v)
+        } else {
+            this.state.gender.splice(i, 1)
+        }
+        // 最后必须setState设置一下，才会触发render
+        this.setState({
+            gender: this.state.gender
+        })
+    }
+}
+```
+
+当然，也可以通过 **对象** 的方式来存储，写的话更简单，只不过取用数据的时候，可能会麻烦一些，如示例：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            gender: {
+                male: false,
+                female: false
+            }
+        }
+        this.select = this.select.bind(this)
+    }
+
+    render() {
+        return <form>
+            <label>
+                male
+                <input type="checkbox" name='gender' value='male'
+                       checked={this.state.gender.male}
+                       onChange={this.select}/>
+            </label>
+            <label>
+                female
+                <input type="checkbox" name='gender' value='female'
+                       checked={this.state.gender.female}
+                       onChange={this.select}/>
+            </label>
+            <br/>
+            你当前选择的性别是：{JSON.stringify(this.state.gender)}
+        </form>
+    }
+
+    // 以下这种写法是可复用写法（即多个不同的 checkbox 可以复用这一个函数）
+    select(e) {
+        let v = e.target.value
+        let name = e.target.name
+        this.state[name][v] = !this.state[name][v]
+        this.setState({
+            [name]: this.state[name]
+        })
+    }
+}
+```
+
+【select】标签：
+
+select 标签在使用的时候，和 Vue 有一点最大的不同之处在于：
+
+1. 当 Vue 中设置 select 标签的值为 **空字符串** 时，那么 select 标签会不选中任何 option；
+2. 当 React 中设置 select 标签的值为 **空字符串3** 时，那么 select 标签会默认选中 **第一个 option 标签** ；
+3. 不管将 select 标签绑定的 value 的值设置为 **空字符串** ，或者是 null，或者是 **option** 标签不存在的值，React 都会将 select 标签绑定的 value 的值设置为 **空字符串**；
+4. 然后由于当 select 标签绑定的值为空字符串时，会在 **页面视觉** 上，默认选中第一个 option 标签；
+5. 如果你此时去拿select的值，拿到的是空字符串；但是通过select标签来拿值，那么拿到的是第一个 option 的值；
+
+也就是说，当值为 **空字符串** 时，页面上显示的效果，和实际值不同！
+
+所以需要通过 js 手动将该 DOM 标签的值设置为空字符串，才可以。
+
+具体解决办法如下（包含 select 标签使用方法）：
+
+```
+class HelloWord extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            gender: ''
+        }
+        this.select = this.select.bind(this)
+    }
+
+    render() {
+        return <div>
+            <select value={this.state.gender} ref={input => {
+                this.DOM = input
+            }} onChange={this.select} id='abc'>
+                <option value="male">male</option>
+                <option value="female">female</option>
+            </select>
+            <br/>
+            你当前选择的性别是：{this.state.gender}
+            <button onClick={this.setGender.bind(this)}>点击不设置gender</button>
+        </div>
+    }
+
+    // 以下这种写法是通用写法
+    select(e) {
+        let v = e.target.value
+        this.setState({
+            gender: v
+        })
+    }
+
+    setGender() {
+        this.setState({
+            gender: ''
+        })
+    }
+
+    // 如果假如 select 为空的话，需要通过 ref 手动拿到元素，然后设置 value 的值为空，从而默认不选择值
+    componentDidUpdate(preProps, preState) {
+        console.log('componentDidUpdate', arguments)
+        if (this.state.gender === '') {
+            this.DOM.value = ''
+        }
+    }
+
+    // 如果初始为空的话，也需要在这里手动配置一波，这是组件创建时【生命周期】在挂载完毕时执行的函数
+    componentDidMount() {
+        console.log('componentDidMount')
+        if (this.state.gender === '') {
+            this.DOM.value = ''
+        }
+    }
+}
+```
+
+
+<h3>17、ref</h3>
 
 <h3>18、</h3>

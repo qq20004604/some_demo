@@ -79,8 +79,8 @@ class HelloWord extends React.Component {
         console.log('---->B、 componentWillUpdate(nextProps, nextState) 【父组件】，render渲染前执行')
     }
 
-    // 渲染完毕后执行，会优先执行子组件的渲染函数
-    componentDidUpdate() {
+    // 渲染完毕后执行，会优先执行子组件的渲染函数，这里的参数，是旧的 state 的值，而不是最新的
+    componentDidUpdate(preProps, preState) {
         console.log('---->G、 componentDidUpdate 【父组件】 父组件的render已经渲染完毕')
     }
 
