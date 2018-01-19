@@ -1157,6 +1157,101 @@ class HelloWord extends React.Component {
 ```
 
 
-<h3>17、ref</h3>
+<h3>17、组件通信</h3>
+
+这个很好理解，我们开发常面对几种情况：
+
+1. **子组件** 需要使用 **父组件** 的值：通过标签传入，props取值，如：``<Status temperaature={this.state.temperaature}></Status>``
+2. **父组件** 需要使用 **子组件** 的值：不能直接将父组件值传入子组件并在子组件修改（不好），应采用父组件传函数到子组件，子组件调用父组件的该函数，并通过函数参数传值；
+3. **子组件** 需要使用 **另一个子组件** 的值：将值存储在 **父组件** 中，第一步通过【2】中的方法，数据来源子组件修改存于父组件的值，第二步通过【1】中的方法，目标子组件使用了修改后的值；
+
+这里放一个示例：
+
+父组件Parent 存储变量temperaature，子组件Status 负责显示这个变量的值，子组件Controller 负责修改这个变量的值。
+
+如代码：
+
+```
+// 显示组件
+class Status extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return <div>
+            当前温度：{this.props.temperaature} 摄氏度
+        </div>
+    }
+}
+
+// 控制组件
+class Controller extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return <div>
+            {/* 通过调用父组件传给子组件的 onControllerChange 来实现修改，传值的不同是参数 */}
+            {/* 这两种写法，都可以实现目的，但假如没有在父组件绑定this（应该不会吧），会导致下面那种写法的this指向错误 */}
+            <button onClick={e => {
+                this.props.onControllerChange(true)
+            }}>点击开始自动升温
+            </button>
+            <button onClick={this.props.onControllerChange.bind(null, false)}>点击开始自动降温</button>
+        </div>
+    }
+}
+
+// 父组件
+class Parent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            temperaature: 0
+        }
+        // 注意，因为这里绑定了this，所以后面子组件再次绑定this是无效的
+        this.changeTemplate = this.changeTemplate.bind(this)
+        this.timer
+    }
+
+    render() {
+        return <div>
+            <Status temperaature={this.state.temperaature}></Status>
+            <Controller temperaature={this.state.temperaature}
+                        onControllerChange={this.changeTemplate}></Controller>
+        </div>
+    }
+
+    changeTemplate(status) {
+        console.log(this)
+        if (this.timer) {
+            clearInterval(this.timer)
+        }
+        if (status) {
+            this.timer = setInterval(() => {
+                // 如果大于等于100，则停止计时器并返回
+                if (this.state.temperaature >= 100) {
+                    return clearInterval(this.timer)
+                }
+                this.setState({
+                    temperaature: this.state.temperaature + 1
+                })
+            }, 200)
+        } else {
+            this.timer = setInterval(() => {
+                // 如果小于等于-100，则停止计时器并返回
+                if (this.state.temperaature <= -100) {
+                    return clearInterval(this.timer)
+                }
+                this.setState({
+                    temperaature: this.state.temperaature - 1
+                })
+            }, 200)
+        }
+    }
+}
+```
 
 <h3>18、</h3>
