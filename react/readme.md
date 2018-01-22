@@ -1545,8 +1545,174 @@ ReactDOM.render(
 3. 基础组件专心于基础组件本身的样式，以及一些通用逻辑，以及 props.children 放置在哪里等；
 4. 细分后的 MyInput 组件，可以专心于搞定 input 输入框的样式，通用逻辑等；
 
-<h3>20、</h3>3
+<h3>20、style 写法</h3>
 
-<h3>21、</h3>
+JSX里，写 style 属性，有几点需要注意：
 
-<h3>22、</h3>
+1. 以 k-v （对象）形式来写 style 属性（如果直接写在 html 标签里，容易以为是双大括号，事实上还是单大括号）；
+2. key 使用驼峰写法；
+3. 值是字符串；
+4. 如果想混合多个属性，需要先通过例如 ``Object.assign()`` 将其混合为一个对象，再使用。 **不能** 使用数组或写 2 个 ``style={}`` 来实现；
+
+示例代码：
+
+```
+class StyleDemo extends React.Component {
+    render() {
+        let style = {
+            fontSize: '100px',
+            color: 'red'
+        }
+        return <div style={style}>
+            这是一段红色文字
+        </div>
+    }
+}
+```
+
+<h3>21、class 写法</h3>
+
+有几点注意：
+
+1. 写在标签里的时候，不是 ``class = "xxx"``， 而是 ``className = "xxx"``；
+2. 值是字符串，自行拼空格；
+
+示例代码：
+
+```
+class StyleDemo extends React.Component {
+    render() {
+        let myClass = 'abc def'
+        return <div className={myClass}>
+            这是一段红色文字
+        </div>
+    }
+}
+```
+
+<h3>22、JSX</h3>
+
+【1】标签名可以是对象的属性（前提对象属性是一个组件）
+
+这种情况下，对象和属性的首字母，可以不大写（但 **建议大写** ，以作区分）
+
+```
+let MyDom = {
+    my() {
+        return <p>这是一行</p>
+    }
+}
+
+class MyInput extends React.Component {
+    render() {
+        return <div>
+            <MyDom.my/>
+        </div>
+    }
+}
+```
+
+【2】标签名不能是表达式（注意和上面的区别）：
+
+也就是说，通过标签名，你可以得到一个确定的组件，而不是一个只有在运行时，才能确认加载哪个组件。
+
+【3】表达式：
+
+可以用的简单，不能用的，当然就是 if 判断语句，或者是 for 循环啦，以及类似的东西。
+
+不过函数是可以用的（注意是否成功返回 JSX 或者 你需要的内容，千万不要表达式的结果是一个函数，而不是函数运行的结果）
+
+示例代码：
+
+```
+class Demo extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            arr: ['a', 'b', 'c']
+        }
+    }
+
+    render() {
+        return <div>
+            {
+                this.state.arr.map((item, index) => <p key={index}>{item}</p>)
+            }
+        </div>
+    }
+}
+```
+
+【4】未传值则默认传值为true：
+
+```
+class Demo extends React.Component {
+    render() {
+        return <div>
+            {/* 以下两个，效果相同 */}
+            <input type='checkbox' checked={true}/>
+            <input type='checkbox' checked/>
+        </div>
+    }
+}
+```
+
+【5】同时传多个属性：
+
+如果觉得一个一个写绑定属性太麻烦了，那么可以用 es6 的对象的扩展操作符来实现。
+
+不过唯一有问题的地方在于，假如你需要传一个state的变量，那么这种写法可能导致，state 被更新后，无法正常渲染到子组件（当然，也不是没办法解决，比如赋值的代码，写在生命周期里）。
+
+```
+class MyInput extends React.Component {
+    render() {
+        return <input value={this.props.theValue} onChange={e => {
+            this.props.changeEvent.call(null, e)
+        }}/>
+    }
+}
+
+class Demo extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            value: ''
+        }
+        this.changeEvent = this.changeEvent.bind(this)
+        this.myProps = {
+            // theValue: this.state.value,  // 这种写法是不可以的，因为是 state 变量
+            changeEvent: this.changeEvent
+        }
+    }
+
+    render() {
+        return <div>
+            <MyInput theValue={this.state.value} {...this.myProps}/>
+        </div>
+    }
+
+    changeEvent(e) {
+        this.setState({
+            value: e.target.value
+        })
+    }
+}
+```
+
+【6】不会被显示的内容：
+
+false、null、undefined 和 true 都是有效的，但它们不会直接被渲染：
+
+如果你需要显示字符串形式的以上，可以通过 js 表达式，将他们转为字符串；
+
+如果想选择性的显示一个 DOM，可以通过表达式来实现；
+
+
+
+<h3>23、</h3>
+
+<h3>24、</h3>
+
+<h3>25、</h3>
+
+<h3>26、</h3>
