@@ -1709,7 +1709,156 @@ false、null、undefined 和 true 都是有效的，但它们不会直接被渲�
 
 
 
-<h3>23、</h3>
+<h3>23、ref</h3>
+
+用过 Vue 的同学，在使用 React 的 ref 时，注意不要混淆。
+
+在 Vue 中，ref 绑定的 DOM 元素，可以直接在组件实例里，通过 ``this.$refs.xxx`` 来获取。
+
+但是在 React 中，ref 的属性的值，是一个函数；
+
+函数的参数是当前 DOM 标签，或是组件实例；
+
+于是你可以在函数体内，通过 ``this.xxx = xxxx`` 来将该 DOM 赋值给组件的某个变量。
+
+这样就实现了类似 Vue 的 refs 的功能。
+
+给一个示例：
+
+```
+class RefsDemo extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            display: ''
+        }
+    }
+
+    render() {
+        return <div>
+            <div type="text" ref={(input) => {
+                this.textInput = input
+            }}></div>
+        </div>
+    }
+
+    componentDidMount() {
+        console.log(this.textInput)
+    }
+}
+```
+
+输出结果：
+
+```
+<input type="text">
+```
+
+---
+
+当然也可以用来获取子组件：
+
+```
+class ChildDemo extends React.Component {
+    render() {
+        return <p>123</p>
+    }
+}
+
+class RefsDemo extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            display: ''
+        }
+    }
+
+    render() {
+        return <div>
+            <ChildDemo ref={(child) => {
+                this.child = child
+            }}/>
+        </div>
+    }
+
+    componentDidMount() {
+        console.log(this.child)
+    }
+}
+```
+
+输出：
+
+```
+ChildDemo {props: {…}, context: {…}, refs: {…}, updater: {…}, _reactInternalFiber: FiberNode, …}
+```
+
+---
+
+<b>父组件获取子组件的 DOM：</b>
+
+首先，我们知道， **不能** 直接通过父元素传 props 属性，然后将该 DOM 赋值给这个属性；
+
+所以我们可以用常规的方法：即父组件传一个赋值函数给子组件，然后子组件在 ref 中调用这个函数即可。
+
+示例：
+
+```
+class ChildDemo extends React.Component {
+    render() {
+        return <div>
+            <input type="text" ref={this.props.getInput}/>
+        </div>
+    }
+}
+
+class RefsDemo extends React.Component {
+    render() {
+        return <div>
+            <ChildDemo getInput={this.getInput.bind(this)}/>
+        </div>
+    }
+
+    getInput(DOM) {
+        console.log(DOM)
+        this.myInput = DOM
+    }
+}
+```
+
+如果熟悉 React 的基本功，那么写出以上代码是毫无难度的。
+
+但是，getInput 这个方法其实并没有必要独立出来，因为他的逻辑很简单，所以完全可以直接将这个函数作为 props 直接传入子组件，这也就有了 React 的教程上的示例。
+
+```
+class ChildDemo extends React.Component {
+    render() {
+        return <div>
+            <input type="text" ref={this.props.getInput}/>
+        </div>
+    }
+}
+
+class RefsDemo extends React.Component {
+    render() {
+        return <div>
+            {/* 因为函数简单，所以直接写到这里，箭头函数自带绑定this到声明时的作用域 */}
+            <ChildDemo getInput={DOM => {
+                console.log(DOM)
+                this.myInput = DOM
+            }}/>
+        </div>
+    }
+
+    // 注释掉
+    // getInput(DOM) {
+    //     console.log(DOM)
+    //     this.myInput = DOM
+    // }
+}
+```
+
+
 
 <h3>24、</h3>
 

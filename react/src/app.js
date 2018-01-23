@@ -1,33 +1,35 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-
-class Demo extends React.Component {
-    constructor() {
-        super()
-        this.state = {
-            display: ''
-        }
-        this.change = this.change.bind(this)
-    }
-
+class ChildDemo extends React.Component {
     render() {
         return <div>
-            {this.state.display && <button onClick={this.change}>现在是【A】，点击切换</button>}
-            {!this.state.display && <button onClick={this.change}>点击切换，现在是【B】</button>}
+            <input type="text" ref={this.props.getInput}/>
+        </div>
+    }
+}
+
+class RefsDemo extends React.Component {
+    render() {
+        return <div>
+            {/* 因为函数简单，所以直接写到这里，箭头函数自带绑定this到声明时的作用域 */}
+            <ChildDemo getInput={DOM => {
+                console.log(DOM)
+                this.myInput = DOM
+            }}/>
         </div>
     }
 
-    change() {
-        this.setState({
-            display: !this.state.display
-        })
-    }
+    // 注释掉
+    // getInput(DOM) {
+    //     console.log(DOM)
+    //     this.myInput = DOM
+    // }
 }
 
 ReactDOM.render(
     <div>
-        <Demo/>
+        <RefsDemo/>
     </div>,
     document.getElementById('root')
 )
