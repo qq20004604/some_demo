@@ -1,11 +1,16 @@
 ﻿// 引入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack')
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
     // 入口文件
     entry: {
-        app: './src/app.tsx'
+        app: './src/app.tsx',
+        vendor: [
+            'react',
+            'react-dom',
+        ]
     },
     // 出口文件
     output: {
@@ -39,11 +44,21 @@ module.exports = {
         // html 源文件
         new HtmlWebpackPlugin({
             chunks: 'app',
-            template: `./index.html`
+            template: `./index.html`,
+            hash: true
+        }),
+        new webpack.DefinePlugin({
+            'process.env': {
+                'NODE_ENV': '"production"'
+            }
         }),
         // HMR 需要的两个插件
         new webpack.NamedModulesPlugin(),
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.optimize.CommonsChunkPlugin({
+            names: ['vendor']
+        }),
+        new UglifyJSPlugin()
     ],
     resolve: {
         // Add `.ts` and `.tsx` as a resolvable extension.

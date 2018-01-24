@@ -60,7 +60,14 @@ npm install typescript
 
 这里是在配合 webpack 的基础上进行进一步的设置。
 
-打开 ``tsconfig.json``，进行配置：
+首先除了安装react和react-dom外，还得安装 ts 版本的 react 和 react-dom：（如果报了一大堆语法错误，十有八九就是这个问题了）
+
+```
+npm install @types/react
+npm install @types/react-dom
+```
+
+然后打开 ``tsconfig.json``，进行配置：
 
 [TypeScript配置文件tsconfig简析.md](https://github.com/hstarorg/HstarDoc/blob/master/%E5%89%8D%E7%AB%AF%E7%9B%B8%E5%85%B3/TypeScript%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6tsconfig%E7%AE%80%E6%9E%90.md)
 
@@ -72,3 +79,27 @@ npm install typescript
 "jsx": "react",
 "allowSyntheticDefaultImports": true
 ```
+
+
+<h3>问题释义：</h3>
+
+<h4>1、体积过大</h4>
+
+如果发现压缩后过大，通过以下插件给 ``webpack.config.js`` 来缩小来自 react 代码的体积
+
+```
+new webpack.DefinePlugin({
+    'process.env': {
+        'NODE_ENV': '"production"'
+    }
+})
+```
+
+压缩比较（React + React-dom）：
+
+1. 完全不压缩：接近 800 KB；
+2. （不含上面的策略）单纯丑化压缩：280 KB +；
+3. 【2】 + 将上面的值设置为：``"development"``，187 KB；
+4. 【2】 + 将上面的值设置为：``"production"``，不到 110 KB；
+
+
