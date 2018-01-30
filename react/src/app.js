@@ -1,30 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class ChildDemo extends React.Component {
-    render() {
-        return <div>
-            <input type="text" ref={this.props.getInput}/>
-        </div>
-    }
-}
-
 class RefsDemo extends React.Component {
+    constructor() {
+        super()
+        this.state = {
+            a: 1,
+            b: 2
+        }
+        this.change = this.change.bind(this)
+    }
+
     render() {
         return <div>
-            {/* 因为函数简单，所以直接写到这里，箭头函数自带绑定this到声明时的作用域 */}
-            <ChildDemo getInput={DOM => {
-                console.log(DOM)
-                this.myInput = DOM
+            <input type="text" value={this.state.a} onChange={e => {
+                this.change('a', e)
             }}/>
         </div>
     }
 
-    // 注释掉
-    // getInput(DOM) {
-    //     console.log(DOM)
-    //     this.myInput = DOM
-    // }
+    change(type, e) {
+        console.log(type, e)
+    }
 }
 
 ReactDOM.render(

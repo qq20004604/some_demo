@@ -8,82 +8,76 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-// 这是接口
-interface ChildDemoProps {
-    // 如果是函数，需要用以下这种形式写接口；
-    // 如果返回的 DOM 是一个 input，需要用 HTMLInputElement 才行
-    getInput: (DOM: HTMLInputElement) => void;
+interface UserInputState {
+    totalPrice: string;
+    downPayment: string;
 }
 
-interface ChildDemoState {
-    value: string;
-}
-
-/* 关于<>：
- * 第一个参数是 props 的接口描述，第二个是 state 的接口描述
- * 如果缺少这个，会导致ts报错；
- * 如果没有比如 state，那么该位置用 {} 替代
-  * */
-class ChildDemo extends React.Component<ChildDemoProps, ChildDemoState> {
-    constructor(props: any) {
+class UserInput extends React.Component <{}, UserInputState> {
+    constructor(props: object) {
         super(props)
         this.state = {
-            value: '123'
+            totalPrice: '',
+            downPayment: ''
+        }
+        this.changeValue = this.changeValue.bind(this)
+    }
+
+    render() {
+        return <div>
+
+            <label>
+                房价总计：<input value={this.state.totalPrice} onChange={this.changeValue.bind(null, 'totalPrice')}/><b>万</b>
+            </label>
+            <label>
+                首付比例：
+                <select value={this.state.downPayment} onChange={this.changeValue.bind(null, 'downPayment')}>
+                    <option value="0.1">一成</option>
+                    <option value="0.2">两成</option>
+                    <option value="0.3" selected>三成</option>
+                    <option value="0.4">四成</option>
+                    <option value="0.5">五成</option>
+                    <option value="0.6">六成</option>
+                    <option value="0.7">七成</option>
+                    <option value="0.8">八成</option>
+                    <option value="0.9">九成</option>
+                </select>
+            </label>
+            <label>
+                年利率：<input id="年利率" value="6"/><b>％</b>
+            </label>
+            <label>
+                总计年数：<input id="总计年数" value="30"/><b>年</b>
+            </label>
+            <label>
+                CPI年均通货膨胀：<input id="CPI年均通货膨胀" value="3"/><b>％</b>
+            </label>
+        </div>
+    }
+
+    changeValue(type: string, input: any): void {
+        let DOM: (HTMLInputElement | HTMLSelectElement) = input.target
+        let value: string = DOM.value
+        console.log(type, input)
+        // this.setState({
+        //     [type]: value
+        // })
+        if (type === 'totalPrice') {
+            this.setState({
+                totalPrice: value
+            })
+        } else if (type === 'downPayment') {
+            this.setState({
+                downPayment: value
+            })
         }
     }
-
-    render() {
-        return <div>
-            <p>{this.state.value}</p>
-            <input type="text" ref={this.props.getInput}/>
-        </div>
-    }
 }
 
-class RefsDemo extends React.Component {
-    myInput: HTMLInputElement;
-
-    render() {
-        return <div>
-            {/* 因为函数简单，所以直接写到这里，箭头函数自带绑定this到声明时的作用域 */}
-            <ChildDemo getInput={this.getInput.bind(this)}/>
-        </div>
-    }
-
-    // 传递一个函数，参数可以用 HTMLInputElement 也可以用 HTMLElement，不过还是统一一下
-    getInput(DOM: HTMLInputElement): void {
-        this.myInput = DOM
-    }
-}
 
 ReactDOM.render(
     <div>
-        <RefsDemo/>
+        <UserInput/>
     </div>,
     document.getElementById('root')
 )
-
-
-// 普通 DEMO
-let a = 1;
-
-function Foo(val: number) {
-    return val * 3
-}
-
-function Bar(val: string) {
-    return val + '：123'
-}
-
-let baz = Bar(String(Foo(a)))
-
-function CreateDOM(str: string) {
-    let DOM = document.createElement('div')
-    DOM.innerHTML = str
-    return DOM
-}
-
-let RootDOM = document.querySelector("#root")
-if (RootDOM) {
-    RootDOM.appendChild(CreateDOM(baz))
-}
