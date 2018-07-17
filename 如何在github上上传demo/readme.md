@@ -89,3 +89,23 @@ https://github.com/new
 在新的窗口里直接点击push即可。
 
 如果ok的话，webstorm 右下角会有提示，告诉你 push 成功了，并且 push过程中，webstorm 下方也有进度条的。
+
+
+## 疑难杂症
+
+### 1、明明生成 SSH 密钥了，还是提示错误
+
+报错信息：
+
+```
+Push failed: Failed with error: Could not read from remote repository.
+```
+
+
+假如没生成SSH密钥，也没将这个密钥添加到 github，那么添加。如果已经添加了，还是报这个错误，请在 git bash 里输入以下两行命令（记得替换对应的字段，替换后的字段没有引号）
+
+```
+git config --global user.name "yourname"
+git config --global user.email "youremail"
+```
+
