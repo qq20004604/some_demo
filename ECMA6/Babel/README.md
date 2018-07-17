@@ -1,4 +1,94 @@
-﻿##Babel
+﻿## 使用 babel-preset-env
+
+【本节内容，于2018/02/14更新】
+
+安装
+
+```
+npm install --save babel-core babel-preset-env babel-runtime babel-plugin-transform-runtime
+```
+
+配置 babel 规则文件``.babelrc``
+
+```
+{
+  "presets": [
+    "babel-preset-env"
+  ],
+  "plugins": [
+    "transform-runtime"
+  ]
+}
+```
+
+即可正常使用。
+
+<b>使用 babel-loader </b>
+
+
+单独使用 babel 还是比较少的，一般是用 babel-loader 来自动编译 js 文件，建议参考这篇 [babel-loader](https://github.com/qq20004604/webpack-study/tree/master/5%E3%80%81Loader/babel_loader#%E5%89%8D%E6%B3%A8)。
+
+<b>配置 babel 支持新特性</b>
+
+例如支持对象扩展运算符
+
+```
+let foo = {
+    a: 1,
+    b: 2
+}
+
+let bar = {c: 3, ...foo}
+```
+
+或者支持 class 里直接赋值变量
+
+```
+class Foo extends React.Component {
+    state = {
+        a: 1
+    }
+
+    render() {
+        return (<div>a: {this.state.a}</div>)
+    }
+}
+```
+
+一般来说，这种新特性，正常来说 runtime 是不支持的，因此额外安装下面这个
+
+```
+npm install --save babel-preset-stage-2
+```
+
+然后配置 ``.babelrc`` 文件：
+
+```
+{
+  "presets": [
+    "babel-preset-env",
+    "stage-2"
+  ],
+  "plugins": [
+    "transform-runtime"
+  ]
+}
+```
+
+即可。
+
+注：
+
+1. 通常安装到 stage-2 就足够了，如果还不行，再安装 stage-1 或者 stage-0 （越小越新）；
+2. 安装这个对体积影响不大，我自己在 React 项目里测试，添加了上面两段代码后，并添加 ``"stage-2"`` 配置，体积大约增加了 2KB；
+
+【分割线以上的本节内容，于2018/02/14更新】
+
+【分割线以下内容，比较旧】
+
+---
+
+##Babel
 
 参考[阮一峰的文章](http://es6.ruanyifeng.com/#docs/intro)所写。
 

@@ -58,19 +58,19 @@ class UserInput extends React.Component <{}, UserInputState> {
     changeValue(type: string, input: any): void {
         let DOM: (HTMLInputElement | HTMLSelectElement) = input.target
         let value: string = DOM.value
-        console.log(type, input)
-        // this.setState({
-        //     [type]: value
-        // })
-        if (type === 'totalPrice') {
-            this.setState({
-                totalPrice: value
-            })
-        } else if (type === 'downPayment') {
-            this.setState({
-                downPayment: value
-            })
+        let obj: object = {
+            [type]: value
         }
+        this.setState(obj)
+        // if (type === 'totalPrice') {
+        //     this.setState({
+        //         totalPrice: value
+        //     })
+        // } else if (type === 'downPayment') {
+        //     this.setState({
+        //         downPayment: value
+        //     })
+        // }
     }
 }
 
