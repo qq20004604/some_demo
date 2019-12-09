@@ -90,6 +90,12 @@
                         //通过内置方法转为JSON字符串
                         var data = JSON.stringify(options.data);
                     }
+
+                    if (options.headers) {
+                        Object.keys(options.headers).forEach(key => {
+                            req.setRequestHeader(key, options.headers[key])
+                        })
+                    }
                 } else {
 
                     //此时请求类型必然是get
@@ -151,8 +157,7 @@
                 } else {
                     success(res);
                 }
-            }
-            else {
+            } else {
                 //fail则是用户写的失败处理函数，同样将错误文本作为参数传递，并执行之
                 var isErr = false;
                 try {
@@ -196,6 +201,12 @@
                     req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
                 } else {
                     req.setRequestHeader("Content-Type", "application/json");
+                }
+
+                if (options.headers) {
+                    Object.keys(options.headers).forEach(key => {
+                        req.setRequestHeader(key, options.headers[key])
+                    })
                 }
 
                 //然后再发送
