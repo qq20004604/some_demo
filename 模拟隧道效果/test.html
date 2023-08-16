@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background-color: #000;
+        }
+
+        .contaner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 1px solid #fff;
+            /*background-color: #ccc;*/
+            transform-style: preserve-3d;
+            perspective: 600px;
+            perspective-origin: 50% 50%;
+            overflow: hidden;
+        }
+
+        .box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            /*transform: translateZ(0px);*/
+            transform-style: preserve-3d;
+            animation: move 6s linear;
+        }
+
+        .box div {
+            position: absolute;
+            border: 1px solid #fff;
+        }
+
+        .top {
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 600px;
+            transform-origin: 50% 0;
+            transform: rotateX(-90deg);
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFFGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDggNzkuMTY0MDM2LCAyMDE5LzA4LzEzLTAxOjA2OjU3ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjMtMDgtMTZUMTU6MDQrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgc3RFdnQ6d2hlbj0iMjAyMy0wOC0xNlQxNTowNCswODowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+7nRHfAAAAGJJREFUWMNjjIlJ+88wgIAFRPz8+Uty9eoFL+hpcVxchvS/f/+eMAxkCIDsZmIYYDDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow5ggnQU44TpbXFkZJoIiGYc6O45APilFgyzH4KBAAAAAElFTkSuQmCC') repeat;
+            backface-visibility: visible;
+            /*background: linear-gradient(rgb(0, 0, 255), rgb(0, 255, 255));*/
+        }
+
+        .bottom {
+            left: 0;
+            bottom: 0;
+            width: 200px;
+            height: 600px;
+            transform-origin: 0 100%;
+            transform: rotateX(90deg);
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFFGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDggNzkuMTY0MDM2LCAyMDE5LzA4LzEzLTAxOjA2OjU3ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjMtMDgtMTZUMTU6MDQrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgc3RFdnQ6d2hlbj0iMjAyMy0wOC0xNlQxNTowNCswODowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+7nRHfAAAAGJJREFUWMNjjIlJ+88wgIAFRPz8+Uty9eoFL+hpcVxchvS/f/+eMAxkCIDsZmIYYDDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow5ggnQU44TpbXFkZJoIiGYc6O45APilFgyzH4KBAAAAAElFTkSuQmCC') repeat;
+            backface-visibility: visible;
+            /*background: linear-gradient(rgb(0, 0, 255), rgb(0, 255, 255));*/
+        }
+
+        .left {
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 200px;
+            transform-origin: 0 50%;
+            transform: rotateY(90deg);
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFFGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDggNzkuMTY0MDM2LCAyMDE5LzA4LzEzLTAxOjA2OjU3ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjMtMDgtMTZUMTU6MDQrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgc3RFdnQ6d2hlbj0iMjAyMy0wOC0xNlQxNTowNCswODowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+7nRHfAAAAGJJREFUWMNjjIlJ+88wgIAFRPz8+Uty9eoFL+hpcVxchvS/f/+eMAxkCIDsZmIYYDDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow5ggnQU44TpbXFkZJoIiGYc6O45APilFgyzH4KBAAAAAElFTkSuQmCC') repeat;
+            backface-visibility: visible;
+            /*background: linear-gradient(to right, rgb(0, 0, 255), rgb(0, 255, 255));*/
+        }
+
+        .right {
+            right: 0;
+            bottom: 0;
+            width: 600px;
+            height: 200px;
+            transform-origin: 100% 50%;
+            transform: rotateY(-90deg);
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFFGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDggNzkuMTY0MDM2LCAyMDE5LzA4LzEzLTAxOjA2OjU3ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjMtMDgtMTZUMTU6MDQrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIzLTA4LTE2VDE1OjA3OjMxKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo4OTAxYWEzMC1jNmE2LTQyM2QtYmYwMi1mZDcyNDUyNTRhZWMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjg5MDFhYTMwLWM2YTYtNDIzZC1iZjAyLWZkNzI0NTI1NGFlYyIgc3RFdnQ6d2hlbj0iMjAyMy0wOC0xNlQxNTowNCswODowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+7nRHfAAAAGJJREFUWMNjjIlJ+88wgIAFRPz8+Uty9eoFL+hpcVxchvS/f/+eMAxkCIDsZmIYYDDqgFEHjDpg1AGjDhh1wKgDRh0w6oBRB4w6YNQBow5ggnQU44TpbXFkZJoIiGYc6O45APilFgyzH4KBAAAAAElFTkSuQmCC') repeat;
+            backface-visibility: visible;
+            /*background: linear-gradient(to left, rgb(0, 0, 255), rgb(0, 255, 255));*/
+        }
+
+        @keyframes move {
+            /*from {*/
+            /*    transform: translateZ(0);*/
+            /*}*/
+            to {
+                transform: translateZ(600px);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="contaner" id="contaner">
+
+    <!--    <div class="box green" id="box2">-->
+    <!--        <div class="top"></div>-->
+    <!--        <div class="bottom"></div>-->
+    <!--        <div class="left"></div>-->
+    <!--        <div class="right"></div>-->
+    <!--    </div>-->
+</div>
+
+<script>
+    const $ = id => document.querySelector(id);
+
+    const getBox = () => `<div class="box green">
+        <div class="top"></div>
+        <div class="bottom"></div>
+        <div class="left"></div>
+        <div class="right"></div>
+    </div>`
+
+    let beginID = 1;
+
+    // 先生成第一个元素，直接插入到div里
+    const box1 = getBox(beginID);
+    beginID += 1;
+    const newBox1 = document.createElement("div");
+    newBox1.id = beginID;
+    newBox1.classList.add('box');
+    newBox1.innerHTML = box1;
+    newBox1.children[0].style.transform = `translateZ(0px)`;
+    $("#contaner").appendChild(newBox1);
+    setTimeout(() => {
+        $("#contaner").removeChild(newBox1);
+    }, 2000);
+
+
+    // 再生成第二个，第二个距离会远一点
+    const box2 = getBox(beginID);
+    beginID += 1;
+    const newBox2 = document.createElement("div");
+    newBox2.id = beginID;
+    newBox2.classList.add('box');
+    newBox2.innerHTML = box2;
+    newBox2.children[0].style.transform = `translateZ(-200px)`;
+    $("#contaner").appendChild(newBox2);
+    setTimeout(() => {
+        $("#contaner").removeChild(newBox2);
+    }, 4000);
+
+
+    // 然后每2秒生成一个，并且在生成4秒后移除
+    setInterval(() => {
+        const box = getBox(beginID);
+        beginID += 1;
+        const newBox = document.createElement("div");
+        newBox.id = beginID;
+        newBox.classList.add('box');
+        newBox.innerHTML = box;
+        newBox.style.transform = `translateZ(-600px)`;
+        $("#contaner").appendChild(newBox);
+        setTimeout(() => {
+            $("#contaner").removeChild(newBox);
+        }, 6000);
+    }, 2000)
+</script>
+</body>
+</html>
